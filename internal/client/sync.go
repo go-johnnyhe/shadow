@@ -2,36 +2,36 @@ package client
 
 import (
 	"context"
-    "crypto/sha256"
+	"crypto/sha256"
 	"encoding/base64"
-    "encoding/hex"
-    "fmt"
-    "log"
-    "os"
-    "path/filepath"
+	"encoding/hex"
+	"fmt"
+	"github.com/go-johnnyhe/shadow/internal/wsutil"
+	"log"
+	"os"
+	"path/filepath"
 	"regexp"
-    "strings"
-    "sync"
+	"strings"
+	"sync"
 	"sync/atomic"
-    "time"
-    "github.com/go-johnnyhe/waveland/internal/wsutil"
+	"time"
 
-    "github.com/fsnotify/fsnotify"
-    "github.com/gorilla/websocket"
+	"github.com/fsnotify/fsnotify"
+	"github.com/gorilla/websocket"
 )
 
 var ignore = regexp.MustCompile(`(?i)(?:^|[\\/])(?:\.git|\.hg|\.svn|\.vscode|\.idea)(?:[\\/]|$)|(?:^|[\\/])\.s\.pgsql\.\d+$|\.ds_store$|\.sw[a-p0-9]$|\.swp$|\.swo$|~$|\.bak$|\.tmp$`)
 
 type Client struct {
-	conn *wsutil.Peer
-	timer *time.Timer
-	timerMutex sync.Mutex
+	conn                  *wsutil.Peer
+	timer                 *time.Timer
+	timerMutex            sync.Mutex
 	isWritingReceivedFile atomic.Bool
-	lastHash sync.Map
+	lastHash              sync.Map
 }
 
 func NewClient(conn *websocket.Conn) *Client {
-	return &Client {
+	return &Client{
 		conn: wsutil.NewPeer(conn),
 	}
 }
@@ -47,7 +47,7 @@ func fileHash(b []byte) string {
 }
 
 func (c *Client) SendFile(filePath string) {
-	
+
 	if c.isWritingReceivedFile.Load() {
 		// log.Println("skipping send - currently writing a received file")
 		return
@@ -56,7 +56,7 @@ func (c *Client) SendFile(filePath string) {
 	if err != nil || !fileInfo.Mode().IsRegular() {
 		return
 	}
-	if fileInfo.Size() > 10 * 1024 * 1024 {
+	if fileInfo.Size() > 10*1024*1024 {
 		log.Printf("File %s too large (%d bytes)", filePath, fileInfo.Size())
 		return
 	}
@@ -95,7 +95,7 @@ func (c *Client) readLoop() {
 			}
 			return
 		}
-		if len(msg) > 10 * 1024 * 1024 {
+		if len(msg) > 10*1024*1024 {
 			log.Printf("message too large: %d bytes", len(msg))
 			continue
 		}
@@ -124,16 +124,15 @@ func (c *Client) readLoop() {
 			continue
 		}
 
-
 		c.isWritingReceivedFile.Store(true)
 
 		func() {
 			defer c.isWritingReceivedFile.Store(false)
-				if err = os.WriteFile(filename, decodedContent, 0644); err != nil {
-					log.Printf("error writing this file: %s: %v\n", filename, err)
-				} else{
-					fmt.Printf("<- %s\n", filename)
-				}
+			if err = os.WriteFile(filename, decodedContent, 0644); err != nil {
+				log.Printf("error writing this file: %s: %v\n", filename, err)
+			} else {
+				fmt.Printf("<- %s\n", filename)
+			}
 		}()
 		c.lastHash.Store(filename, fileHash(decodedContent))
 	}
@@ -147,7 +146,7 @@ func (c *Client) monitorFiles(ctx context.Context) {
 	}
 
 	go func() {
-		<- ctx.Done()
+		<-ctx.Done()
 		watcher.Close()
 	}()
 
@@ -157,8 +156,8 @@ func (c *Client) monitorFiles(ctx context.Context) {
 		// Don't confuse users with partial functionality
 		fmt.Println("\n❌ Cannot watch this directory (filesystem issue)")
 		fmt.Println("\n✅ Quick fix - run these 2 commands:")
-		fmt.Println("   $ mkdir -p /tmp/waveland && cd /tmp/waveland")
-		fmt.Println("   $ waveland join <session-url>")
+		fmt.Println("   $ mkdir -p /tmp/shadow && cd /tmp/shadow")
+		fmt.Println("   $ shadow join <session-url>")
 		fmt.Println("\nThis will start your session in a clean directory.")
 		os.Exit(1)
 	}
@@ -182,18 +181,17 @@ func (c *Client) monitorFiles(ctx context.Context) {
 			}
 		}
 	}
-	
-	
+
 	// select{}
 
 }
 
-func (c *Client) processFileEvents(ctx context.Context,watcher *fsnotify.Watcher) {
+func (c *Client) processFileEvents(ctx context.Context, watcher *fsnotify.Watcher) {
 	for {
 		select {
-		case <- ctx.Done():
+		case <-ctx.Done():
 			return
-		case event, ok := <- watcher.Events:
+		case event, ok := <-watcher.Events:
 			if !ok {
 				return
 			}
@@ -201,7 +199,7 @@ func (c *Client) processFileEvents(ctx context.Context,watcher *fsnotify.Watcher
 			if event.Op&(fsnotify.Write|fsnotify.Create|fsnotify.Rename|fsnotify.Chmod) != 0 {
 				c.handleFileEvent(event)
 			}
-		case err, ok := <- watcher.Errors:
+		case err, ok := <-watcher.Errors:
 			if !ok {
 				return
 			}

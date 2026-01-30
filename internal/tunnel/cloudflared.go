@@ -28,12 +28,12 @@ func getCloudflaredBinary() (string, error) {
 		return "", fmt.Errorf("failed to get home directory: %v", err)
 	}
 
-	wavelandDir := filepath.Join(homeDir, ".waveland")
-	if err := os.MkdirAll(wavelandDir, 0755); err != nil {
-		return "", fmt.Errorf("failed to create .waveland directory: %v", err)
+	shadowDir := filepath.Join(homeDir, ".shadow")
+	if err := os.MkdirAll(shadowDir, 0755); err != nil {
+		return "", fmt.Errorf("failed to create .shadow directory: %v", err)
 	}
 
-	binaryPath := filepath.Join(wavelandDir, binaryName)
+	binaryPath := filepath.Join(shadowDir, binaryName)
 	// if runtime.GOOS != "windows" {
 	// 	binaryPath = "./" + binaryName
 	// }

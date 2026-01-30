@@ -1,4 +1,4 @@
-module github.com/go-johnnyhe/waveland
+module github.com/go-johnnyhe/shadow
 
 go 1.24.3
 

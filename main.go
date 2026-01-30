@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/go-johnnyhe/waveland/cmd"
-)	
+	"github.com/go-johnnyhe/shadow/cmd"
+)
 
 var version = "dev"
 

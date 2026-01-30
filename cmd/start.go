@@ -3,9 +3,9 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/go-johnnyhe/waveland/internal/client"
-	"github.com/go-johnnyhe/waveland/internal/tunnel"
-	"github.com/go-johnnyhe/waveland/server"
+	"github.com/go-johnnyhe/shadow/internal/client"
+	"github.com/go-johnnyhe/shadow/internal/tunnel"
+	"github.com/go-johnnyhe/shadow/server"
 	"github.com/gorilla/websocket"
 	"github.com/spf13/cobra"
 	"net"
@@ -31,11 +31,11 @@ This command will:
 - Generate a shareable URL for your coding partner
 
 Example:
-  waveland start main.py              # Share a single file
-  waveland start .                    # Share current directory
+  shadow start main.py              # Share a single file
+  shadow start .                    # Share current directory
 
 The generated URL can be shared with anyone - they can join using:
-  waveland join <your-session-url>
+  shadow join <your-session-url>
 
 Perfect for mock interviews, pair programming, and collaborative debugging.`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -98,15 +98,15 @@ Perfect for mock interviews, pair programming, and collaborative debugging.`,
 			return
 		}
 
-		fmt.Printf("\n✅ Wavelanding %s\n", fileName)
+		fmt.Printf("\n✅ Shadowing %s\n", fileName)
 		fmt.Println("")
 		fmt.Printf("Share this command with your partner:\n")
 
 		// Bold the command for better visibility
 		if os.Getenv("TERM") != "dumb" && os.Getenv("NO_COLOR") == "" {
-			fmt.Printf("\n  \033[1mwaveland join %s\033[0m\n", tunnelURL)
+			fmt.Printf("\n  \033[1mshadow join %s\033[0m\n", tunnelURL)
 		} else {
-			fmt.Printf("\n  waveland join %s\n", tunnelURL)
+			fmt.Printf("\n  shadow join %s\n", tunnelURL)
 		}
 
 		// let the starter user connect as a client too

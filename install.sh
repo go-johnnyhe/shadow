@@ -2,8 +2,8 @@
 
 set -e
 
-REPO="go-johnnyhe/waveland"
-BIN="waveland"
+REPO="go-johnnyhe/shadow"
+BIN="shadow"
 
 # Detect platform
 OS=$(uname | tr '[:upper:]' '[:lower:]')

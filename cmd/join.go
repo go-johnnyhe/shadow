@@ -4,15 +4,15 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-    "context"
-    "fmt"
-    "os"
-    "os/signal"
-    "strings"
-    "syscall"
-    "github.com/gorilla/websocket"
-    "github.com/spf13/cobra"
-	"github.com/go-johnnyhe/waveland/internal/client"
+	"context"
+	"fmt"
+	"github.com/go-johnnyhe/shadow/internal/client"
+	"github.com/gorilla/websocket"
+	"github.com/spf13/cobra"
+	"os"
+	"os/signal"
+	"strings"
+	"syscall"
 )
 
 // joinCmd represents the join command
@@ -26,9 +26,9 @@ This will:
 - Enable real-time file synchronization
 
 Example:
-  waveland join https://abc123.trycloudflare.com
+  shadow join https://abc123.trycloudflare.com
 
-The session URL comes from whoever ran 'waveland start'.`,
+The session URL comes from whoever ran 'shadow start'.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("join called")
 		if len(args) != 1 {

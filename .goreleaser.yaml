@@ -1,13 +1,13 @@
-project_name: waveland
+project_name: shadow
 release:
   github:
     owner: go-johnnyhe
-    name: waveland
+    name: shadow
 
 builds:
-  - id: waveland
+  - id: shadow
     main: .
-    binary: waveland
+    binary: shadow
     goos:
       - linux
       - darwin
@@ -31,7 +31,7 @@ changelog:
   use: git
 
 brews:
-  - name: waveland
+  - name: shadow
     tap:
       owner: go-johnnyhe
       name: homebrew-tap
@@ -39,7 +39,7 @@ brews:
       name: GoReleaser Bot
       email: bot@goreleaser.com
     folder: Formula
-    homepage: "https://github.com/go-johnnyhe/waveland"
+    homepage: "https://github.com/go-johnnyhe/shadow"
     description: "A CLI tool collab coding"
     install: |
-      bin.install "waveland"
+      bin.install "shadow"

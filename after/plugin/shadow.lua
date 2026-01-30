@@ -1,8 +1,8 @@
--- ~/.config/nvim/after/plugin/waveland.lua
+-- ~/.config/nvim/after/plugin/shadow.lua
 vim.opt.autoread = true
 vim.opt.updatetime = 500
 vim.opt.swapfile = false
-local group = vim.api.nvim_create_augroup("waveland_autoread", { clear = true })
+local group = vim.api.nvim_create_augroup("shadow_autoread", { clear = true })
 
 
 vim.api.nvim_create_autocmd(

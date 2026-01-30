@@ -17,11 +17,11 @@ import (
 //go:embed extras/autoread.vim
 var pluginBody []byte
 
-const luaSnippet = `-- ~/.config/nvim/after/plugin/waveland.lua
+const luaSnippet = `-- ~/.config/nvim/after/plugin/shadow.lua
 vim.opt.autoread = true
 vim.opt.updatetime = 100
 vim.opt.swapfile = false
-local group = vim.api.nvim_create_augroup("waveland_autoread", { clear = true })
+local group = vim.api.nvim_create_augroup("shadow_autoread", { clear = true })
 
 -- Timer for file watching
 local file_watch_timer = nil
@@ -81,14 +81,14 @@ var vimSetupCmd = &cobra.Command{
 
 		if data, err := nvimDataDir(); err == nil {
 			dst := filepath.Join(data,
-			"site", "pack", "waveland", "start",
-			"autoread", "plugin", "autoread.vim")
+				"site", "pack", "shadow", "start",
+				"autoread", "plugin", "autoread.vim")
 			fmt.Println("DEBUG copying to →", dst)
 			if err := copyFile(dst, pluginBody); err == nil {
 				fmt.Println("✅ Neovim config is done (data path)")
 				ok = true
 			} else {
-				failures = append(failures, "Neovim-data: " + err.Error())
+				failures = append(failures, "Neovim-data: "+err.Error())
 			}
 		}
 
@@ -99,23 +99,21 @@ var vimSetupCmd = &cobra.Command{
 				fmt.Println("✅ Neovim config is done (after/plugin path), restart your nvim")
 				ok = true
 			} else {
-				failures = append(failures, "Neovim-cfg: " + err.Error())
+				failures = append(failures, "Neovim-cfg: "+err.Error())
 			}
 		}
 
-		configDst := filepath.Join(vimSiteDir(), 
-		"pack", "waveland", "start",
-		"autoread", "plugin", "autoread.vim")
+		configDst := filepath.Join(vimSiteDir(),
+			"pack", "shadow", "start",
+			"autoread", "plugin", "autoread.vim")
 		fmt.Println("DEBUG copying to →", configDst)
 		if err := copyFile(configDst, pluginBody); err == nil {
 			fmt.Println("✅ Vim config is done, restart your vim")
 			ok = true
 		} else {
-			failures = append(failures, "Vim: " + err.Error())
+			failures = append(failures, "Vim: "+err.Error())
 		}
-		
-			
-		
+
 		if !ok {
 			return fmt.Errorf("%s", strings.Join(failures, "; "))
 		}
@@ -151,7 +149,7 @@ func nvimConfigDir() (string, error) {
 }
 
 func installNvimScriptAfterPlugin(cfg string) error {
-	dst := filepath.Join(cfg, "after", "plugin", "waveland.lua")
+	dst := filepath.Join(cfg, "after", "plugin", "shadow.lua")
 	fmt.Println("DEBUG copying to →", dst)
 	if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
 		return err
@@ -159,11 +157,10 @@ func installNvimScriptAfterPlugin(cfg string) error {
 	return os.WriteFile(dst, []byte(luaSnippet), 0o644)
 }
 
-func vimSiteDir() (string) {
+func vimSiteDir() string {
 	home, _ := os.UserHomeDir()
 	return filepath.Join(home, ".vim")
 }
-
 
 func copyFile(dest string, body []byte) error {
 	if err := os.MkdirAll(filepath.Dir(dest), 0o755); err != nil {
@@ -172,7 +169,6 @@ func copyFile(dest string, body []byte) error {
 
 	return os.WriteFile(dest, body, 0o644)
 }
-
 
 func init() {
 	rootCmd.AddCommand(vimSetupCmd)

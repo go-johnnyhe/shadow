@@ -1,4 +1,4 @@
-# Waveland
+# Shadow
 
 Real-time code collaboration that works with any editor. Like Google Docs, but for coding.
 
@@ -16,41 +16,41 @@ Real-time code collaboration that works with any editor. Like Google Docs, but f
 **Install:**
 
 ```bash
-curl -sSf https://raw.githubusercontent.com/go-johnnyhe/waveland/main/install.sh | sh
+curl -sSf https://raw.githubusercontent.com/go-johnnyhe/shadow/main/install.sh | sh
 ```
 
 **Start a session:**
 
 ```bash
-waveland start .
+shadow start .
 ```
 
 **Join a session:**
 
 ```bash
-waveland join <session-url>
+shadow join <session-url>
 ```
 
 **First-time Vim/Neovim users, run:**
 
 ```bash
-waveland vimSetup
+shadow vimSetup
 ```
 
 ## How it works
 
-1. Run `waveland start filename.py` in your project
+1. Run `shadow start filename.py` in your project
 2. Share the generated URL 
-3. Your partner runs `waveland join <url>`
+3. Your partner runs `shadow join <url>`
 4. Both see live changes with `→` and `←` indicators
 
 Works with Vim, Neovim, VS Code, JetBrains, or any editor.
 
-## Why Waveland?
+## Why Shadow?
 
 Screensharing is clunky. Git is too slow for real-time work. Live Share only works in VS Code.
 
-Waveland syncs files directly—use whatever editor you want.
+Shadow syncs files directly—use whatever editor you want.
 
 ## Use Cases
 

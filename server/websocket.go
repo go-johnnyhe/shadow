@@ -1,20 +1,20 @@
 package server
 
 import (
+	"fmt"
+	"github.com/go-johnnyhe/shadow/internal/wsutil"
+	"github.com/gorilla/websocket"
+	"log"
 	"net/http"
 	"sync"
-	"fmt"
-	"log"
 	"time"
-	"github.com/go-johnnyhe/waveland/internal/wsutil"
-	"github.com/gorilla/websocket"
 )
 
 var clients = make(map[*wsutil.Peer]bool)
 var clientsMutex = &sync.Mutex{}
-var upgrader = websocket.Upgrader {
-	ReadBufferSize: 4096,
-	WriteBufferSize: 4096,
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:    4096,
+	WriteBufferSize:   4096,
 	EnableCompression: true,
 	CheckOrigin: func(r *http.Request) bool {
 		return true
@@ -28,15 +28,15 @@ func StartServer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	conn.SetReadDeadline(time.Now().Add(60*time.Second))
+	conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 	conn.SetPongHandler(func(string) error {
-		conn.SetReadDeadline(time.Now().Add(60*time.Second))
+		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 		return nil
 	})
 
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
-	
+
 	p := wsutil.NewPeer(conn)
 	go func() {
 		for range ticker.C {
@@ -59,7 +59,6 @@ func StartServer(w http.ResponseWriter, r *http.Request) {
 		clientsMutex.Unlock()
 		log.Printf("Client disconnected. Total clients now: %d", len(clients))
 	}()
-
 
 	for {
 		msgType, msg, err := conn.ReadMessage()
