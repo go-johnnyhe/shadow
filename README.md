@@ -31,12 +31,6 @@ shadow start .
 shadow join <session-url>
 ```
 
-**First-time Vim/Neovim users, run:**
-
-```bash
-shadow vimSetup
-```
-
 ## How it works
 
 1. Run `shadow start filename.py` in your project
