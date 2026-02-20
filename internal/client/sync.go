@@ -184,6 +184,10 @@ func (c *Client) sendFile(filePath string, verbose bool) bool {
 		return false
 	}
 	if fileInfo.Size() > 10*1024*1024 {
+		if verbose {
+			sizeMB := float64(fileInfo.Size()) / (1024 * 1024)
+			fmt.Println(ui.Dim(fmt.Sprintf("⊘ skipped %s (%.0fMB, exceeds 10MB limit)", relPath, sizeMB)))
+		}
 		return false
 	}
 	content, err := os.ReadFile(absPath)
@@ -229,7 +233,8 @@ func (c *Client) readLoop() {
 			return
 		}
 		if len(msg) > 10*1024*1024 {
-			log.Printf("message too large: %d bytes", len(msg))
+			sizeMB := float64(len(msg)) / (1024 * 1024)
+			fmt.Println(ui.Dim(fmt.Sprintf("⊘ skipped incoming message (%.0fMB, exceeds 10MB limit)", sizeMB)))
 			continue
 		}
 
