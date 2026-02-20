@@ -152,8 +152,13 @@ func runStart(opts StartOptions) error {
 		displayPath = filepath.Base(absSharePath)
 	}
 	fmt.Printf("\n  %s %s\n\n", ui.Accent("◗ shadow"), ui.Dim("— sharing "+displayPath))
+	joinCmd := fmt.Sprintf("shadow join '%s'", shareJoinURL)
 	fmt.Printf("  %s\n", ui.Dim("share this with your partner:"))
-	fmt.Printf("  %s\n\n", ui.Bold(fmt.Sprintf("shadow join '%s'", shareJoinURL)))
+	fmt.Printf("  %s", ui.Bold(joinCmd))
+	if ui.CopyToClipboard(joinCmd) {
+		fmt.Printf(" %s", ui.Dim("(copied to clipboard)"))
+	}
+	fmt.Print("\n\n")
 	footer := "encrypted end-to-end · ctrl+c to stop"
 	if opts.ReadOnlyJoiners {
 		footer += " · joiners are read-only"
