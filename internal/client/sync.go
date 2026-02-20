@@ -228,7 +228,7 @@ func (c *Client) readLoop() {
 		_, msg, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("Connection lost: %v", err)
+				fmt.Println(ui.Warn("⚠ connection lost"))
 			}
 			return
 		}

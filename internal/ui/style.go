@@ -41,3 +41,10 @@ func InArrow(s string) string {
 	}
 	return "\033[2;32m" + s + "\033[0m" // green dim
 }
+
+func Warn(s string) string {
+	if !UseColor() {
+		return s
+	}
+	return "\033[33m" + s + "\033[0m" // yellow
+}
