@@ -19,24 +19,36 @@ Real-time code collaboration that works with any editor. Like Google Docs, but f
 curl -sSf https://raw.githubusercontent.com/go-johnnyhe/shadow/main/install.sh | sh
 ```
 
-**Start a session:**
+**Interactive flow (recommended):**
+
+```bash
+shadow
+```
+
+Then choose `Start` or `Join` in the prompt.
+
+**Direct commands (still supported):**
 
 ```bash
 shadow start .
-```
-
-**Join a session:**
-
-```bash
-shadow join <session-url>
+shadow join '<session-url>#<key>'
 ```
 
 ## How it works
 
-1. Run `shadow start filename.py` in your project
+1. Run `shadow` (or `shadow start filename.py`) in your project
 2. Share the generated URL 
-3. Your partner runs `shadow join <url>`
+3. Your partner runs `shadow join '<url>#<key>'`
 4. Both see live changes with `→` and `←` indicators
+
+### Optional start flags
+
+- `--read-only-joiners`: joiners receive updates but cannot upload local edits
+- `--key <secret>`: set your own E2E key (otherwise Shadow auto-generates one)
+- `--path <path>`: pass share path as a flag instead of positional argument
+- `--force`: bypass the large-directory safety prompt
+
+Security note: file payloads are E2E encrypted between clients. The generated join link includes `#<key>` so the receiver can decrypt.
 
 Works with Vim, Neovim, VS Code, JetBrains, or any editor.
 

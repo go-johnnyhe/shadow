@@ -4,16 +4,11 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"context"
 	"fmt"
-	"github.com/go-johnnyhe/shadow/internal/client"
-	"github.com/gorilla/websocket"
 	"github.com/spf13/cobra"
-	"os"
-	"os/signal"
-	"strings"
-	"syscall"
 )
+
+var joinKey string
 
 // joinCmd represents the join command
 var joinCmd = &cobra.Command{
@@ -26,40 +21,27 @@ This will:
 - Enable real-time file synchronization
 
 Example:
-  shadow join https://abc123.trycloudflare.com
+  shadow join 'https://abc123.trycloudflare.com#<e2e-key>'
 
 The session URL comes from whoever ran 'shadow start'.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("join called")
 		if len(args) != 1 {
 			fmt.Println("Error: this takes exactly one url")
 			cmd.Usage()
 			return
 		}
-		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-		defer stop()
-		sessionUrl := args[0]
-		wsURL := strings.Replace(sessionUrl, "https://", "wss://", 1)
-		if !strings.HasSuffix(wsURL, "/ws") {
-			wsURL = strings.TrimSuffix(wsURL, "/") + "/ws"
-		}
-		fmt.Println("Starting your mock interview session ...")
-		conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+
+		err := runJoin(JoinOptions{
+			SessionURL: args[0],
+			E2EKey:     joinKey,
+		})
 		if err != nil {
-			fmt.Println("Error making connection", err)
-			return
+			fmt.Printf("Error: %v\n", err)
 		}
-		defer conn.Close()
-
-		c := client.NewClient(conn)
-		c.Start(ctx)
-
-		<-ctx.Done()
-		fmt.Println("")
-		fmt.Println("Goodbye!")
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(joinCmd)
+	joinCmd.Flags().StringVar(&joinKey, "key", "", "E2E share key (optional if included in URL fragment)")
 }

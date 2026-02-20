@@ -33,7 +33,14 @@ No accounts, no servers to manage, no complex setup - just pure collaborative co
 			fmt.Println("shadow version:", Version)
 			os.Exit(0)
 		}
-		cmd.Help()
+
+		if err := runInteractiveWizard(); err != nil {
+			if !isInteractiveSession() {
+				cmd.Help()
+				return
+			}
+			fmt.Printf("Error: %v\n", err)
+		}
 	},
 }
 
@@ -48,4 +55,13 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.PersistentFlags().Bool("version", false, "Print the version and exit")
 
+}
+
+func isInteractiveSession() bool {
+	stdinInfo, stdinErr := os.Stdin.Stat()
+	stdoutInfo, stdoutErr := os.Stdout.Stat()
+	if stdinErr != nil || stdoutErr != nil {
+		return false
+	}
+	return (stdinInfo.Mode()&os.ModeCharDevice) != 0 && (stdoutInfo.Mode()&os.ModeCharDevice) != 0
 }

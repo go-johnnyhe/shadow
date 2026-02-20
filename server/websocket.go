@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"github.com/go-johnnyhe/shadow/internal/protocol"
 	"github.com/go-johnnyhe/shadow/internal/wsutil"
 	"github.com/gorilla/websocket"
 	"log"
@@ -12,6 +13,10 @@ import (
 
 var clients = make(map[*wsutil.Peer]bool)
 var clientsMutex = &sync.Mutex{}
+var sessionOptions = struct {
+	mu              sync.RWMutex
+	readOnlyJoiners bool
+}{}
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:    4096,
 	WriteBufferSize:   4096,
@@ -19,6 +24,18 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
+}
+
+func SetReadOnlyJoiners(enabled bool) {
+	sessionOptions.mu.Lock()
+	sessionOptions.readOnlyJoiners = enabled
+	sessionOptions.mu.Unlock()
+}
+
+func getReadOnlyJoiners() bool {
+	sessionOptions.mu.RLock()
+	defer sessionOptions.mu.RUnlock()
+	return sessionOptions.readOnlyJoiners
 }
 
 func StartServer(w http.ResponseWriter, r *http.Request) {
@@ -38,6 +55,13 @@ func StartServer(w http.ResponseWriter, r *http.Request) {
 	defer ticker.Stop()
 
 	p := wsutil.NewPeer(conn)
+
+	if err := p.Write(websocket.TextMessage, protocol.EncodeControlReadOnlyJoiners(getReadOnlyJoiners())); err != nil {
+		log.Printf("Failed to send session options: %v", err)
+		conn.Close()
+		return
+	}
+
 	go func() {
 		for range ticker.C {
 			if err := p.Write(websocket.PingMessage, nil); err != nil {
@@ -63,12 +87,12 @@ func StartServer(w http.ResponseWriter, r *http.Request) {
 	for {
 		msgType, msg, err := conn.ReadMessage()
 		if err != nil {
-			fmt.Println("Error reading message from the websocket: ", err)
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+				log.Printf("websocket read error: %v", err)
+			}
 			break
 		}
 		if msgType == websocket.TextMessage {
-			log.Printf("Message received: %d bytes for file", len(msg))
-
 			clientsMutex.Lock()
 			for client := range clients {
 				if client != p {

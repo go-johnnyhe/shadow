@@ -1,0 +1,545 @@
+{"ts":"2026-02-08T23:59:14.497708","event":"tts_queued","data":{"text":"Reticulating splines... ... Adjusting flux capacit","queue_size":1}}
+{"ts":"2026-02-08T23:59:14.514464","event":"tts_generate_start","data":{"text":"Reticulating splines... ... Adjusting flux capacit"}}
+{"ts":"2026-02-08T23:59:15.798624","event":"response_end","data":{"model":"claude-haiku-4-5-20251001","elapsed":0.5000638961791992,"chars":0,"tts_time":0.0,"stop_reason":"max_tokens"}}
+{"ts":"2026-02-08T23:59:16.565355","event":"response_end","data":{"model":"claude-haiku-4-5-20251001","elapsed":1.026520013809204,"chars":0,"tts_time":0.0,"stop_reason":"max_tokens"}}
+{"ts":"2026-02-08T23:59:21.589452","event":"tts_generate_done","data":{"bytes":330284}}
+{"ts":"2026-02-08T23:59:21.590007","event":"tts_play_start","data":{"text":"Reticulating splines... ... Adjusting flux capacit","session":"default"}}
+{"ts":"2026-02-08T23:59:28.671210","event":"tts_play_done","data":{"elapsed":7.081189870834351}}
+{"ts":"2026-02-08T23:59:57.350937","event":"error","data":{"type":"parse","message":"Unterminated string starting at: line 1 column 144 (char 143)"}}
+{"ts":"2026-02-08T23:59:57.351394","event":"block_start","data":{"index":0,"type":"text"}}
+{"ts":"2026-02-08T23:59:57.352939","event":"text","data":{"content":"{\""}}
+{"ts":"2026-02-08T23:59:57.394743","event":"text","data":{"content":"isNewTopic\": true"}}
+{"ts":"2026-02-08T23:59:57.453303","event":"text","data":{"content":", \"title\": \""}}
+{"ts":"2026-02-08T23:59:57.454929","event":"text","data":{"content":"Initial"}}
+{"ts":"2026-02-08T23:59:57.499792","event":"text","data":{"content":" Greeting\"}"}}
+{"ts":"2026-02-08T23:59:57.501362","event":"block_stop","data":{"index":0}}
+{"ts":"2026-02-08T23:59:57.527641","event":"response_end","data":{"model":"","elapsed":1.2584960460662842,"chars":0,"tts_time":0.0,"stop_reason":"end_turn"}}
+{"ts":"2026-02-08T23:59:58.305792","event":"error","data":{"type":"parse","message":"Expecting value: line 1 column 145 (char 144)"}}
+{"ts":"2026-02-08T23:59:58.306170","event":"block_start","data":{"index":0,"type":"text"}}
+{"ts":"2026-02-08T23:59:58.306624","event":"text","data":{"content":"\n\n<say>Hi"}}
+{"ts":"2026-02-08T23:59:58.307123","event":"text","data":{"content":"!"}}
+{"ts":"2026-02-08T23:59:58.319967","event":"text","data":{"content":" How"}}
+{"ts":"2026-02-08T23:59:58.320115","event":"tts_queued","data":{"text":"Hi!","queue_size":1}}
+{"ts":"2026-02-08T23:59:58.335333","event":"tts_generate_start","data":{"text":"Hi!"}}
+{"ts":"2026-02-08T23:59:58.396523","event":"text","data":{"content":" can I help you today?</say"}}
+{"ts":"2026-02-08T23:59:58.446617","event":"text","data":{"content":">"}}
+{"ts":"2026-02-08T23:59:58.446660","event":"tts_queued","data":{"text":"How can I help you today?","queue_size":1}}
+{"ts":"2026-02-08T23:59:58.447109","event":"block_stop","data":{"index":0}}
+{"ts":"2026-02-08T23:59:58.463158","event":"response_end","data":{"model":"","elapsed":2.1890690326690674,"chars":28,"tts_time":0.0,"stop_reason":"end_turn"}}
+{"ts":"2026-02-08T23:59:58.494661","event":"tts_generate_done","data":{"bytes":53804}}
+{"ts":"2026-02-08T23:59:58.494712","event":"tts_generate_start","data":{"text":"How can I help you today?"}}
+{"ts":"2026-02-08T23:59:58.494829","event":"tts_play_start","data":{"text":"Hi!","session":"default"}}
+{"ts":"2026-02-08T23:59:58.623769","event":"tts_generate_done","data":{"bytes":73004}}
+{"ts":"2026-02-08T23:59:59.772455","event":"tts_play_done","data":{"elapsed":1.2776141166687012}}
+{"ts":"2026-02-08T23:59:59.772617","event":"tts_play_start","data":{"text":"How can I help you today?","session":"default"}}
+{"ts":"2026-02-09T00:00:01.439481","event":"tts_play_done","data":{"elapsed":1.6668570041656494}}
+{"ts":"2026-02-09T00:00:19.092234","event":"error","data":{"type":"parse","message":"Unterminated string starting at: line 1 column 144 (char 143)"}}
+{"ts":"2026-02-09T00:00:19.092897","event":"block_start","data":{"index":0,"type":"text"}}
+{"ts":"2026-02-09T00:00:19.093155","event":"text","data":{"content":"{\""}}
+{"ts":"2026-02-09T00:00:19.105725","event":"text","data":{"content":"isNewTopic\": true"}}
+{"ts":"2026-02-09T00:00:19.122365","event":"text","data":{"content":", \"title\": \"Collaboration"}}
+{"ts":"2026-02-09T00:00:19.147211","event":"text","data":{"content":" bugs"}}
+{"ts":"2026-02-09T00:00:19.175246","event":"text","data":{"content":"\"}"}}
+{"ts":"2026-02-09T00:00:19.201197","event":"block_stop","data":{"index":0}}
+{"ts":"2026-02-09T00:00:19.230126","event":"response_end","data":{"model":"","elapsed":0.7035009860992432,"chars":0,"tts_time":0.0,"stop_reason":"end_turn"}}
+{"ts":"2026-02-09T00:00:20.544157","event":"block_start","data":{"index":0,"type":"text"}}
+{"ts":"2026-02-09T00:00:20.546341","event":"text","data":{"content":"\n\n"}}
+{"ts":"2026-02-09T00:00:20.546609","event":"block_stop","data":{"index":0}}
+{"ts":"2026-02-09T00:00:24.590108","event":"block_stop","data":{"index":1}}
+{"ts":"2026-02-09T00:00:24.596989","event":"block_start","data":{"index":2,"type":"text"}}
+{"ts":"2026-02-09T00:00:24.608092","event":"text","data":{"content":"<say"}}
+{"ts":"2026-02-09T00:00:24.620363","event":"text","data":{"content":">"}}
+{"ts":"2026-02-09T00:00:24.637525","event":"text","data":{"content":"Yeah"}}
+{"ts":"2026-02-09T00:00:24.692016","event":"text","data":{"content":", these"}}
+{"ts":"2026-02-09T00:00:24.748995","event":"text","data":{"content":" are really valid"}}
+{"ts":"2026-02-09T00:00:24.808721","event":"text","data":{"content":" concerns. Let me look"}}
+{"ts":"2026-02-09T00:00:24.808919","event":"tts_queued","data":{"text":"Yeah, these are really valid concerns.","queue_size":1}}
+{"ts":"2026-02-09T00:00:24.813348","event":"tts_generate_start","data":{"text":"Yeah, these are really valid concerns."}}
+{"ts":"2026-02-09T00:00:24.862199","event":"text","data":{"content":" at the current sync"}}
+{"ts":"2026-02-09T00:00:24.914732","event":"text","data":{"content":" logic to understand what"}}
+{"ts":"2026-02-09T00:00:24.978631","event":"text","data":{"content":" prot"}}
+{"ts":"2026-02-09T00:00:25.048711","event":"text","data":{"content":"ections exist today"}}
+{"ts":"2026-02-09T00:00:25.057836","event":"tts_generate_done","data":{"bytes":126764}}
+{"ts":"2026-02-09T00:00:25.074168","event":"tts_play_start","data":{"text":"Yeah, these are really valid concerns.","session":"default"}}
+{"ts":"2026-02-09T00:00:25.104809","event":"text","data":{"content":","}}
+{"ts":"2026-02-09T00:00:25.151108","event":"text","data":{"content":" and then I"}}
+{"ts":"2026-02-09T00:00:25.197229","event":"text","data":{"content":" can"}}
+{"ts":"2026-02-09T00:00:25.248293","event":"text","data":{"content":" give"}}
+{"ts":"2026-02-09T00:00:25.303186","event":"text","data":{"content":" you concrete suggestions."}}
+{"ts":"2026-02-09T00:00:25.362352","event":"text","data":{"content":"</say>"}}
+{"ts":"2026-02-09T00:00:25.362558","event":"tts_queued","data":{"text":"Let me look at the current sync logic to understan","queue_size":1}}
+{"ts":"2026-02-09T00:00:25.366302","event":"tts_generate_start","data":{"text":"Let me look at the current sync logic to understan"}}
+{"ts":"2026-02-09T00:00:25.643505","event":"block_stop","data":{"index":2}}
+{"ts":"2026-02-09T00:00:25.913556","event":"tts_generate_done","data":{"bytes":349484}}
+{"ts":"2026-02-09T00:00:26.467307","event":"block_stop","data":{"index":3}}
+{"ts":"2026-02-09T00:00:26.688921","event":"block_stop","data":{"index":4}}
+{"ts":"2026-02-09T00:00:26.707348","event":"tool_use","data":{"name":"Read","input":"{\"file_path\": \"/Users/hemingao/Desktop/projects/shadow/internal/client/sync.go\"}"}}
+{"ts":"2026-02-09T00:00:26.707406","event":"tool_use","data":{"name":"Glob","input":"{\"pattern\": \"**/*.go\"}"}}
+{"ts":"2026-02-09T00:00:26.707426","event":"response_end","data":{"model":"claude-opus-4-6","elapsed":8.173661231994629,"chars":165,"tts_time":0.0,"stop_reason":"tool_use"}}
+{"ts":"2026-02-09T00:00:27.875577","event":"tts_play_done","data":{"elapsed":2.801406145095825}}
+{"ts":"2026-02-09T00:00:27.875757","event":"tts_play_start","data":{"text":"Let me look at the current sync logic to understan","session":"default"}}
+{"ts":"2026-02-09T00:00:30.568988","event":"block_stop","data":{"index":0}}
+{"ts":"2026-02-09T00:00:30.749269","event":"block_stop","data":{"index":1}}
+{"ts":"2026-02-09T00:00:31.387616","event":"block_stop","data":{"index":2}}
+{"ts":"2026-02-09T00:00:31.604362","event":"tool_use","data":{"name":"Read","input":"{\"file_path\": \"/Users/hemingao/Desktop/projects/shadow/cmd/session.go\"}"}}
+{"ts":"2026-02-09T00:00:31.604437","event":"tool_use","data":{"name":"Read","input":"{\"file_path\": \"/Users/hemingao/Desktop/projects/shadow/cmd/start.go\"}"}}
+{"ts":"2026-02-09T00:00:31.604448","event":"tool_use","data":{"name":"Read","input":"{\"file_path\": \"/Users/hemingao/Desktop/projects/shadow/cmd/join.go\"}"}}
+{"ts":"2026-02-09T00:00:31.604459","event":"response_end","data":{"model":"claude-opus-4-6","elapsed":4.8688108921051025,"chars":0,"tts_time":2.801406145095825,"stop_reason":"tool_use"}}
+{"ts":"2026-02-09T00:00:35.312315","event":"tts_play_done","data":{"elapsed":7.436560153961182}}
+{"ts":"2026-02-09T00:00:49.761884","event":"block_stop","data":{"index":0}}
+{"ts":"2026-02-09T00:00:49.762277","event":"block_start","data":{"index":1,"type":"text"}}
+{"ts":"2026-02-09T00:00:49.762604","event":"text","data":{"content":"<say"}}
+{"ts":"2026-02-09T00:00:49.762835","event":"text","data":{"content":">"}}
+{"ts":"2026-02-09T00:00:49.763356","event":"text","data":{"content":"Okay, I"}}
+{"ts":"2026-02-09T00:00:49.764839","event":"text","data":{"content":"'ve"}}
+{"ts":"2026-02-09T00:00:49.766213","event":"text","data":{"content":" read"}}
+{"ts":"2026-02-09T00:00:49.767980","event":"text","data":{"content":" through the whole"}}
+{"ts":"2026-02-09T00:00:49.770321","event":"text","data":{"content":" sync"}}
+{"ts":"2026-02-09T00:00:49.771394","event":"text","data":{"content":" logic"}}
+{"ts":"2026-02-09T00:00:49.773084","event":"text","data":{"content":","}}
+{"ts":"2026-02-09T00:00:49.777334","event":"text","data":{"content":" session"}}
+{"ts":"2026-02-09T00:00:49.779097","event":"text","data":{"content":" setup"}}
+{"ts":"2026-02-09T00:00:49.783175","event":"text","data":{"content":", and join"}}
+{"ts":"2026-02-09T00:00:49.784549","event":"text","data":{"content":" flow"}}
+{"ts":"2026-02-09T00:00:49.786291","event":"text","data":{"content":". You"}}
+{"ts":"2026-02-09T00:00:49.786386","event":"tts_queued","data":{"text":"Okay, I've read through the whole sync logic, sess","queue_size":1}}
+{"ts":"2026-02-09T00:00:49.787742","event":"text","data":{"content":"'re"}}
+{"ts":"2026-02-09T00:00:49.789677","event":"text","data":{"content":" right to be worried"}}
+{"ts":"2026-02-09T00:00:49.790533","event":"text","data":{"content":" —"}}
+{"ts":"2026-02-09T00:00:49.791097","event":"text","data":{"content":" there"}}
+{"ts":"2026-02-09T00:00:49.791429","event":"text","data":{"content":" are several real foot"}}
+{"ts":"2026-02-09T00:00:49.792478","event":"text","data":{"content":"guns here. Let me break"}}
+{"ts":"2026-02-09T00:00:49.792579","event":"tts_queued","data":{"text":"You're right to be worried — there are several rea","queue_size":2}}
+{"ts":"2026-02-09T00:00:49.792638","event":"text","data":{"content":" down the specific"}}
+{"ts":"2026-02-09T00:00:49.793036","event":"text","data":{"content":" problems"}}
+{"ts":"2026-02-09T00:00:49.793093","event":"text","data":{"content":" and rank"}}
+{"ts":"2026-02-09T00:00:49.799873","event":"tts_generate_start","data":{"text":"Okay, I've read through the whole sync logic, sess"}}
+{"ts":"2026-02-09T00:00:49.821001","event":"text","data":{"content":" some"}}
+{"ts":"2026-02-09T00:00:49.881725","event":"text","data":{"content":" solutions."}}
+{"ts":"2026-02-09T00:00:49.931268","event":"text","data":{"content":"</say>\n\n##"}}
+{"ts":"2026-02-09T00:00:49.931326","event":"tts_queued","data":{"text":"Let me break down the specific problems and rank s","queue_size":2}}
+{"ts":"2026-02-09T00:00:49.983752","event":"text","data":{"content":" Problems"}}
+{"ts":"2026-02-09T00:00:50.047625","event":"text","data":{"content":" I see"}}
+{"ts":"2026-02-09T00:00:50.153129","event":"text","data":{"content":"\n\n**"}}
+{"ts":"2026-02-09T00:00:50.206127","event":"text","data":{"content":"1"}}
+{"ts":"2026-02-09T00:00:50.218754","event":"tts_generate_done","data":{"bytes":203564}}
+{"ts":"2026-02-09T00:00:50.218780","event":"tts_generate_start","data":{"text":"You're right to be worried — there are several rea"}}
+{"ts":"2026-02-09T00:00:50.220171","event":"tts_play_start","data":{"text":"Okay, I've read through the whole sync logic, sess","session":"default"}}
+{"ts":"2026-02-09T00:00:50.261683","event":"text","data":{"content":". Root/"}}
+{"ts":"2026-02-09T00:00:50.315188","event":"text","data":{"content":"home directory sharing —"}}
+{"ts":"2026-02-09T00:00:50.369232","event":"text","data":{"content":" the"}}
+{"ts":"2026-02-09T00:00:50.428188","event":"text","data":{"content":" big one**\nIf"}}
+{"ts":"2026-02-09T00:00:50.495377","event":"text","data":{"content":" someone runs `shadow start ~"}}
+{"ts":"2026-02-09T00:00:50.519088","event":"tts_generate_done","data":{"bytes":203564}}
+{"ts":"2026-02-09T00:00:50.519108","event":"tts_generate_start","data":{"text":"Let me break down the specific problems and rank s"}}
+{"ts":"2026-02-09T00:00:50.533873","event":"text","data":{"content":"` or `shadow start /`,"}}
+{"ts":"2026-02-09T00:00:50.589494","event":"text","data":{"content":" it"}}
+{"ts":"2026-02-09T00:00:50.645088","event":"text","data":{"content":" walks"}}
+{"ts":"2026-02-09T00:00:50.700480","event":"text","data":{"content":" the *"}}
+{"ts":"2026-02-09T00:00:50.742838","event":"tts_generate_done","data":{"bytes":157484}}
+{"ts":"2026-02-09T00:00:50.762115","event":"text","data":{"content":"entire* tree"}}
+{"ts":"2026-02-09T00:00:50.807356","event":"text","data":{"content":" and bl"}}
+{"ts":"2026-02-09T00:00:50.860930","event":"text","data":{"content":"asts every"}}
+{"ts":"2026-02-09T00:00:50.917801","event":"text","data":{"content":" file to"}}
+{"ts":"2026-02-09T00:00:50.971726","event":"text","data":{"content":" the jo"}}
+{"ts":"2026-02-09T00:00:51.025149","event":"text","data":{"content":"iner. The"}}
+{"ts":"2026-02-09T00:00:51.079250","event":"text","data":{"content":" only"}}
+{"ts":"2026-02-09T00:00:51.135073","event":"text","data":{"content":" guard"}}
+{"ts":"2026-02-09T00:00:51.189465","event":"text","data":{"content":" is"}}
+{"ts":"2026-02-09T00:00:51.248577","event":"text","data":{"content":" the"}}
+{"ts":"2026-02-09T00:00:51.300282","event":"text","data":{"content":" "}}
+{"ts":"2026-02-09T00:00:51.355064","event":"text","data":{"content":"10MB per-file limit and"}}
+{"ts":"2026-02-09T00:00:51.446961","event":"text","data":{"content":" the"}}
+{"ts":"2026-02-09T00:00:51.469398","event":"text","data":{"content":" hard"}}
+{"ts":"2026-02-09T00:00:51.538939","event":"text","data":{"content":"coded ignore list. No"}}
+{"ts":"2026-02-09T00:00:51.577224","event":"text","data":{"content":" file"}}
+{"ts":"2026-02-09T00:00:51.632748","event":"text","data":{"content":" count cap"}}
+{"ts":"2026-02-09T00:00:51.692056","event":"text","data":{"content":", no depth limit, no confirmation"}}
+{"ts":"2026-02-09T00:00:51.746324","event":"text","data":{"content":".\n\n**2. Sensitive"}}
+{"ts":"2026-02-09T00:00:51.798165","event":"text","data":{"content":" files leak"}}
+{"ts":"2026-02-09T00:00:51.853166","event":"text","data":{"content":"**"}}
+{"ts":"2026-02-09T00:00:51.909828","event":"text","data":{"content":"\nThe"}}
+{"ts":"2026-02-09T00:00:51.964190","event":"text","data":{"content":" ignore"}}
+{"ts":"2026-02-09T00:00:52.017822","event":"text","data":{"content":" list"}}
+{"ts":"2026-02-09T00:00:52.071557","event":"text","data":{"content":" (`"}}
+{"ts":"2026-02-09T00:00:52.127130","event":"text","data":{"content":"sync"}}
+{"ts":"2026-02-09T00:00:52.182793","event":"text","data":{"content":".go"}}
+{"ts":"2026-02-09T00:00:52.249201","event":"text","data":{"content":":"}}
+{"ts":"2026-02-09T00:00:52.326300","event":"text","data":{"content":"27"}}
+{"ts":"2026-02-09T00:00:52.344454","event":"text","data":{"content":"`) doesn"}}
+{"ts":"2026-02-09T00:00:52.398218","event":"text","data":{"content":"'t cover"}}
+{"ts":"2026-02-09T00:00:52.471043","event":"text","data":{"content":" `.env`, `.ssh/`, `."}}
+{"ts":"2026-02-09T00:00:52.513852","event":"text","data":{"content":"aws"}}
+{"ts":"2026-02-09T00:00:52.646193","event":"text","data":{"content":"/`, `"}}
+{"ts":"2026-02-09T00:00:52.653553","event":"text","data":{"content":"credentials."}}
+{"ts":"2026-02-09T00:00:52.677353","event":"text","data":{"content":"json`, `."}}
+{"ts":"2026-02-09T00:00:52.820510","event":"text","data":{"content":"npm"}}
+{"ts":"2026-02-09T00:00:52.848489","event":"text","data":{"content":"rc`"}}
+{"ts":"2026-02-09T00:00:52.851505","event":"text","data":{"content":" with"}}
+{"ts":"2026-02-09T00:00:52.892798","event":"text","data":{"content":" tokens, etc. A"}}
+{"ts":"2026-02-09T00:00:52.949014","event":"text","data":{"content":" root"}}
+{"ts":"2026-02-09T00:00:53.014531","event":"text","data":{"content":"-"}}
+{"ts":"2026-02-09T00:00:53.054743","event":"text","data":{"content":"level share"}}
+{"ts":"2026-02-09T00:00:53.111113","event":"text","data":{"content":" could send"}}
+{"ts":"2026-02-09T00:00:53.168565","event":"text","data":{"content":" secrets"}}
+{"ts":"2026-02-09T00:00:53.227087","event":"text","data":{"content":"."}}
+{"ts":"2026-02-09T00:00:53.276395","event":"text","data":{"content":"\n\n**3. Branch"}}
+{"ts":"2026-02-09T00:00:53.331047","event":"text","data":{"content":" mismatch overw"}}
+{"ts":"2026-02-09T00:00:53.385736","event":"text","data":{"content":"rites the"}}
+{"ts":"2026-02-09T00:00:53.444931","event":"text","data":{"content":" jo"}}
+{"ts":"2026-02-09T00:00:53.595376","event":"text","data":{"content":"iner's working tree**\nWhen"}}
+{"ts":"2026-02-09T00:00:53.615520","event":"text","data":{"content":" a joiner connects, the"}}
+{"ts":"2026-02-09T00:00:53.621609","event":"text","data":{"content":" host sends the"}}
+{"ts":"2026-02-09T00:00:53.728238","event":"text","data":{"content":" full"}}
+{"ts":"2026-02-09T00:00:53.763544","event":"text","data":{"content":" initial"}}
+{"ts":"2026-02-09T00:00:53.774675","event":"text","data":{"content":" snapshot (`"}}
+{"ts":"2026-02-09T00:00:53.892575","event":"text","data":{"content":"Send"}}
+{"ts":"2026-02-09T00:00:53.937663","event":"text","data":{"content":"InitialSnapshot`"}}
+{"ts":"2026-02-09T00:00:53.938228","event":"text","data":{"content":")."}}
+{"ts":"2026-02-09T00:00:53.991730","event":"text","data":{"content":" Files"}}
+{"ts":"2026-02-09T00:00:54.046718","event":"text","data":{"content":" land"}}
+{"ts":"2026-02-09T00:00:54.105399","event":"text","data":{"content":" directly"}}
+{"ts":"2026-02-09T00:00:54.158344","event":"text","data":{"content":" in the joiner's C"}}
+{"ts":"2026-02-09T00:00:54.211917","event":"text","data":{"content":"WD. If the joiner has"}}
+{"ts":"2026-02-09T00:00:54.265338","event":"text","data":{"content":" uncomm"}}
+{"ts":"2026-02-09T00:00:54.322578","event":"text","data":{"content":"itted work on"}}
+{"ts":"2026-02-09T00:00:54.375216","event":"text","data":{"content":" a"}}
+{"ts":"2026-02-09T00:00:54.428776","event":"text","data":{"content":" different branch, it"}}
+{"ts":"2026-02-09T00:00:54.484453","event":"text","data":{"content":" gets sil"}}
+{"ts":"2026-02-09T00:00:54.542356","event":"text","data":{"content":"ently overwritten —"}}
+{"ts":"2026-02-09T00:00:54.596442","event":"text","data":{"content":" no warning, no backup."}}
+{"ts":"2026-02-09T00:00:54.623490","event":"tts_play_done","data":{"elapsed":4.403313159942627}}
+{"ts":"2026-02-09T00:00:54.623635","event":"tts_play_start","data":{"text":"You're right to be worried — there are several rea","session":"default"}}
+{"ts":"2026-02-09T00:00:54.649542","event":"text","data":{"content":" And"}}
+{"ts":"2026-02-09T00:00:54.704952","event":"text","data":{"content":" since"}}
+{"ts":"2026-02-09T00:00:54.758864","event":"text","data":{"content":" `.git` is ignored, git thinks"}}
+{"ts":"2026-02-09T00:00:54.812547","event":"text","data":{"content":" the"}}
+{"ts":"2026-02-09T00:00:54.870863","event":"text","data":{"content":" joiner just"}}
+{"ts":"2026-02-09T00:00:54.927140","event":"text","data":{"content":" made"}}
+{"ts":"2026-02-09T00:00:54.978750","event":"text","data":{"content":" a"}}
+{"ts":"2026-02-09T00:00:55.035331","event":"text","data":{"content":" bunch"}}
+{"ts":"2026-02-09T00:00:55.090574","event":"text","data":{"content":" of changes.\n\n**4."}}
+{"ts":"2026-02-09T00:00:55.147428","event":"text","data":{"content":" Bidirectional sync c"}}
+{"ts":"2026-02-09T00:00:55.199854","event":"text","data":{"content":"lob"}}
+{"ts":"2026-02-09T00:00:55.256159","event":"text","data":{"content":"bers the"}}
+{"ts":"2026-02-09T00:00:55.313248","event":"text","data":{"content":" host"}}
+{"ts":"2026-02-09T00:00:55.379975","event":"text","data":{"content":" too"}}
+{"ts":"2026-02-09T00:00:55.438544","event":"text","data":{"content":"**\nThe"}}
+{"ts":"2026-02-09T00:00:55.474553","event":"text","data":{"content":" joiner ("}}
+{"ts":"2026-02-09T00:00:55.531334","event":"text","data":{"content":"unless"}}
+{"ts":"2026-02-09T00:00:55.589476","event":"text","data":{"content":" `"}}
+{"ts":"2026-02-09T00:00:55.642203","event":"text","data":{"content":"--"}}
+{"ts":"2026-02-09T00:00:55.695020","event":"text","data":{"content":"read-only-joiners`)"}}
+{"ts":"2026-02-09T00:00:55.750119","event":"text","data":{"content":" also watches"}}
+{"ts":"2026-02-09T00:00:55.807727","event":"text","data":{"content":" and"}}
+{"ts":"2026-02-09T00:00:55.861856","event":"text","data":{"content":" sends files."}}
+{"ts":"2026-02-09T00:00:55.917239","event":"text","data":{"content":" So the"}}
+{"ts":"2026-02-09T00:00:55.968644","event":"text","data":{"content":" jo"}}
+{"ts":"2026-02-09T00:00:56.025455","event":"text","data":{"content":"iner's different"}}
+{"ts":"2026-02-09T00:00:56.141710","event":"text","data":{"content":" files flow"}}
+{"ts":"2026-02-09T00:00:56.202150","event":"text","data":{"content":" back to the host, potentially overwriting"}}
+{"ts":"2026-02-09T00:00:56.256172","event":"text","data":{"content":" the host's work."}}
+{"ts":"2026-02-09T00:00:56.316155","event":"text","data":{"content":" It"}}
+{"ts":"2026-02-09T00:00:56.369554","event":"text","data":{"content":" becomes"}}
+{"ts":"2026-02-09T00:00:56.422614","event":"text","data":{"content":" a race"}}
+{"ts":"2026-02-09T00:00:56.475717","event":"text","data":{"content":" condition"}}
+{"ts":"2026-02-09T00:00:56.529892","event":"text","data":{"content":" of"}}
+{"ts":"2026-02-09T00:00:56.586695","event":"text","data":{"content":" who"}}
+{"ts":"2026-02-09T00:00:56.641240","event":"text","data":{"content":" writes"}}
+{"ts":"2026-02-09T00:00:56.699192","event":"text","data":{"content":" last"}}
+{"ts":"2026-02-09T00:00:56.754422","event":"text","data":{"content":".\n\n**5. No"}}
+{"ts":"2026-02-09T00:00:56.815174","event":"text","data":{"content":" user"}}
+{"ts":"2026-02-09T00:00:56.867887","event":"text","data":{"content":"-custom"}}
+{"ts":"2026-02-09T00:00:56.921099","event":"text","data":{"content":"izable ignore**"}}
+{"ts":"2026-02-09T00:00:56.976234","event":"text","data":{"content":"\nNo"}}
+{"ts":"2026-02-09T00:00:57.030108","event":"text","data":{"content":" support"}}
+{"ts":"2026-02-09T00:00:57.088110","event":"text","data":{"content":" for `.shadowignore` or `."}}
+{"ts":"2026-02-09T00:00:57.141035","event":"text","data":{"content":"gitignore` —"}}
+{"ts":"2026-02-09T00:00:57.195636","event":"text","data":{"content":" users can't control"}}
+{"ts":"2026-02-09T00:00:57.251006","event":"text","data":{"content":" what gets shared.\n\n---"}}
+{"ts":"2026-02-09T00:00:57.304399","event":"text","data":{"content":"\n\n## Suggestions"}}
+{"ts":"2026-02-09T00:00:57.357405","event":"text","data":{"content":","}}
+{"ts":"2026-02-09T00:00:57.413590","event":"text","data":{"content":" ranked by impact"}}
+{"ts":"2026-02-09T00:00:57.471426","event":"text","data":{"content":"\n\n|"}}
+{"ts":"2026-02-09T00:00:57.523645","event":"text","data":{"content":" Priority"}}
+{"ts":"2026-02-09T00:00:57.580987","event":"text","data":{"content":" | Fix"}}
+{"ts":"2026-02-09T00:00:57.631546","event":"text","data":{"content":" |"}}
+{"ts":"2026-02-09T00:00:57.686488","event":"text","data":{"content":" Effort"}}
+{"ts":"2026-02-09T00:00:57.738165","event":"text","data":{"content":" |"}}
+{"ts":"2026-02-09T00:00:57.797287","event":"text","data":{"content":"\n|----------|-----|--------|"}}
+{"ts":"2026-02-09T00:00:57.851634","event":"text","data":{"content":"\n| **"}}
+{"ts":"2026-02-09T00:00:57.908961","event":"text","data":{"content":"P"}}
+{"ts":"2026-02-09T00:00:57.962632","event":"text","data":{"content":"0"}}
+{"ts":"2026-02-09T00:00:58.011621","event":"text","data":{"content":"** | **"}}
+{"ts":"2026-02-09T00:00:58.125598","event":"text","data":{"content":"Add"}}
+{"ts":"2026-02-09T00:00:58.184276","event":"text","data":{"content":" dangerous"}}
+{"ts":"2026-02-09T00:00:58.244272","event":"text","data":{"content":"-"}}
+{"ts":"2026-02-09T00:00:58.291244","event":"text","data":{"content":"path"}}
+{"ts":"2026-02-09T00:00:58.339061","event":"text","data":{"content":" guard"}}
+{"ts":"2026-02-09T00:00:58.395003","event":"text","data":{"content":"** —"}}
+{"ts":"2026-02-09T00:00:58.448244","event":"text","data":{"content":" refuse"}}
+{"ts":"2026-02-09T00:00:58.500736","event":"text","data":{"content":" to share ("}}
+{"ts":"2026-02-09T00:00:58.558890","event":"text","data":{"content":"or"}}
+{"ts":"2026-02-09T00:00:58.610969","event":"text","data":{"content":" require"}}
+{"ts":"2026-02-09T00:00:58.664820","event":"text","data":{"content":" `"}}
+{"ts":"2026-02-09T00:00:58.723405","event":"text","data":{"content":"--force"}}
+{"ts":"2026-02-09T00:00:58.780684","event":"text","data":{"content":"`)"}}
+{"ts":"2026-02-09T00:00:58.827408","event":"text","data":{"content":" if"}}
+{"ts":"2026-02-09T00:00:58.882115","event":"text","data":{"content":" the"}}
+{"ts":"2026-02-09T00:00:58.939552","event":"text","data":{"content":" resolved"}}
+{"ts":"2026-02-09T00:00:58.992740","event":"text","data":{"content":" path is `"}}
+{"ts":"2026-02-09T00:00:59.010393","event":"tts_play_done","data":{"elapsed":4.386752128601074}}
+{"ts":"2026-02-09T00:00:59.010536","event":"tts_play_start","data":{"text":"Let me break down the specific problems and rank s","session":"default"}}
+{"ts":"2026-02-09T00:00:59.047807","event":"text","data":{"content":"$"}}
+{"ts":"2026-02-09T00:00:59.106579","event":"text","data":{"content":"HOME`,"}}
+{"ts":"2026-02-09T00:00:59.159780","event":"text","data":{"content":" `/"}}
+{"ts":"2026-02-09T00:00:59.213043","event":"text","data":{"content":"`, or has"}}
+{"ts":"2026-02-09T00:00:59.269231","event":"text","data":{"content":" more"}}
+{"ts":"2026-02-09T00:00:59.320223","event":"text","data":{"content":" than N"}}
+{"ts":"2026-02-09T00:00:59.377018","event":"text","data":{"content":" files ("}}
+{"ts":"2026-02-09T00:00:59.430681","event":"text","data":{"content":"e.g."}}
+{"ts":"2026-02-09T00:00:59.488379","event":"text","data":{"content":" "}}
+{"ts":"2026-02-09T00:00:59.541421","event":"text","data":{"content":"500"}}
+{"ts":"2026-02-09T00:00:59.594438","event":"text","data":{"content":"). Print"}}
+{"ts":"2026-02-09T00:00:59.646781","event":"text","data":{"content":" a count"}}
+{"ts":"2026-02-09T00:00:59.704014","event":"text","data":{"content":" +"}}
+{"ts":"2026-02-09T00:00:59.757125","event":"text","data":{"content":" confirmation"}}
+{"ts":"2026-02-09T00:00:59.811780","event":"text","data":{"content":" prompt. | Low"}}
+{"ts":"2026-02-09T00:00:59.864972","event":"text","data":{"content":" |"}}
+{"ts":"2026-02-09T00:00:59.922521","event":"text","data":{"content":"\n| **P0"}}
+{"ts":"2026-02-09T00:00:59.976448","event":"text","data":{"content":"** | **"}}
+{"ts":"2026-02-09T00:01:00.030550","event":"text","data":{"content":"Expand"}}
+{"ts":"2026-02-09T00:01:00.179257","event":"text","data":{"content":" the"}}
+{"ts":"2026-02-09T00:01:00.202753","event":"text","data":{"content":" default"}}
+{"ts":"2026-02-09T00:01:00.324606","event":"text","data":{"content":" ignore"}}
+{"ts":"2026-02-09T00:01:00.331665","event":"text","data":{"content":" list"}}
+{"ts":"2026-02-09T00:01:00.333014","event":"text","data":{"content":"** — add `.env*"}}
+{"ts":"2026-02-09T00:01:00.359521","event":"text","data":{"content":"`, `.ssh`,"}}
+{"ts":"2026-02-09T00:01:00.415349","event":"text","data":{"content":" `.aws`,"}}
+{"ts":"2026-02-09T00:01:00.871662","event":"text","data":{"content":" `."}}
+{"ts":"2026-02-09T00:01:00.898252","event":"text","data":{"content":"g"}}
+{"ts":"2026-02-09T00:01:00.936926","event":"text","data":{"content":"cloud`, `"}}
+{"ts":"2026-02-09T00:01:00.942665","event":"text","data":{"content":"*."}}
+{"ts":"2026-02-09T00:01:00.949351","event":"text","data":{"content":"p"}}
+{"ts":"2026-02-09T00:01:00.956326","event":"text","data":{"content":"em`, `*.key"}}
+{"ts":"2026-02-09T00:01:00.962859","event":"text","data":{"content":"`, `"}}
+{"ts":"2026-02-09T00:01:00.965587","event":"text","data":{"content":"credentials"}}
+{"ts":"2026-02-09T00:01:00.966888","event":"text","data":{"content":"*"}}
+{"ts":"2026-02-09T00:01:00.977030","event":"text","data":{"content":"`, `.npmrc`, `."}}
+{"ts":"2026-02-09T00:01:01.033319","event":"text","data":{"content":"py"}}
+{"ts":"2026-02-09T00:01:01.089436","event":"text","data":{"content":"pirc`"}}
+{"ts":"2026-02-09T00:01:01.145649","event":"text","data":{"content":" |"}}
+{"ts":"2026-02-09T00:01:01.202399","event":"text","data":{"content":" Low |\n| **P1"}}
+{"ts":"2026-02-09T00:01:01.256368","event":"text","data":{"content":"** | **"}}
+{"ts":"2026-02-09T00:01:01.313694","event":"text","data":{"content":"Respect"}}
+{"ts":"2026-02-09T00:01:01.367648","event":"text","data":{"content":" `."}}
+{"ts":"2026-02-09T00:01:01.421607","event":"text","data":{"content":"git"}}
+{"ts":"2026-02-09T00:01:01.478200","event":"text","data":{"content":"ignore`"}}
+{"ts":"2026-02-09T00:01:01.531953","event":"text","data":{"content":"** — if"}}
+{"ts":"2026-02-09T00:01:01.587048","event":"text","data":{"content":" a `."}}
+{"ts":"2026-02-09T00:01:01.645600","event":"text","data":{"content":"gitignore` exists, parse"}}
+{"ts":"2026-02-09T00:01:01.700432","event":"text","data":{"content":" and"}}
+{"ts":"2026-02-09T00:01:01.754656","event":"text","data":{"content":" apply"}}
+{"ts":"2026-02-09T00:01:01.807881","event":"text","data":{"content":" it."}}
+{"ts":"2026-02-09T00:01:01.862884","event":"text","data":{"content":" This"}}
+{"ts":"2026-02-09T00:01:01.915988","event":"text","data":{"content":" alone"}}
+{"ts":"2026-02-09T00:01:01.969734","event":"text","data":{"content":" would solve most"}}
+{"ts":"2026-02-09T00:01:02.023199","event":"text","data":{"content":" \""}}
+{"ts":"2026-02-09T00:01:02.078928","event":"text","data":{"content":"shared"}}
+{"ts":"2026-02-09T00:01:02.133365","event":"text","data":{"content":" too"}}
+{"ts":"2026-02-09T00:01:02.192958","event":"text","data":{"content":" much\" cases"}}
+{"ts":"2026-02-09T00:01:02.245733","event":"text","data":{"content":" since"}}
+{"ts":"2026-02-09T00:01:02.299883","event":"text","data":{"content":" most projects"}}
+{"ts":"2026-02-09T00:01:02.354139","event":"text","data":{"content":" already"}}
+{"ts":"2026-02-09T00:01:02.414628","event":"text","data":{"content":" have a good"}}
+{"ts":"2026-02-09T00:01:02.435673","event":"tts_play_done","data":{"elapsed":3.4251298904418945}}
+{"ts":"2026-02-09T00:01:02.510707","event":"text","data":{"content":" git"}}
+{"ts":"2026-02-09T00:01:02.524686","event":"text","data":{"content":"ignore. | Medium |\n|"}}
+{"ts":"2026-02-09T00:01:02.578562","event":"text","data":{"content":" **P1** | **"}}
+{"ts":"2026-02-09T00:01:02.627158","event":"text","data":{"content":"Jo"}}
+{"ts":"2026-02-09T00:01:02.682709","event":"text","data":{"content":"iner sandbox"}}
+{"ts":"2026-02-09T00:01:02.735302","event":"text","data":{"content":" directory"}}
+{"ts":"2026-02-09T00:01:02.792808","event":"text","data":{"content":"** — instead"}}
+{"ts":"2026-02-09T00:01:02.845260","event":"text","data":{"content":" of syn"}}
+{"ts":"2026-02-09T00:01:02.900698","event":"text","data":{"content":"cing into"}}
+{"ts":"2026-02-09T00:01:02.955701","event":"text","data":{"content":" C"}}
+{"ts":"2026-02-09T00:01:03.045893","event":"text","data":{"content":"WD, create"}}
+{"ts":"2026-02-09T00:01:03.081243","event":"text","data":{"content":" a temp"}}
+{"ts":"2026-02-09T00:01:03.122126","event":"text","data":{"content":"/"}}
+{"ts":"2026-02-09T00:01:03.181595","event":"text","data":{"content":"dedicated"}}
+{"ts":"2026-02-09T00:01:03.237415","event":"text","data":{"content":" directory like"}}
+{"ts":"2026-02-09T00:01:03.289893","event":"text","data":{"content":" `./"}}
+{"ts":"2026-02-09T00:01:03.397670","event":"text","data":{"content":"shadow-session"}}
+{"ts":"2026-02-09T00:01:03.453262","event":"text","data":{"content":"-"}}
+{"ts":"2026-02-09T00:01:03.507083","event":"text","data":{"content":"<id"}}
+{"ts":"2026-02-09T00:01:03.560897","event":"text","data":{"content":">/"}}
+{"ts":"2026-02-09T00:01:03.621036","event":"text","data":{"content":"`"}}
+{"ts":"2026-02-09T00:01:03.676447","event":"text","data":{"content":" so"}}
+{"ts":"2026-02-09T00:01:03.725865","event":"text","data":{"content":" the joiner's existing"}}
+{"ts":"2026-02-09T00:01:03.780264","event":"text","data":{"content":" work"}}
+{"ts":"2026-02-09T00:01:03.836153","event":"text","data":{"content":" is"}}
+{"ts":"2026-02-09T00:01:03.891095","event":"text","data":{"content":" never"}}
+{"ts":"2026-02-09T00:01:03.946233","event":"text","data":{"content":" touched"}}
+{"ts":"2026-02-09T00:01:04.004243","event":"text","data":{"content":". Or"}}
+{"ts":"2026-02-09T00:01:04.060492","event":"text","data":{"content":" at"}}
+{"ts":"2026-02-09T00:01:04.113291","event":"text","data":{"content":" minimum warn"}}
+{"ts":"2026-02-09T00:01:04.169575","event":"text","data":{"content":" +"}}
+{"ts":"2026-02-09T00:01:04.221417","event":"text","data":{"content":" confirm before"}}
+{"ts":"2026-02-09T00:01:04.275228","event":"text","data":{"content":" writing"}}
+{"ts":"2026-02-09T00:01:04.329481","event":"text","data":{"content":" into"}}
+{"ts":"2026-02-09T00:01:04.383755","event":"text","data":{"content":" a"}}
+{"ts":"2026-02-09T00:01:04.441229","event":"text","data":{"content":" non"}}
+{"ts":"2026-02-09T00:01:04.496381","event":"text","data":{"content":"-empty"}}
+{"ts":"2026-02-09T00:01:04.551482","event":"text","data":{"content":" directory. | Medium |\n| **"}}
+{"ts":"2026-02-09T00:01:04.612743","event":"text","data":{"content":"P2** | **Support"}}
+{"ts":"2026-02-09T00:01:04.663800","event":"text","data":{"content":" `.shadowignore`** — let"}}
+{"ts":"2026-02-09T00:01:04.718579","event":"text","data":{"content":" users add"}}
+{"ts":"2026-02-09T00:01:04.774357","event":"text","data":{"content":" a custom"}}
+{"ts":"2026-02-09T00:01:04.828443","event":"text","data":{"content":" ignore file"}}
+{"ts":"2026-02-09T00:01:04.882909","event":"text","data":{"content":" on"}}
+{"ts":"2026-02-09T00:01:04.936767","event":"text","data":{"content":" top"}}
+{"ts":"2026-02-09T00:01:04.990414","event":"text","data":{"content":" of the defaults"}}
+{"ts":"2026-02-09T00:01:05.044657","event":"text","data":{"content":" |"}}
+{"ts":"2026-02-09T00:01:05.102261","event":"text","data":{"content":" Low"}}
+{"ts":"2026-02-09T00:01:05.159122","event":"text","data":{"content":"-"}}
+{"ts":"2026-02-09T00:01:05.209340","event":"text","data":{"content":"Medium |\n| **P2**"}}
+{"ts":"2026-02-09T00:01:05.264221","event":"text","data":{"content":" | **Dry"}}
+{"ts":"2026-02-09T00:01:05.320821","event":"text","data":{"content":"-"}}
+{"ts":"2026-02-09T00:01:05.375552","event":"text","data":{"content":"run /"}}
+{"ts":"2026-02-09T00:01:05.433083","event":"text","data":{"content":" manifest"}}
+{"ts":"2026-02-09T00:01:05.489473","event":"text","data":{"content":"**"}}
+{"ts":"2026-02-09T00:01:05.545507","event":"text","data":{"content":" — before"}}
+{"ts":"2026-02-09T00:01:05.600972","event":"text","data":{"content":" sending"}}
+{"ts":"2026-02-09T00:01:05.660749","event":"text","data":{"content":" the"}}
+{"ts":"2026-02-09T00:01:05.723047","event":"text","data":{"content":" initial snapshot, show the"}}
+{"ts":"2026-02-09T00:01:05.764008","event":"text","data":{"content":" host"}}
+{"ts":"2026-02-09T00:01:05.824934","event":"text","data":{"content":" a"}}
+{"ts":"2026-02-09T00:01:05.907313","event":"text","data":{"content":" list of files that *"}}
+{"ts":"2026-02-09T00:01:05.931163","event":"text","data":{"content":"would* be shared"}}
+{"ts":"2026-02-09T00:01:05.987066","event":"text","data":{"content":" and"}}
+{"ts":"2026-02-09T00:01:06.044413","event":"text","data":{"content":" ask for confirmation. Like"}}
+{"ts":"2026-02-09T00:01:06.099011","event":"text","data":{"content":" `"}}
+{"ts":"2026-02-09T00:01:06.155059","event":"text","data":{"content":"Will"}}
+{"ts":"2026-02-09T00:01:06.231771","event":"text","data":{"content":" share"}}
+{"ts":"2026-02-09T00:01:06.298432","event":"text","data":{"content":" "}}
+{"ts":"2026-02-09T00:01:06.320269","event":"text","data":{"content":"47"}}
+{"ts":"2026-02-09T00:01:06.372358","event":"text","data":{"content":" files ("}}
+{"ts":"2026-02-09T00:01:06.474878","event":"text","data":{"content":"2"}}
+{"ts":"2026-02-09T00:01:06.486991","event":"text","data":{"content":"."}}
+{"ts":"2026-02-09T00:01:06.548557","event":"text","data":{"content":"3"}}
+{"ts":"2026-02-09T00:01:06.593845","event":"text","data":{"content":" "}}
+{"ts":"2026-02-09T00:01:06.652139","event":"text","data":{"content":"MB)."}}
+{"ts":"2026-02-09T00:01:06.765578","event":"text","data":{"content":" Proceed? ["}}
+{"ts":"2026-02-09T00:01:07.264374","event":"text","data":{"content":"y/N]` | Low |"}}
+{"ts":"2026-02-09T00:01:07.282036","event":"text","data":{"content":"\n| **P3"}}
+{"ts":"2026-02-09T00:01:07.292999","event":"text","data":{"content":"** | **Branch"}}
+{"ts":"2026-02-09T00:01:07.325849","event":"text","data":{"content":"-aware warning"}}
+{"ts":"2026-02-09T00:01:07.389265","event":"text","data":{"content":"** — if"}}
+{"ts":"2026-02-09T00:01:07.423877","event":"text","data":{"content":" both"}}
+{"ts":"2026-02-09T00:01:07.569818","event":"text","data":{"content":" sides"}}
+{"ts":"2026-02-09T00:01:07.623561","event":"text","data":{"content":" are in"}}
+{"ts":"2026-02-09T00:01:07.661207","event":"text","data":{"content":" a"}}
+{"ts":"2026-02-09T00:01:07.741339","event":"text","data":{"content":" git"}}
+{"ts":"2026-02-09T00:01:07.808385","event":"text","data":{"content":" repo, exchange"}}
+{"ts":"2026-02-09T00:01:07.836998","event":"text","data":{"content":" branch"}}
+{"ts":"2026-02-09T00:01:07.860948","event":"text","data":{"content":" names over"}}
+{"ts":"2026-02-09T00:01:07.887275","event":"text","data":{"content":" the control"}}
+{"ts":"2026-02-09T00:01:07.928036","event":"text","data":{"content":" channel and"}}
+{"ts":"2026-02-09T00:01:07.939758","event":"text","data":{"content":" warn if"}}
+{"ts":"2026-02-09T00:01:07.950236","event":"text","data":{"content":" they differ. \""}}
+{"ts":"2026-02-09T00:01:07.954840","event":"text","data":{"content":"Host"}}
+{"ts":"2026-02-09T00:01:07.959140","event":"text","data":{"content":" is"}}
+{"ts":"2026-02-09T00:01:07.964073","event":"text","data":{"content":" on `"}}
+{"ts":"2026-02-09T00:01:07.966806","event":"text","data":{"content":"main`, you"}}
+{"ts":"2026-02-09T00:01:08.002085","event":"text","data":{"content":"'re on `feature-x"}}
+{"ts":"2026-02-09T00:01:08.054284","event":"text","data":{"content":"`. Files"}}
+{"ts":"2026-02-09T00:01:08.107840","event":"text","data":{"content":" will over"}}
+{"ts":"2026-02-09T00:01:08.161427","event":"text","data":{"content":"write your"}}
+{"ts":"2026-02-09T00:01:08.217779","event":"text","data":{"content":" working"}}
+{"ts":"2026-02-09T00:01:08.273688","event":"text","data":{"content":" tree.\" | Medium |"}}
+{"ts":"2026-02-09T00:01:08.382924","event":"text","data":{"content":"\n\n<say>If"}}
+{"ts":"2026-02-09T00:01:08.438032","event":"text","data":{"content":" I had to pick the highest"}}
+{"ts":"2026-02-09T00:01:08.491232","event":"text","data":{"content":"-bang"}}
+{"ts":"2026-02-09T00:01:08.544887","event":"text","data":{"content":"-for-buck changes"}}
+{"ts":"2026-02-09T00:01:08.600685","event":"text","data":{"content":", I'd go with three"}}
+{"ts":"2026-02-09T00:01:08.656721","event":"text","data":{"content":" things"}}
+{"ts":"2026-02-09T00:01:08.711659","event":"text","data":{"content":"."}}
+{"ts":"2026-02-09T00:01:08.767779","event":"text","data":{"content":" First, a"}}
+{"ts":"2026-02-09T00:01:08.767932","event":"tts_queued","data":{"text":"If I had to pick the highest-bang-for-buck changes","queue_size":1}}
+{"ts":"2026-02-09T00:01:08.783375","event":"tts_generate_start","data":{"text":"If I had to pick the highest-bang-for-buck changes"}}
+{"ts":"2026-02-09T00:01:08.825251","event":"text","data":{"content":" dangerous"}}
+{"ts":"2026-02-09T00:01:08.877683","event":"text","data":{"content":" path"}}
+{"ts":"2026-02-09T00:01:08.931495","event":"text","data":{"content":" guard that"}}
+{"ts":"2026-02-09T00:01:08.986315","event":"text","data":{"content":" refuses to share home"}}
+{"ts":"2026-02-09T00:01:09.045407","event":"text","data":{"content":" or"}}
+{"ts":"2026-02-09T00:01:09.097911","event":"text","data":{"content":" root directories"}}
+{"ts":"2026-02-09T00:01:09.135885","event":"tts_generate_done","data":{"bytes":195884}}
+{"ts":"2026-02-09T00:01:09.152203","event":"tts_play_start","data":{"text":"If I had to pick the highest-bang-for-buck changes","session":"default"}}
+{"ts":"2026-02-09T00:01:09.152350","event":"text","data":{"content":" without"}}
+{"ts":"2026-02-09T00:01:09.224909","event":"text","data":{"content":" a"}}
+{"ts":"2026-02-09T00:01:09.268367","event":"text","data":{"content":" force"}}
+{"ts":"2026-02-09T00:01:09.338240","event":"text","data":{"content":" flag and"}}
+{"ts":"2026-02-09T00:01:09.380468","event":"text","data":{"content":" warns"}}
+{"ts":"2026-02-09T00:01:09.541304","event":"text","data":{"content":" when"}}
+{"ts":"2026-02-09T00:01:09.565280","event":"text","data":{"content":" there are too"}}
+{"ts":"2026-02-09T00:01:09.568773","event":"text","data":{"content":" many files. Second, expanding"}}
+{"ts":"2026-02-09T00:01:09.568898","event":"tts_queued","data":{"text":"First, a dangerous path guard that refuses to shar","queue_size":1}}
+{"ts":"2026-02-09T00:01:09.578269","event":"tts_generate_start","data":{"text":"First, a dangerous path guard that refuses to shar"}}
+{"ts":"2026-02-09T00:01:09.594460","event":"text","data":{"content":" the default ignore list to cover env"}}
+{"ts":"2026-02-09T00:01:09.650698","event":"text","data":{"content":" files, SSH keys, and"}}
+{"ts":"2026-02-09T00:01:09.712072","event":"text","data":{"content":" credentials"}}
+{"ts":"2026-02-09T00:01:09.760784","event":"text","data":{"content":". And"}}
+{"ts":"2026-02-09T00:01:09.760825","event":"tts_queued","data":{"text":"Second, expanding the default ignore list to cover","queue_size":1}}
+{"ts":"2026-02-09T00:01:09.815102","event":"text","data":{"content":" third, making"}}
+{"ts":"2026-02-09T00:01:09.868288","event":"text","data":{"content":" the joiner sync"}}
+{"ts":"2026-02-09T00:01:09.923802","event":"text","data":{"content":" into a sandboxed subd"}}
+{"ts":"2026-02-09T00:01:09.977371","event":"text","data":{"content":"irectory instead"}}
+{"ts":"2026-02-09T00:01:10.032290","event":"text","data":{"content":" of directly"}}
+{"ts":"2026-02-09T00:01:10.093743","event":"text","data":{"content":" into their"}}
+{"ts":"2026-02-09T00:01:10.144760","event":"text","data":{"content":" working"}}
+{"ts":"2026-02-09T00:01:10.152755","event":"tts_generate_done","data":{"bytes":345644}}
+{"ts":"2026-02-09T00:01:10.152777","event":"tts_generate_start","data":{"text":"Second, expanding the default ignore list to cover"}}
+{"ts":"2026-02-09T00:01:10.201800","event":"text","data":{"content":" tree. Those"}}
+{"ts":"2026-02-09T00:01:10.201829","event":"tts_queued","data":{"text":"And third, making the joiner sync into a sandboxed","queue_size":1}}
+{"ts":"2026-02-09T00:01:10.255751","event":"text","data":{"content":" three alone"}}
+{"ts":"2026-02-09T00:01:10.312360","event":"text","data":{"content":" would eliminate"}}
+{"ts":"2026-02-09T00:01:10.364096","event":"text","data":{"content":" most"}}
+{"ts":"2026-02-09T00:01:10.421575","event":"text","data":{"content":" of the \"o"}}
+{"ts":"2026-02-09T00:01:10.480139","event":"text","data":{"content":"ops\""}}
+{"ts":"2026-02-09T00:01:10.533519","event":"text","data":{"content":" scenarios."}}
+{"ts":"2026-02-09T00:01:10.587640","event":"text","data":{"content":" Want"}}
+{"ts":"2026-02-09T00:01:10.587671","event":"tts_queued","data":{"text":"Those three alone would eliminate most of the \"oop","queue_size":2}}
+{"ts":"2026-02-09T00:01:10.604088","event":"tts_generate_done","data":{"bytes":326444}}
+{"ts":"2026-02-09T00:01:10.604106","event":"tts_generate_start","data":{"text":"And third, making the joiner sync into a sandboxed"}}
+{"ts":"2026-02-09T00:01:10.641082","event":"text","data":{"content":" me to implement any of these?"}}
+{"ts":"2026-02-09T00:01:10.705620","event":"text","data":{"content":"</say>"}}
+{"ts":"2026-02-09T00:01:10.705650","event":"tts_queued","data":{"text":"Want me to implement any of these?","queue_size":2}}
+{"ts":"2026-02-09T00:01:10.708177","event":"block_stop","data":{"index":1}}
+{"ts":"2026-02-09T00:01:10.755832","event":"response_end","data":{"model":"claude-opus-4-6","elapsed":39.13590884208679,"chars":713,"tts_time":19.651755332946777,"stop_reason":"end_turn"}}
+{"ts":"2026-02-09T00:01:11.067417","event":"tts_generate_done","data":{"bytes":330284}}
+{"ts":"2026-02-09T00:01:11.067459","event":"tts_generate_start","data":{"text":"Those three alone would eliminate most of the \"oop"}}
+{"ts":"2026-02-09T00:01:11.358990","event":"tts_generate_done","data":{"bytes":211244}}
+{"ts":"2026-02-09T00:01:11.359030","event":"tts_generate_start","data":{"text":"Want me to implement any of these?"}}
+{"ts":"2026-02-09T00:01:11.490595","event":"tts_generate_done","data":{"bytes":88364}}
+{"ts":"2026-02-09T00:01:12.745255","event":"block_start","data":{"index":0,"type":"text"}}
+{"ts":"2026-02-09T00:01:12.747243","event":"text","data":{"content":"yeah"}}
+{"ts":"2026-02-09T00:01:12.790579","event":"text","data":{"content":" let"}}
+{"ts":"2026-02-09T00:01:12.846500","event":"text","data":{"content":"'s"}}
+{"ts":"2026-02-09T00:01:12.915692","event":"text","data":{"content":" do those"}}
+{"ts":"2026-02-09T00:01:12.966753","event":"text","data":{"content":" "}}
+{"ts":"2026-02-09T00:01:13.030242","event":"text","data":{"content":"3,"}}
+{"ts":"2026-02-09T00:01:13.082454","event":"text","data":{"content":" go"}}
+{"ts":"2026-02-09T00:01:13.115059","event":"text","data":{"content":" ahead"}}
+{"ts":"2026-02-09T00:01:13.182475","event":"block_stop","data":{"index":0}}
+{"ts":"2026-02-09T00:01:13.227983","event":"response_end","data":{"model":"claude-opus-4-6","elapsed":2.4570610523223877,"chars":0,"tts_time":0.0,"stop_reason":"end_turn"}}
+{"ts":"2026-02-09T00:01:13.398123","event":"tts_play_done","data":{"elapsed":4.245910167694092}}
+{"ts":"2026-02-09T00:01:13.398302","event":"tts_play_start","data":{"text":"First, a dangerous path guard that refuses to shar","session":"default"}}
+{"ts":"2026-02-09T00:01:20.748662","event":"tts_play_done","data":{"elapsed":7.350354909896851}}
+{"ts":"2026-02-09T00:01:20.748860","event":"tts_play_start","data":{"text":"Second, expanding the default ignore list to cover","session":"default"}}
+{"ts":"2026-02-09T00:01:27.702380","event":"tts_play_done","data":{"elapsed":6.953514099121094}}
+{"ts":"2026-02-09T00:01:27.702581","event":"tts_play_start","data":{"text":"And third, making the joiner sync into a sandboxed","session":"default"}}
+{"ts":"2026-02-09T00:01:34.728987","event":"tts_play_done","data":{"elapsed":7.02640175819397}}
+{"ts":"2026-02-09T00:01:34.729300","event":"tts_play_start","data":{"text":"Those three alone would eliminate most of the \"oop","session":"default"}}
+{"ts":"2026-02-09T00:01:39.273211","event":"tts_play_done","data":{"elapsed":4.543906927108765}}
+{"ts":"2026-02-09T00:01:39.273668","event":"tts_play_start","data":{"text":"Want me to implement any of these?","session":"default"}}
+{"ts":"2026-02-09T00:01:41.259471","event":"tts_play_done","data":{"elapsed":1.9857981204986572}}
