@@ -220,8 +220,7 @@ func runJoin(opts JoinOptions) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	fmt.Printf("\n  %s\n\n", ui.Accent("◗ shadow"))
-	fmt.Printf("  %s", ui.Dim("connecting..."))
+	fmt.Printf("\n  %s", ui.Dim("connecting..."))
 	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
 	if err != nil {
 		fmt.Println()

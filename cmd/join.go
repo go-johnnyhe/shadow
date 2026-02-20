@@ -5,6 +5,8 @@ package cmd
 
 import (
 	"fmt"
+
+	"github.com/go-johnnyhe/shadow/internal/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -29,6 +31,8 @@ The session URL comes from whoever ran 'shadow start'.`,
 			cmd.Usage()
 			return
 		}
+
+		fmt.Printf("\n  %s\n", ui.Dim("◗ shadow"))
 
 		err := runJoin(JoinOptions{
 			SessionURL: args[0],

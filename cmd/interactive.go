@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/charmbracelet/huh"
 	"strings"
+
+	"github.com/charmbracelet/huh"
+	"github.com/go-johnnyhe/shadow/internal/ui"
 )
 
 const (
@@ -12,6 +14,8 @@ const (
 )
 
 func runInteractiveWizard() error {
+	fmt.Printf("\n  %s\n  %s\n\n", ui.Bold("◗ shadow"), ui.Dim("live sync your code"))
+
 	var action string
 	err := huh.NewForm(
 		huh.NewGroup(
@@ -39,6 +43,8 @@ func runInteractiveWizard() error {
 }
 
 func runInteractiveStart() error {
+	fmt.Printf("  %s\n\n", ui.Dim("◗ shadow"))
+
 	const (
 		shareCurrentDir = "current_dir"
 		shareCustomPath = "custom_path"
@@ -92,6 +98,8 @@ func runInteractiveStart() error {
 }
 
 func runInteractiveJoin() error {
+	fmt.Printf("  %s\n\n", ui.Dim("◗ shadow"))
+
 	var sessionURL string
 	var joinKeyInput string
 

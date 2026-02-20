@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+
+	"github.com/go-johnnyhe/shadow/internal/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -38,6 +40,8 @@ Perfect for mock interviews, pair programming, and collaborative debugging.`,
 			cmd.Usage()
 			return
 		}
+
+		fmt.Printf("\n  %s\n", ui.Dim("◗ shadow"))
 
 		err = runStart(StartOptions{
 			Path:            targetPath,
