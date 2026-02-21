@@ -11,8 +11,12 @@ import (
 	"time"
 )
 
-var clients = make(map[*wsutil.Peer]bool)
-var clientsMutex = &sync.Mutex{}
+type clientPeer interface {
+	Write(msgType int, msg []byte) error
+}
+
+var clients = make(map[clientPeer]struct{})
+var clientsMutex sync.Mutex
 var sessionOptions = struct {
 	mu              sync.RWMutex
 	readOnlyJoiners bool
@@ -38,15 +42,67 @@ func getReadOnlyJoiners() bool {
 	return sessionOptions.readOnlyJoiners
 }
 
-func broadcastPeerCount(exclude *wsutil.Peer, count int) {
-	msg := protocol.EncodeControlPeerCount(count)
+func snapshotClients(exclude clientPeer) []clientPeer {
 	clientsMutex.Lock()
 	defer clientsMutex.Unlock()
+
+	targets := make([]clientPeer, 0, len(clients))
 	for client := range clients {
 		if client != exclude {
-			client.Write(websocket.TextMessage, msg)
+			targets = append(targets, client)
 		}
 	}
+	return targets
+}
+
+func writeToClients(targets []clientPeer, msgType int, msg []byte) []clientPeer {
+	stale := make([]clientPeer, 0)
+	for _, client := range targets {
+		if err := client.Write(msgType, msg); err != nil {
+			stale = append(stale, client)
+		}
+	}
+	return stale
+}
+
+func removeClients(stale []clientPeer) int {
+	if len(stale) == 0 {
+		clientsMutex.Lock()
+		count := len(clients)
+		clientsMutex.Unlock()
+		return count
+	}
+
+	clientsMutex.Lock()
+	for _, client := range stale {
+		delete(clients, client)
+	}
+	count := len(clients)
+	clientsMutex.Unlock()
+
+	for _, client := range stale {
+		if closer, ok := client.(interface{ Close() error }); ok {
+			_ = closer.Close()
+		}
+	}
+	return count
+}
+
+func broadcastPeerCount(exclude clientPeer, count int) {
+	msg := protocol.EncodeControlPeerCount(count)
+	targets := snapshotClients(exclude)
+	stale := writeToClients(targets, websocket.TextMessage, msg)
+	removeClients(stale)
+}
+
+func broadcastText(exclude clientPeer, msgType int, msg []byte) {
+	targets := snapshotClients(exclude)
+	stale := writeToClients(targets, msgType, msg)
+	if len(stale) == 0 {
+		return
+	}
+	peerCount := removeClients(stale)
+	broadcastPeerCount(nil, peerCount)
 }
 
 func StartServer(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +138,7 @@ func StartServer(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	clientsMutex.Lock()
-	clients[p] = true
+	clients[p] = struct{}{}
 	peerCount := len(clients)
 	clientsMutex.Unlock()
 	broadcastPeerCount(p, peerCount)
@@ -105,16 +161,7 @@ func StartServer(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		if msgType == websocket.TextMessage {
-			clientsMutex.Lock()
-			for client := range clients {
-				if client != p {
-					err := client.Write(msgType, msg)
-					if err != nil {
-						fmt.Println("Error writing message to other clients: ", err)
-					}
-				}
-			}
-			clientsMutex.Unlock()
+			broadcastText(p, msgType, msg)
 		}
 	}
 }

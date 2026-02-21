@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io/fs"
 	"log"
@@ -23,6 +24,20 @@ import (
 	"github.com/go-johnnyhe/shadow/internal/wsutil"
 	"github.com/gorilla/websocket"
 )
+
+const (
+	maxSyncedFileBytes      = 10 * 1024 * 1024
+	maxIncomingMessageBytes = 20 * 1024 * 1024
+	deletePayloadMarker     = "__shadow_delete__"
+)
+
+type incomingFileTooLargeError struct {
+	size int
+}
+
+func (e incomingFileTooLargeError) Error() string {
+	return fmt.Sprintf("decoded file payload exceeds %d-byte limit", maxSyncedFileBytes)
+}
 
 type Client struct {
 	conn                  *wsutil.Peer
@@ -52,6 +67,7 @@ func NewClient(conn *websocket.Conn, opts ...Options) (*Client, error) {
 	if len(opts) > 0 {
 		opt = opts[0]
 	}
+	conn.SetReadLimit(maxIncomingMessageBytes)
 
 	codec, err := e2e.NewCodec(opt.E2EKey)
 	if err != nil {
@@ -183,7 +199,7 @@ func (c *Client) sendFile(filePath string, verbose bool) bool {
 	if err != nil || !fileInfo.Mode().IsRegular() {
 		return false
 	}
-	if fileInfo.Size() > 10*1024*1024 {
+	if fileInfo.Size() > maxSyncedFileBytes {
 		if verbose {
 			sizeMB := float64(fileInfo.Size()) / (1024 * 1024)
 			fmt.Println(ui.Dim(fmt.Sprintf("⊘ skipped %s (%.0fMB, exceeds 10MB limit)", relPath, sizeMB)))
@@ -223,19 +239,49 @@ func (c *Client) sendFile(filePath string, verbose bool) bool {
 	return true
 }
 
+func (c *Client) sendDelete(relPath string, verbose bool) bool {
+	if c.readOnlyJoinerMode.Load() {
+		return false
+	}
+	if c.isWritingReceivedFile.Load() {
+		return false
+	}
+	if c.shouldIgnoreOutboundRel(relPath, false) {
+		return false
+	}
+
+	plaintextMessage := []byte(fmt.Sprintf("%s|%s", relPath, deletePayloadMarker))
+	encryptedPayload, err := c.codec.Encrypt(plaintextMessage)
+	if err != nil {
+		log.Println("error encrypting delete message: ", err)
+		return false
+	}
+	message := fmt.Sprintf("%s|%s", protocol.EncryptedChannel, encryptedPayload)
+
+	if err := c.conn.Write(websocket.TextMessage, []byte(message)); err != nil {
+		log.Println("error writing delete message: ", err)
+		return false
+	}
+	c.dropPathHashes(relPath)
+
+	if verbose {
+		fmt.Printf("%s %s %s\n", ui.OutArrow("→"), relPath, ui.Dim("(deleted)"))
+	}
+	return true
+}
+
 func (c *Client) readLoop() {
 	for {
 		_, msg, err := c.conn.ReadMessage()
 		if err != nil {
+			if websocket.IsCloseError(err, websocket.CloseMessageTooBig) || strings.Contains(err.Error(), "read limit exceeded") {
+				fmt.Println(ui.Warn("⚠ incoming data exceeded transport limit"))
+				return
+			}
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				fmt.Println(ui.Warn("⚠ connection lost"))
 			}
 			return
-		}
-		if len(msg) > 10*1024*1024 {
-			sizeMB := float64(len(msg)) / (1024 * 1024)
-			fmt.Println(ui.Dim(fmt.Sprintf("⊘ skipped incoming message (%.0fMB, exceeds 10MB limit)", sizeMB)))
-			continue
 		}
 
 		parts := strings.SplitN(string(msg), "|", 2)
@@ -292,13 +338,29 @@ func (c *Client) readLoop() {
 			continue
 		}
 
-		decodedContent, err := base64.StdEncoding.DecodeString(parts[1])
+		destPath := filepath.Join(c.baseDir, filepath.FromSlash(relPath))
+		if parts[1] == deletePayloadMarker {
+			if err := os.RemoveAll(destPath); err != nil && !os.IsNotExist(err) {
+				log.Printf("error deleting %s: %v\n", relPath, err)
+			} else {
+				fmt.Printf("%s %s %s\n", ui.InArrow("←"), relPath, ui.Dim("(deleted)"))
+			}
+			c.dropPathHashes(relPath)
+			continue
+		}
+
+		decodedContent, err := decodeIncomingFileContent(parts[1])
 		if err != nil {
+			var tooLarge incomingFileTooLargeError
+			if errors.As(err, &tooLarge) {
+				sizeMB := float64(tooLarge.size) / (1024 * 1024)
+				fmt.Println(ui.Dim(fmt.Sprintf("⊘ skipped incoming %s (%.0fMB, exceeds 10MB limit)", relPath, sizeMB)))
+				continue
+			}
 			log.Printf("error decoding content for %s: %v\n", relPath, err)
 			continue
 		}
 
-		destPath := filepath.Join(c.baseDir, filepath.FromSlash(relPath))
 		if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
 			log.Printf("error creating parent directories for %s: %v\n", relPath, err)
 			continue
@@ -307,7 +369,7 @@ func (c *Client) readLoop() {
 		c.isWritingReceivedFile.Store(true)
 		func() {
 			defer c.isWritingReceivedFile.Store(false)
-			if err = os.WriteFile(destPath, decodedContent, 0644); err != nil {
+			if err = atomicWriteFile(destPath, decodedContent, 0644); err != nil {
 				log.Printf("error writing this file: %s: %v\n", relPath, err)
 			} else {
 				fmt.Printf("%s %s\n", ui.InArrow("←"), relPath)
@@ -402,7 +464,11 @@ func (c *Client) processFileEvents(ctx context.Context, watcher *fsnotify.Watche
 				}
 			}
 
-			if event.Op&(fsnotify.Write|fsnotify.Create|fsnotify.Rename|fsnotify.Chmod) != 0 {
+			if event.Op&(fsnotify.Remove|fsnotify.Rename) != 0 {
+				c.handleDeleteEvent(event)
+			}
+
+			if event.Op&(fsnotify.Write|fsnotify.Create|fsnotify.Chmod) != 0 {
 				c.handleFileEvent(event)
 			}
 		case err, ok := <-watcher.Errors:
@@ -462,6 +528,38 @@ func (c *Client) handleFileEvent(event fsnotify.Event) {
 	c.timerMutex.Unlock()
 }
 
+func (c *Client) handleDeleteEvent(event fsnotify.Event) {
+	filePath := event.Name
+	wasRename := event.Op&fsnotify.Rename != 0
+	relPath, err := c.relativeProtocolPath(filePath)
+	if err != nil {
+		return
+	}
+	if c.shouldIgnoreOutboundRel(relPath, false) {
+		return
+	}
+
+	c.timerMutex.Lock()
+	if c.timer != nil {
+		c.timer.Stop()
+	}
+
+	c.timer = time.AfterFunc(50*time.Millisecond, func() {
+		// Rename often emits delete before create; avoid false delete if file reappears.
+		if _, statErr := os.Stat(filePath); statErr == nil {
+			c.SendFile(filePath)
+			return
+		}
+		c.sendDelete(relPath, true)
+		if wasRename {
+			if _, snapshotErr := c.SendInitialSnapshot(); snapshotErr != nil {
+				log.Printf("failed to rescan after rename %s: %v", relPath, snapshotErr)
+			}
+		}
+	})
+	c.timerMutex.Unlock()
+}
+
 func (c *Client) relativeProtocolPath(filePath string) (string, error) {
 	absPath, err := filepath.Abs(filePath)
 	if err != nil {
@@ -493,6 +591,92 @@ func normalizeIncomingPath(rawPath string) (string, error) {
 	return cleanPath, nil
 }
 
+func atomicWriteFile(destPath string, data []byte, perm os.FileMode) error {
+	writePath := destPath
+	targetPerm := perm
+
+	if info, err := os.Lstat(destPath); err == nil {
+		if info.Mode()&os.ModeSymlink != 0 {
+			linkTarget, readErr := os.Readlink(destPath)
+			if readErr != nil {
+				return readErr
+			}
+			if filepath.IsAbs(linkTarget) {
+				writePath = linkTarget
+			} else {
+				writePath = filepath.Join(filepath.Dir(destPath), linkTarget)
+			}
+			if targetInfo, statErr := os.Stat(writePath); statErr == nil {
+				targetPerm = targetInfo.Mode().Perm()
+			}
+		} else {
+			targetPerm = info.Mode().Perm()
+		}
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+
+	tmpFile, err := os.CreateTemp(filepath.Dir(writePath), "."+filepath.Base(writePath)+".shadow_tmp_*.tmp")
+	if err != nil {
+		return err
+	}
+	tmpPath := tmpFile.Name()
+	cleanup := true
+	defer func() {
+		if cleanup {
+			_ = os.Remove(tmpPath)
+		}
+	}()
+
+	if err := tmpFile.Chmod(targetPerm); err != nil {
+		_ = tmpFile.Close()
+		return err
+	}
+	if _, err := tmpFile.Write(data); err != nil {
+		_ = tmpFile.Close()
+		return err
+	}
+	if err := tmpFile.Close(); err != nil {
+		return err
+	}
+
+	if err := os.Rename(tmpPath, writePath); err != nil {
+		// Windows may reject rename-over-existing. Fallback keeps behavior working.
+		if removeErr := os.Remove(writePath); removeErr == nil || errors.Is(removeErr, os.ErrNotExist) {
+			if retryErr := os.Rename(tmpPath, writePath); retryErr == nil {
+				cleanup = false
+				return nil
+			}
+		}
+		return err
+	}
+	cleanup = false
+	return nil
+}
+
+func decodeIncomingFileContent(encoded string) ([]byte, error) {
+	decodedContent, err := base64.StdEncoding.DecodeString(encoded)
+	if err != nil {
+		return nil, err
+	}
+	if len(decodedContent) > maxSyncedFileBytes {
+		return nil, incomingFileTooLargeError{size: len(decodedContent)}
+	}
+	return decodedContent, nil
+}
+
+func (c *Client) dropPathHashes(relPath string) {
+	c.lastHash.Delete(relPath)
+	prefix := relPath + "/"
+	c.lastHash.Range(func(key, _ any) bool {
+		pathKey, ok := key.(string)
+		if ok && strings.HasPrefix(pathKey, prefix) {
+			c.lastHash.Delete(pathKey)
+		}
+		return true
+	})
+}
+
 func (c *Client) shouldIgnoreOutboundRel(relPath string, isDir bool) bool {
 	if c.outboundIgnore == nil {
 		return hardcodedIgnore.MatchString(relPath)
@@ -503,4 +687,3 @@ func (c *Client) shouldIgnoreOutboundRel(relPath string, isDir bool) bool {
 func (c *Client) shouldIgnoreInboundRel(relPath string) bool {
 	return shouldIgnoreInbound(relPath)
 }
-
