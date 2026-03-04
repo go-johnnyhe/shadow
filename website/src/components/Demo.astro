@@ -1,0 +1,86 @@
+---
+const rawBase = import.meta.env.BASE_URL;
+const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
+---
+
+<section class="demo fade-up">
+  <div class="demo-inner">
+    <div class="demo-window">
+      <div class="window-bar">
+        <span class="window-dot red"></span>
+        <span class="window-dot yellow"></span>
+        <span class="window-dot green"></span>
+        <span class="window-label">shadow demo</span>
+      </div>
+      <div class="video-wrap">
+        <video
+          src={`${base}demo.mp4`}
+          autoplay
+          loop
+          muted
+          playsinline
+          preload="metadata"
+        ></video>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .demo {
+    margin-top: calc(var(--section-gap) * -0.25);
+    margin-bottom: var(--section-gap);
+  }
+
+  .demo-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+  }
+
+  .demo-window {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--bg-surface);
+    box-shadow:
+      0 0 0 1px var(--border-subtle),
+      0 24px 48px -12px rgba(0, 0, 0, 0.5);
+  }
+
+  .window-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .window-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .window-dot.red { background: #ef4444; }
+  .window-dot.yellow { background: #eab308; }
+  .window-dot.green { background: #22c55e; }
+
+  .window-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-left: auto;
+    margin-right: auto;
+    padding-right: 30px;
+  }
+
+  .video-wrap {
+    line-height: 0;
+  }
+
+  video {
+    width: 100%;
+    display: block;
+  }
+</style>

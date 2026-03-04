@@ -1,0 +1,125 @@
+---
+const rows = [
+  { label: 'Editor lock-in', shadow: 'None', liveshare: 'VS Code only', screenshare: 'None' },
+  { label: 'Latency', shadow: 'Low (WebSocket)', liveshare: 'Low', screenshare: 'High' },
+  { label: 'Both can edit', shadow: 'Yes', liveshare: 'Yes', screenshare: 'No' },
+  { label: 'Setup required', shadow: 'Zero', liveshare: 'Extension install', screenshare: 'None' },
+  { label: 'Encryption', shadow: 'E2E', liveshare: 'Microsoft servers', screenshare: 'Varies' },
+];
+---
+
+<section class="comparison fade-up">
+  <div class="comparison-inner">
+    <h2 class="section-title">How is this different?</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="feature-col"></th>
+            <th class="shadow-col">Shadow</th>
+            <th>VS Code Live Share</th>
+            <th>Screenshare</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr>
+              <td class="feature-col">{row.label}</td>
+              <td class="shadow-col">{row.shadow}</td>
+              <td>{row.liveshare}</td>
+              <td>{row.screenshare}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<style>
+  .comparison {
+    margin-bottom: var(--section-gap);
+  }
+
+  .comparison-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+  }
+
+  .section-title {
+    font-family: var(--font-mono);
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    font-weight: 600;
+    margin-bottom: 2.5rem;
+    text-align: center;
+    letter-spacing: -0.01em;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-surface);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+
+  thead {
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    text-align: left;
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.85rem 1.25rem;
+    color: var(--text-secondary);
+    border-top: 1px solid var(--border-subtle);
+    white-space: nowrap;
+  }
+
+  .feature-col {
+    color: var(--text-primary);
+    font-weight: 500;
+    width: 30%;
+  }
+
+  th.shadow-col {
+    color: var(--accent);
+  }
+
+  td.shadow-col {
+    color: var(--accent);
+    font-weight: 500;
+    width: 28%;
+  }
+
+  tr:first-child td {
+    border-top: none;
+  }
+
+  tbody tr {
+    transition: background 0.15s;
+  }
+
+  tbody tr:hover {
+    background: var(--bg-elevated);
+  }
+
+  @media (max-width: 640px) {
+    th, td {
+      padding: 0.7rem 0.9rem;
+      font-size: 0.78rem;
+    }
+  }
+</style>

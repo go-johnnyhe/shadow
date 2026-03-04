@@ -1,0 +1,228 @@
+---
+const installCmd = "curl -sSf https://raw.githubusercontent.com/go-johnnyhe/shadow/main/install.sh | sh";
+const steps = [
+  { num: '1', cmd: 'shadow start .', desc: 'Start sharing your project' },
+  { num: '2', cmd: "Share the URL", desc: 'Send the generated link to your partner' },
+  { num: '3', cmd: "shadow join '<url>'", desc: 'Your partner joins — both edit live' },
+];
+---
+
+<section class="cta fade-up">
+  <div class="cta-inner">
+    <h2 class="cta-title">Get started in seconds</h2>
+
+    <div class="install-box">
+      <div class="install-line">
+        <span class="prompt">$</span>
+        <code id="cta-cmd">{installCmd}</code>
+        <button class="copy-btn" id="cta-copy-btn" aria-label="Copy install command">
+          <svg class="icon-copy" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          <svg class="icon-check" width="16" height="16" viewBox="0 0 16 16" fill="none" style="display:none">
+            <path d="M3 8.5L6.5 12L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="steps">
+      {steps.map((s) => (
+        <div class="step">
+          <span class="step-num">{s.num}</span>
+          <div class="step-content">
+            <code class="step-cmd">{s.cmd}</code>
+            <p class="step-desc">{s.desc}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <a
+      href="https://github.com/go-johnnyhe/shadow"
+      class="github-btn"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+      </svg>
+      Star on GitHub
+    </a>
+  </div>
+</section>
+
+<script is:inline>
+  document.getElementById('cta-copy-btn')?.addEventListener('click', function () {
+    const cmd = document.getElementById('cta-cmd')?.textContent || '';
+    navigator.clipboard.writeText(cmd).then(() => {
+      const btn = document.getElementById('cta-copy-btn');
+      if (!btn) return;
+      const iconCopy = btn.querySelector('.icon-copy');
+      const iconCheck = btn.querySelector('.icon-check');
+      if (iconCopy) iconCopy.style.display = 'none';
+      if (iconCheck) iconCheck.style.display = 'block';
+      btn.classList.add('copied');
+      if (typeof posthog !== 'undefined') {
+        posthog.capture('install_command_copied');
+      }
+      setTimeout(() => {
+        if (iconCopy) iconCopy.style.display = 'block';
+        if (iconCheck) iconCheck.style.display = 'none';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  });
+</script>
+
+<style>
+  .cta {
+    margin-bottom: var(--section-gap);
+  }
+
+  .cta-inner {
+    max-width: 640px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .cta-title {
+    font-family: var(--font-mono);
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    font-weight: 600;
+    margin-bottom: 2.5rem;
+    letter-spacing: -0.01em;
+  }
+
+  .install-box {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .install-line {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    overflow-x: auto;
+  }
+
+  .prompt {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    flex: 1;
+    text-align: left;
+  }
+
+  .copy-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+
+  .copy-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--text-muted);
+  }
+
+  .copy-btn.copied {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+    text-align: left;
+  }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .step-num {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-glow);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .step-content {
+    flex: 1;
+  }
+
+  .step-cmd {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+    white-space: normal;
+  }
+
+  .step-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .github-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    transition: border-color 0.2s, background 0.2s;
+    text-decoration: none;
+  }
+
+  .github-btn:hover {
+    border-color: var(--text-muted);
+    background: var(--bg-surface);
+    opacity: 1;
+  }
+
+  @media (max-width: 640px) {
+    code {
+      font-size: 0.75rem;
+    }
+  }
+</style>

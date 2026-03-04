@@ -1,0 +1,255 @@
+---
+const installCmd = "curl -sSf https://raw.githubusercontent.com/go-johnnyhe/shadow/main/install.sh | sh";
+const goInstallCmd = "go install github.com/go-johnnyhe/shadow@latest";
+---
+
+<section class="hero">
+  <div class="hero-inner">
+    <p class="hero-tag">Open source &middot; MIT License</p>
+    <h1 class="hero-headline">
+      <span class="line">Real-time code collaboration</span>
+      <span class="line">that works with <span class="highlight">any editor</span><span class="cursor">_</span></span>
+    </h1>
+    <p class="hero-sub">
+      Like Google Docs, but for your codebase. End-to-end encrypted,
+      zero setup, works everywhere.
+    </p>
+
+    <div class="install-block">
+      <div class="install-terminal">
+        <div class="terminal-bar">
+          <span class="terminal-dot"></span>
+          <span class="terminal-dot"></span>
+          <span class="terminal-dot"></span>
+          <span class="terminal-title">Terminal</span>
+        </div>
+        <div class="terminal-body">
+          <span class="prompt">$</span>
+          <code class="install-cmd" id="install-cmd">{installCmd}</code>
+          <button class="copy-btn" id="copy-btn" aria-label="Copy install command">
+            <svg class="icon-copy" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            <svg class="icon-check" width="16" height="16" viewBox="0 0 16 16" fill="none" style="display:none">
+              <path d="M3 8.5L6.5 12L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <p class="install-alt">
+        or <code>go install github.com/go-johnnyhe/shadow@latest</code>
+      </p>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+  document.getElementById('copy-btn')?.addEventListener('click', function () {
+    const cmd = document.getElementById('install-cmd')?.textContent || '';
+    navigator.clipboard.writeText(cmd).then(() => {
+      const btn = document.getElementById('copy-btn');
+      if (!btn) return;
+      const iconCopy = btn.querySelector('.icon-copy');
+      const iconCheck = btn.querySelector('.icon-check');
+      if (iconCopy) iconCopy.style.display = 'none';
+      if (iconCheck) iconCheck.style.display = 'block';
+      btn.classList.add('copied');
+      if (typeof posthog !== 'undefined') {
+        posthog.capture('install_command_copied');
+      }
+      setTimeout(() => {
+        if (iconCopy) iconCopy.style.display = 'block';
+        if (iconCheck) iconCheck.style.display = 'none';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  });
+</script>
+
+<style>
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+
+  .hero-inner {
+    max-width: var(--max-width);
+    width: 100%;
+    text-align: center;
+  }
+
+  .hero-tag {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+  }
+
+  .hero-headline {
+    font-family: var(--font-mono);
+    font-size: clamp(1.8rem, 5vw, 3.2rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-headline .line {
+    display: block;
+  }
+
+  .highlight {
+    color: var(--accent);
+  }
+
+  .cursor {
+    color: var(--accent);
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  .hero-sub {
+    font-size: 1.15rem;
+    color: var(--text-secondary);
+    max-width: 520px;
+    margin: 0 auto 3rem;
+    line-height: 1.7;
+  }
+
+  .install-block {
+    position: relative;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  /* Green glow behind install block */
+  .install-block::before {
+    content: '';
+    position: absolute;
+    inset: -40px -60px;
+    background: radial-gradient(ellipse at center, var(--accent-glow) 0%, transparent 70%);
+    z-index: -1;
+    border-radius: 50%;
+  }
+
+  .install-terminal {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .terminal-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+
+  .terminal-title {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-left: auto;
+    margin-right: auto;
+    padding-right: 30px;
+  }
+
+  .terminal-body {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    gap: 0.75rem;
+    overflow-x: auto;
+  }
+
+  .prompt {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .install-cmd {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    flex: 1;
+    text-align: left;
+  }
+
+  .copy-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+
+  .copy-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--text-muted);
+  }
+
+  .copy-btn.copied {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .install-alt {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 1rem;
+    text-align: center;
+  }
+
+  .install-alt code {
+    color: var(--text-secondary);
+  }
+
+  @media (max-width: 640px) {
+    .hero {
+      min-height: auto;
+      padding-top: 6rem;
+      padding-bottom: 4rem;
+    }
+
+    .install-cmd {
+      font-size: 0.72rem;
+    }
+
+    .terminal-body {
+      padding: 0.75rem 1rem;
+    }
+  }
+</style>
