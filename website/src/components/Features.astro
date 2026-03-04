@@ -1,36 +1,32 @@
 ---
 const features = [
   {
-    num: '01',
     title: 'E2E Encrypted',
-    desc: 'AES-256-GCM. The server is a dumb relay — it never sees your code. The key lives in the URL fragment, never sent over the wire.',
+    desc: 'AES-256-GCM. The server is a dumb relay that never sees your code. The encryption key lives in the URL fragment — never sent over the wire.',
   },
   {
-    num: '02',
     title: 'Any Editor',
     desc: 'Shadow syncs at the filesystem level. VS Code, Vim, Neovim, Zed, JetBrains, Emacs — if it reads files, it works.',
   },
   {
-    num: '03',
     title: 'Zero Setup',
-    desc: 'One curl to install. Run shadow and the interactive wizard handles the rest. No accounts, no config, no extensions.',
+    desc: 'One curl to install. Run shadow and the wizard handles the rest. No accounts, no config files, no extensions to hunt down.',
   },
 ];
 ---
 
 <section class="features">
   <div class="features-inner">
-    <h2 class="section-heading reveal" data-shadow="Built for developers">Built for developers</h2>
+    <h2 class="heading reveal">Built for developers</h2>
 
-    <div class="card-row">
+    <div class="feature-list">
       {features.map((f, i) => (
-        <article class={`card reveal reveal-d${i + 2}`}>
-          <div class="card-num-wrap">
-            <span class="card-num">{f.num}</span>
+        <article class={`feature reveal r-d${i + 1}`}>
+          <div class="feature-num">{String(i + 1).padStart(2, '0')}</div>
+          <div class="feature-body">
+            <h3 class="feature-title">{f.title}</h3>
+            <p class="feature-desc">{f.desc}</p>
           </div>
-          <h3 class="card-title">{f.title}</h3>
-          <p class="card-desc">{f.desc}</p>
-          <div class="card-accent" aria-hidden="true"></div>
         </article>
       ))}
     </div>
@@ -47,80 +43,75 @@ const features = [
     margin: 0 auto;
   }
 
-  .card-row {
+  .heading {
+    font-family: var(--font-serif);
+    font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+    font-weight: 400;
+    letter-spacing: -0.015em;
+    margin-bottom: 3rem;
+    text-align: center;
+  }
+
+  .feature-list {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    background: var(--border-dim);
+    gap: 0;
     border: 1px solid var(--border);
     border-radius: 10px;
     overflow: hidden;
-    margin-top: 2.5rem;
+    background: #fff;
   }
 
-  .card {
-    background: var(--bg-surface);
-    padding: 2rem 1.75rem;
-    position: relative;
+  .feature {
+    padding: 2.25rem 2rem;
+    border-left: 1px solid var(--border);
     transition: background 0.3s;
   }
 
-  .card:hover {
-    background: var(--bg-elevated);
+  .feature:first-child {
+    border-left: none;
   }
 
-  /* Accent line at top of card on hover */
-  .card-accent {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--accent);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  .feature:hover {
+    background: var(--bg-warm);
   }
 
-  .card:hover .card-accent {
-    transform: scaleX(1);
-  }
-
-  .card-num-wrap {
-    margin-bottom: 1.5rem;
-  }
-
-  .card-num {
-    font-family: var(--font-display);
-    font-size: 2.2rem;
-    font-weight: 800;
-    color: var(--border);
-    letter-spacing: -0.04em;
+  .feature-num {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    color: var(--border-strong);
     line-height: 1;
+    margin-bottom: 1.5rem;
+    font-style: italic;
     transition: color 0.3s;
   }
 
-  .card:hover .card-num {
-    color: var(--accent-dim);
+  .feature:hover .feature-num {
+    color: var(--accent);
   }
 
-  .card-title {
-    font-family: var(--font-display);
-    font-size: 1.15rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 0.65rem;
+  .feature-title {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.6rem;
   }
 
-  .card-desc {
-    font-size: 0.82rem;
+  .feature-desc {
+    font-size: 0.88rem;
     color: var(--text-secondary);
     line-height: 1.65;
   }
 
   @media (max-width: 768px) {
-    .card-row {
+    .feature-list {
       grid-template-columns: 1fr;
     }
+    .feature {
+      border-left: none;
+      border-top: 1px solid var(--border);
+    }
+    .feature:first-child { border-top: none; }
   }
 </style>

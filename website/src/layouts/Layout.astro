@@ -21,7 +21,7 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#050506" />
+    <meta name="theme-color" content="#faf9f6" />
 
     <!-- Open Graph -->
     <meta property="og:title" content={title} />
@@ -64,6 +64,8 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
           { threshold: 0.08, rootMargin: '0px 0px -60px 0px' }
         );
         document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+        // Also observe legacy class
+        document.querySelectorAll('.fade-up').forEach((el) => io.observe(el));
       });
     </script>
   </body>

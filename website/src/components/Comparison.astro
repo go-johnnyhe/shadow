@@ -10,33 +10,29 @@ const rows = [
 
 <section class="comparison">
   <div class="comparison-inner">
-    <h2 class="section-heading reveal" data-shadow="How is this different?">How is this different?</h2>
+    <h2 class="heading reveal">How is this different?</h2>
 
-    <div class="table-frame reveal reveal-d1">
-      <div class="table-scroll">
-        <table>
-          <thead>
+    <div class="table-wrap reveal r-d1">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-label"></th>
+            <th class="col-shadow">Shadow</th>
+            <th class="col-other">Live Share</th>
+            <th class="col-other">Screenshare</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
             <tr>
-              <th class="col-label"></th>
-              <th class="col-shadow">
-                <span class="shadow-badge">Shadow</span>
-              </th>
-              <th class="col-other">Live Share</th>
-              <th class="col-other">Screenshare</th>
+              <td class="col-label">{r.label}</td>
+              <td class="col-shadow">{r.shadow}</td>
+              <td class="col-other">{r.liveshare}</td>
+              <td class="col-other">{r.screen}</td>
             </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr>
-                <td class="col-label">{r.label}</td>
-                <td class="col-shadow">{r.shadow}</td>
-                <td class="col-other">{r.liveshare}</td>
-                <td class="col-other">{r.screen}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
@@ -51,24 +47,32 @@ const rows = [
     margin: 0 auto;
   }
 
-  .table-frame {
+  .heading {
+    font-family: var(--font-serif);
+    font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+    font-weight: 400;
+    letter-spacing: -0.015em;
+    margin-bottom: 2.5rem;
+    text-align: center;
+  }
+
+  .table-wrap {
     border: 1px solid var(--border);
     border-radius: 10px;
     overflow: hidden;
-    background: var(--bg-surface);
-    margin-top: 2.5rem;
-  }
-
-  .table-scroll {
-    overflow-x: auto;
+    background: #fff;
   }
 
   table {
     width: 100%;
     border-collapse: collapse;
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    min-width: 600px;
+    font-size: 0.88rem;
+    min-width: 580px;
+  }
+
+  /* Scroll on small screens */
+  .table-wrap {
+    overflow-x: auto;
   }
 
   thead tr {
@@ -77,83 +81,58 @@ const rows = [
 
   th {
     text-align: left;
-    padding: 1rem 1.4rem;
-    font-weight: 500;
-    color: var(--text-ghost);
+    padding: 0.9rem 1.4rem;
+    font-family: var(--font-mono);
     font-size: 0.72rem;
-    letter-spacing: 0.06em;
+    font-weight: 500;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
+    color: var(--text-muted);
   }
 
   td {
-    padding: 0.9rem 1.4rem;
-    border-top: 1px solid var(--border-dim);
+    padding: 0.85rem 1.4rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
   }
 
-  tr:first-child td { border-top: none; }
+  tbody tr:first-child td { border-top: none; }
 
   tbody tr {
     transition: background 0.2s;
   }
   tbody tr:hover {
-    background: var(--bg-elevated);
+    background: var(--accent-soft);
   }
 
-  /* Label column */
   .col-label {
-    color: var(--text-secondary);
     font-weight: 500;
+    color: var(--text);
     width: 25%;
-    min-width: 140px;
   }
 
-  /* Other columns */
   .col-other {
-    color: var(--text-ghost);
     width: 20%;
+    color: var(--text-muted);
   }
 
-  /* Shadow column — highlighted */
+  /* Shadow column — the star */
   th.col-shadow {
-    width: 30%;
-  }
-
-  .shadow-badge {
-    display: inline-block;
-    background: var(--accent-glow-mid);
     color: var(--accent);
-    padding: 3px 10px;
-    border-radius: 4px;
     font-weight: 600;
-    font-size: 0.72rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    border: 1px solid rgba(34,197,94,0.15);
+    width: 28%;
   }
 
   td.col-shadow {
     color: var(--accent);
     font-weight: 500;
-    position: relative;
+    background: var(--accent-soft);
   }
 
-  /* Subtle left-edge accent on the shadow column */
-  td.col-shadow::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 25%;
-    bottom: 25%;
-    width: 2px;
-    background: var(--accent);
-    border-radius: 1px;
-    opacity: 0.4;
-  }
-
-  @media (max-width: 768px) {
+  @media (max-width: 640px) {
     th, td {
       padding: 0.7rem 1rem;
-      font-size: 0.75rem;
+      font-size: 0.8rem;
     }
   }
 </style>
