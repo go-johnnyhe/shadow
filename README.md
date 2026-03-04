@@ -66,14 +66,7 @@ Files are **end-to-end encrypted**. The server is a dumb relay that never sees y
 
 ## Editor Support
 
-Shadow works at the filesystem level, so it works with **any editor**:
-
-| Editor | Setup |
-|--------|-------|
-| VS Code | Works out of the box |
-| Vim / Neovim | Run `shadow setup-editor` for auto-reload |
-| JetBrains IDEs | Works out of the box |
-| Any other editor | Works if it detects file changes on disk |
+Shadow works at the filesystem level, so it works with **any editor** — VS Code, Vim, Neovim, JetBrains, Zed, whatever you use.
 
 ## Options
 
