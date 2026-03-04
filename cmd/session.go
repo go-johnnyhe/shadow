@@ -156,7 +156,7 @@ func runStart(opts StartOptions) error {
 	}
 	fmt.Printf("\n  %s %s\n\n", ui.Accent("◗ shadow"), ui.Dim("— sharing "+displayPath))
 	joinCmd := fmt.Sprintf("shadow join '%s'", shareJoinURL)
-	fmt.Printf("  %s\n", ui.Dim("share this with your partner:"))
+	fmt.Printf("  %s\n", ui.Dim("tell your partner to run this:"))
 	fmt.Printf("  %s", ui.Bold(joinCmd))
 	if ui.CopyToClipboard(joinCmd) {
 		fmt.Printf("  %s", ui.Bold("✓ copied to clipboard"))
@@ -205,7 +205,7 @@ func runStart(opts StartOptions) error {
 	srv.Shutdown(context.Background())
 	time.Sleep(100 * time.Millisecond)
 	elapsed := time.Since(sessionStart).Truncate(time.Second)
-	fmt.Printf("\n%s\n", ui.Dim(fmt.Sprintf("session ended · %d files · %s", sessionFileCount.Load(), formatDuration(elapsed))))
+	fmt.Printf("\n  %s\n", ui.Dim(fmt.Sprintf("done. %d files synced, %s", sessionFileCount.Load(), formatDuration(elapsed))))
 	return nil
 }
 
@@ -248,7 +248,7 @@ func runJoin(opts JoinOptions) error {
 
 	<-ctx.Done()
 	elapsed := time.Since(sessionStart).Truncate(time.Second)
-	fmt.Printf("\n%s\n", ui.Dim(fmt.Sprintf("session ended · %s", formatDuration(elapsed))))
+	fmt.Printf("\n  %s\n", ui.Dim(fmt.Sprintf("done. %s", formatDuration(elapsed))))
 	return nil
 }
 

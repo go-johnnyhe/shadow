@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/huh"
@@ -39,8 +41,37 @@ func shadowTheme() *huh.Theme {
 	return t
 }
 
+func showFirstRunWelcome() {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return
+	}
+	sentinel := filepath.Join(homeDir, ".shadow", ".welcome")
+	if _, err := os.Stat(sentinel); err == nil {
+		return
+	}
+	// Ensure ~/.shadow/ exists (may already from cloudflared setup)
+	os.MkdirAll(filepath.Join(homeDir, ".shadow"), 0755)
+
+	fmt.Println()
+	fmt.Println("  Welcome to shadow!")
+	fmt.Println()
+	fmt.Println("  Pair programming is frustrating when everyone has to use the same")
+	fmt.Println("  editor. Shadow lets each person use their own: vim, neovim, VS Code,")
+	fmt.Println("  JetBrains, Emacs, Jupyter, you name it.")
+	fmt.Println()
+	fmt.Println("  It syncs file changes in real time through an encrypted tunnel")
+	fmt.Println("  powered by cloudflared. Your code never touches the wire unencrypted.")
+	fmt.Println()
+	fmt.Println("  To get started, cd into the project you want to share and run: shadow")
+	fmt.Println()
+
+	os.WriteFile(sentinel, []byte{}, 0644)
+}
+
 func runInteractiveWizard() error {
-	fmt.Printf("\n  %s\n  %s\n\n", ui.Bold("◗ shadow"), ui.Dim("real-time code sharing — no accounts, no setup"))
+	showFirstRunWelcome()
+	fmt.Printf("\n  %s\n  %s\n\n", ui.Bold("◗ shadow"), ui.Dim("real-time code sharing, no accounts, no setup"))
 
 	var action string
 	var readOnlyJoiners bool
@@ -49,16 +80,19 @@ func runInteractiveWizard() error {
 	err := huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().
-				Title("What do you want to do?").
+				Title("I want to").
 				Options(
-					huh.NewOption("Start sharing session", interactiveActionStart),
-					huh.NewOption("Join sharing session", interactiveActionJoin),
+					huh.NewOption("start sharing", interactiveActionStart),
+					huh.NewOption("join a session", interactiveActionJoin),
 				).
 				Value(&action),
 		),
 		huh.NewGroup(
 			huh.NewConfirm().
-				Title("Read-only mode for joiners?").
+				Title("Make joiners read-only?").
+				Description("They'll see your changes but their edits won't sync back.").
+				Affirmative("Yes").
+				Negative("No").
 				Value(&readOnlyJoiners),
 		).WithHideFunc(func() bool { return action != interactiveActionStart }),
 		huh.NewGroup(
@@ -66,7 +100,11 @@ func runInteractiveWizard() error {
 				Title("Paste the shadow join command or URL").
 				Value(&sessionURL),
 		).WithHideFunc(func() bool { return action != interactiveActionJoin }),
-	).WithTheme(shadowTheme()).Run()
+	).WithTheme(shadowTheme()).WithKeyMap(func() *huh.KeyMap {
+		km := huh.NewDefaultKeyMap()
+		km.Select.Filter.SetEnabled(false)
+		return km
+	}()).Run()
 	if err != nil {
 		return err
 	}

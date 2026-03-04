@@ -15,7 +15,7 @@ var rootCmd = &cobra.Command{
 	Use:   "shadow",
 	Short: "Instantly share your code editor with anyone, anywhere - no setup, just shadow start",
 	Long: `shadow is a real-time collaborative coding tool for pair programming, code reviews, and live debugging.
-Share your code instantly with anyone — no accounts, no setup, no configuration.
+Share your code instantly with anyone, no accounts, no setup, no configuration.
 
 How it works:
   1. Start a session:    shadow start .
@@ -23,7 +23,7 @@ How it works:
   3. They join with:     shadow join '<url>'
   4. Code together in real-time using your favorite editors
 
-No accounts, no servers to manage — just pure collaborative coding.`,
+No accounts, no servers to manage, just pure collaborative coding.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		showVersion, _ := cmd.Flags().GetBool("version")
 		if showVersion {

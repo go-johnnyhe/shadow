@@ -325,7 +325,7 @@ func (c *Client) readLoop() {
 				} else if others > 1 {
 					fmt.Println(ui.Dim(fmt.Sprintf("%d peers connected", others)))
 				} else {
-					fmt.Println(ui.Dim("all peers disconnected"))
+					fmt.Println(ui.Dim("no peers connected"))
 				}
 			}
 			c.markReady()
@@ -419,7 +419,7 @@ func (c *Client) monitorFiles(ctx context.Context) {
 
 	if err := c.addWatchRecursive(watcher, c.baseDir); err != nil {
 		fmt.Println("\nCannot watch this directory (filesystem issue)")
-		fmt.Println("\nQuick fix — run these 2 commands:")
+		fmt.Println("\nQuick fix, run these commands:")
 		fmt.Println("  $ mkdir -p /tmp/shadow && cd /tmp/shadow")
 		fmt.Println("  $ shadow join <session-url>")
 		fmt.Println("\nThis will start your session in a clean directory.")

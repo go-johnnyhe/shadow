@@ -121,7 +121,7 @@ func promptLargeShareConfirmation(in io.Reader, out io.Writer, estimate shareSna
 	}
 
 	sizeMB := float64(estimate.TotalBytes) / (1024.0 * 1024.0)
-	fmt.Fprintf(out, "This directory has ~%d files (~%.1fMB). Shadow is designed for live collaboration on smaller workspaces. Continue anyway? [y/N] ", estimate.FileCount, sizeMB)
+	fmt.Fprintf(out, "  This folder has %d files (%.1fMB), which may slow things down.\n  Continue? [y/N] ", estimate.FileCount, sizeMB)
 
 	line, err := bufio.NewReader(in).ReadString('\n')
 	if err != nil && err != io.EOF {

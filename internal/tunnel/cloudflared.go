@@ -15,6 +15,8 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/go-johnnyhe/shadow/internal/ui"
 )
 
 func getCloudflaredBinary() (string, error) {
@@ -41,8 +43,7 @@ func getCloudflaredBinary() (string, error) {
 	if _, err := os.Stat(binaryPath); err == nil {
 		return binaryPath, nil
 	}
-	fmt.Println("First time setup: downloading cloudflared (~15MB)...")
-	fmt.Printf("Saving to: %s\n", binaryPath)
+	fmt.Printf("  %s\n", ui.Dim("first run: downloading tunnel binary (~15MB)..."))
 
 	var downloadURL string
 	var needsExtraction bool
@@ -101,7 +102,7 @@ func getCloudflaredBinary() (string, error) {
 		}
 	}
 
-	fmt.Println("Cloudflared downloaded successfully!")
+	fmt.Printf("  %s\n", ui.Dim("tunnel ready."))
 	return binaryPath, nil
 }
 
