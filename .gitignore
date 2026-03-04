@@ -4,6 +4,8 @@ cloudflared
 .DS_Store
 
 # Website build artifacts
+.env
+.claude/
 website/node_modules/
 website/dist/
 website/.astro/

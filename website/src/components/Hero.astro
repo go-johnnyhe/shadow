@@ -1,66 +1,91 @@
 ---
-const installCmd = "curl -sSf https://raw.githubusercontent.com/go-johnnyhe/shadow/main/install.sh | sh";
-const goInstallCmd = "go install github.com/go-johnnyhe/shadow@latest";
+const installCmd = 'curl -sSf https://raw.githubusercontent.com/go-johnnyhe/shadow/main/install.sh | sh';
 ---
 
 <section class="hero">
-  <div class="hero-inner">
-    <p class="hero-tag">Open source &middot; MIT License</p>
-    <h1 class="hero-headline">
-      <span class="line">Real-time code collaboration</span>
-      <span class="line">that works with <span class="highlight">any editor</span><span class="cursor">_</span></span>
-    </h1>
-    <p class="hero-sub">
-      Like Google Docs, but for your codebase. End-to-end encrypted,
-      zero setup, works everywhere.
-    </p>
+  <!-- Atmospheric glow — the "light source" that casts the shadows -->
+  <div class="hero-glow" aria-hidden="true"></div>
 
-    <div class="install-block">
-      <div class="install-terminal">
-        <div class="terminal-bar">
-          <span class="terminal-dot"></span>
-          <span class="terminal-dot"></span>
-          <span class="terminal-dot"></span>
-          <span class="terminal-title">Terminal</span>
-        </div>
-        <div class="terminal-body">
-          <span class="prompt">$</span>
-          <code class="install-cmd" id="install-cmd">{installCmd}</code>
-          <button class="copy-btn" id="copy-btn" aria-label="Copy install command">
-            <svg class="icon-copy" width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" stroke="currentColor" stroke-width="1.5"/>
-            </svg>
-            <svg class="icon-check" width="16" height="16" viewBox="0 0 16 16" fill="none" style="display:none">
-              <path d="M3 8.5L6.5 12L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-        </div>
+  <div class="hero-inner">
+    <!-- Left column: content -->
+    <div class="hero-content">
+      <div class="hero-badge reveal">
+        <span class="badge-dot"></span>
+        open source &middot; MIT
       </div>
-      <p class="install-alt">
-        or <code>go install github.com/go-johnnyhe/shadow@latest</code>
+
+      <h1 class="hero-title reveal reveal-d1">
+        <span class="title-shadow" aria-hidden="true">Real-time collaboration<br/>for any editor.</span>
+        <span class="title-main">Real-time collaboration<br/>for <em>any</em> editor.</span>
+      </h1>
+
+      <p class="hero-sub reveal reveal-d2">
+        Like Google Docs, but for your codebase. End-to-end encrypted. Zero config. Works everywhere you write code.
       </p>
+
+      <div class="hero-install reveal reveal-d3">
+        <div class="terminal">
+          <div class="terminal-chrome">
+            <div class="terminal-dots">
+              <i></i><i></i><i></i>
+            </div>
+            <span class="terminal-label">zsh</span>
+          </div>
+          <div class="terminal-body">
+            <span class="prompt-char">~</span>
+            <span class="prompt-arrow">&rsaquo;</span>
+            <code class="cmd" id="hero-cmd">{installCmd}</code>
+            <button class="copy-btn" id="hero-copy" aria-label="Copy to clipboard" title="Copy">
+              <svg class="ico-copy" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2"/>
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+              </svg>
+              <svg class="ico-check" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <p class="alt-install">
+          or&ensp;<code>go install github.com/go-johnnyhe/shadow@latest</code>
+        </p>
+      </div>
     </div>
+
+    <!-- Right column: ASCII art -->
+    <div class="hero-ascii reveal reveal-d4" aria-hidden="true">
+      <pre><span class="ascii-dim">      ┌──────────────────┐</span>
+<span class="ascii-dim">      │</span>  <span class="ascii-you">you</span> <span class="ascii-dim">(any editor)</span>  <span class="ascii-dim">│</span>
+<span class="ascii-dim">      └────────┬─────────┘</span>
+<span class="ascii-dim">               │</span>
+<span class="ascii-accent">          encrypted</span>
+<span class="ascii-accent">            sync</span>
+<span class="ascii-dim">               │</span>
+<span class="ascii-dim">      ┌────────┴─────────┐</span>
+<span class="ascii-dim">      │</span> <span class="ascii-you">them</span> <span class="ascii-dim">(any editor)</span> <span class="ascii-dim">│</span>
+<span class="ascii-dim">      └──────────────────┘</span></pre>
+    </div>
+  </div>
+
+  <!-- Decorative line -->
+  <div class="hero-rule reveal reveal-d5" aria-hidden="true">
+    <span class="rule-label">scroll</span>
   </div>
 </section>
 
 <script is:inline>
-  document.getElementById('copy-btn')?.addEventListener('click', function () {
-    const cmd = document.getElementById('install-cmd')?.textContent || '';
+  document.getElementById('hero-copy')?.addEventListener('click', function () {
+    const cmd = document.getElementById('hero-cmd')?.textContent || '';
     navigator.clipboard.writeText(cmd).then(() => {
-      const btn = document.getElementById('copy-btn');
+      const btn = document.getElementById('hero-copy');
       if (!btn) return;
-      const iconCopy = btn.querySelector('.icon-copy');
-      const iconCheck = btn.querySelector('.icon-check');
-      if (iconCopy) iconCopy.style.display = 'none';
-      if (iconCheck) iconCheck.style.display = 'block';
+      btn.querySelector('.ico-copy').style.display = 'none';
+      btn.querySelector('.ico-check').style.display = 'block';
       btn.classList.add('copied');
-      if (typeof posthog !== 'undefined') {
-        posthog.capture('install_command_copied');
-      }
+      if (typeof posthog !== 'undefined') posthog.capture('install_command_copied');
       setTimeout(() => {
-        if (iconCopy) iconCopy.style.display = 'block';
-        if (iconCheck) iconCheck.style.display = 'none';
+        btn.querySelector('.ico-copy').style.display = 'block';
+        btn.querySelector('.ico-check').style.display = 'none';
         btn.classList.remove('copied');
       }, 2000);
     });
@@ -69,187 +94,243 @@ const goInstallCmd = "go install github.com/go-johnnyhe/shadow@latest";
 
 <style>
   .hero {
+    position: relative;
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     justify-content: center;
-    position: relative;
-    padding-top: 4rem;
-    padding-bottom: 4rem;
-  }
-
-  .hero-inner {
-    max-width: var(--max-width);
-    width: 100%;
-    text-align: center;
-  }
-
-  .hero-tag {
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    letter-spacing: 0.05em;
-    margin-bottom: 2rem;
-    text-transform: uppercase;
-  }
-
-  .hero-headline {
-    font-family: var(--font-mono);
-    font-size: clamp(1.8rem, 5vw, 3.2rem);
-    font-weight: 700;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-    margin-bottom: 1.5rem;
-  }
-
-  .hero-headline .line {
-    display: block;
-  }
-
-  .highlight {
-    color: var(--accent);
-  }
-
-  .cursor {
-    color: var(--accent);
-    animation: blink 1s step-end infinite;
-  }
-
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-  }
-
-  .hero-sub {
-    font-size: 1.15rem;
-    color: var(--text-secondary);
-    max-width: 520px;
-    margin: 0 auto 3rem;
-    line-height: 1.7;
-  }
-
-  .install-block {
-    position: relative;
-    max-width: 640px;
-    margin: 0 auto;
-  }
-
-  /* Green glow behind install block */
-  .install-block::before {
-    content: '';
-    position: absolute;
-    inset: -40px -60px;
-    background: radial-gradient(ellipse at center, var(--accent-glow) 0%, transparent 70%);
-    z-index: -1;
-    border-radius: 50%;
-  }
-
-  .install-terminal {
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
     overflow: hidden;
   }
 
-  .terminal-bar {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 14px;
-    background: var(--bg-elevated);
-    border-bottom: 1px solid var(--border-subtle);
+  /* ——— Atmospheric glow ——— */
+  .hero-glow {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    top: -10%;
+    right: -5%;
+    background: radial-gradient(circle, rgba(34,197,94,0.06) 0%, transparent 65%);
+    filter: blur(80px);
+    pointer-events: none;
   }
 
-  .terminal-dot {
-    width: 10px;
-    height: 10px;
+  /* ——— Two-column layout ——— */
+  .hero-inner {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 4rem;
+  }
+
+  /* ——— Content ——— */
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-ghost);
+    margin-bottom: 2.5rem;
+  }
+
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent-glow-strong);
+    animation: pulse-dot 2.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--accent-glow-strong); }
+    50% { opacity: 0.5; box-shadow: 0 0 2px var(--accent-glow); }
+  }
+
+  .hero-title {
+    position: relative;
+    font-family: var(--font-display);
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+    margin-bottom: 1.75rem;
+  }
+
+  .hero-title em {
+    font-style: normal;
+    color: var(--accent);
+    position: relative;
+  }
+
+  /* The shadow duplicate — offset behind */
+  .title-shadow {
+    position: absolute;
+    inset: 0;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--shadow-text);
+    transform: translate(5px, 5px);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .title-main {
+    position: relative;
+  }
+
+  .hero-sub {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    max-width: 440px;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+  }
+
+  /* ——— Terminal install block ——— */
+  .terminal {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 560px;
+    transition: border-color 0.3s;
+  }
+  .terminal:hover {
+    border-color: var(--text-ghost);
+  }
+
+  .terminal-chrome {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--bg-deep);
+    border-bottom: 1px solid var(--border-dim);
+  }
+
+  .terminal-dots {
+    display: flex;
+    gap: 5px;
+  }
+  .terminal-dots i {
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
     background: var(--border);
   }
 
-  .terminal-title {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    color: var(--text-muted);
+  .terminal-label {
     margin-left: auto;
-    margin-right: auto;
-    padding-right: 30px;
+    font-size: 0.6rem;
+    color: var(--text-ghost);
+    letter-spacing: 0.04em;
   }
 
   .terminal-body {
     display: flex;
     align-items: center;
-    padding: 1rem 1.25rem;
-    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    gap: 0.5rem;
     overflow-x: auto;
   }
 
-  .prompt {
-    font-family: var(--font-mono);
+  .prompt-char {
     color: var(--accent);
     font-weight: 600;
     flex-shrink: 0;
   }
+  .prompt-arrow {
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-right: 0.15rem;
+  }
 
-  .install-cmd {
+  .cmd {
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-primary);
     white-space: nowrap;
     flex: 1;
-    text-align: left;
   }
 
   .copy-btn {
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text-muted);
-    cursor: pointer;
-    padding: 6px;
     flex-shrink: 0;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    color: var(--text-ghost);
+    cursor: pointer;
+    padding: 5px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    transition: all 0.2s;
   }
-
   .copy-btn:hover {
-    color: var(--text-primary);
-    border-color: var(--text-muted);
+    color: var(--text-secondary);
+    border-color: var(--border);
   }
-
   .copy-btn.copied {
     color: var(--accent);
-    border-color: var(--accent);
+    border-color: var(--accent-dim);
     background: var(--accent-glow);
   }
 
-  .install-alt {
+  .alt-install {
+    font-size: 0.72rem;
+    color: var(--text-ghost);
+    margin-top: 0.75rem;
+  }
+  .alt-install code {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    margin-top: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+  }
+
+  /* ——— ASCII diagram ——— */
+  .hero-ascii pre {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--text-ghost);
+  }
+
+  .ascii-dim { color: var(--border); }
+  .ascii-you { color: var(--text-primary); font-weight: 600; }
+  .ascii-accent { color: var(--accent); font-weight: 500; }
+
+  /* ——— Bottom rule ——— */
+  .hero-rule {
+    max-width: var(--max-w);
+    margin: 4rem auto 0;
+    width: 100%;
+    border-top: 1px solid var(--border-dim);
+    padding-top: 1rem;
     text-align: center;
   }
-
-  .install-alt code {
-    color: var(--text-secondary);
+  .rule-label {
+    font-size: 0.6rem;
+    color: var(--text-ghost);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    animation: bob 2.5s ease-in-out infinite;
+  }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(3px); }
   }
 
-  @media (max-width: 640px) {
-    .hero {
-      min-height: auto;
-      padding-top: 6rem;
-      padding-bottom: 4rem;
-    }
-
-    .install-cmd {
-      font-size: 0.72rem;
-    }
-
-    .terminal-body {
-      padding: 0.75rem 1rem;
-    }
+  @media (max-width: 768px) {
+    .hero { min-height: auto; padding: 7rem 0 3rem; }
+    .hero-inner { grid-template-columns: 1fr; gap: 3rem; }
+    .hero-ascii { display: none; }
+    .hero-title { font-size: clamp(2rem, 8vw, 3rem); }
+    .hero-sub { max-width: none; }
   }
 </style>

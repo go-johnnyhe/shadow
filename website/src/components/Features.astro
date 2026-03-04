@@ -3,37 +3,35 @@ const features = [
   {
     num: '01',
     title: 'E2E Encrypted',
-    desc: 'AES-256-GCM encryption. The server is a dumb relay that never sees your code. Keys stay in the URL fragment.',
-    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/><circle cx="12" cy="16.5" r="1.5"/></svg>`,
+    desc: 'AES-256-GCM. The server is a dumb relay — it never sees your code. The key lives in the URL fragment, never sent over the wire.',
   },
   {
     num: '02',
     title: 'Any Editor',
-    desc: 'Shadow works at the filesystem level. VS Code, Vim, Neovim, JetBrains, Zed — whatever you use, it just works.',
-    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="14" y1="4" x2="10" y2="20"/></svg>`,
+    desc: 'Shadow syncs at the filesystem level. VS Code, Vim, Neovim, Zed, JetBrains, Emacs — if it reads files, it works.',
   },
   {
     num: '03',
     title: 'Zero Setup',
-    desc: 'One curl command to install. Run shadow and an interactive wizard handles the rest. No accounts, no config files.',
-    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
+    desc: 'One curl to install. Run shadow and the interactive wizard handles the rest. No accounts, no config, no extensions.',
   },
 ];
 ---
 
-<section class="features fade-up">
+<section class="features">
   <div class="features-inner">
-    <h2 class="section-title">Built for developers</h2>
-    <div class="card-grid">
-      {features.map((f) => (
-        <div class="card">
-          <div class="card-header">
+    <h2 class="section-heading reveal" data-shadow="Built for developers">Built for developers</h2>
+
+    <div class="card-row">
+      {features.map((f, i) => (
+        <article class={`card reveal reveal-d${i + 2}`}>
+          <div class="card-num-wrap">
             <span class="card-num">{f.num}</span>
-            <span class="card-icon" set:html={f.icon} />
           </div>
           <h3 class="card-title">{f.title}</h3>
           <p class="card-desc">{f.desc}</p>
-        </div>
+          <div class="card-accent" aria-hidden="true"></div>
+        </article>
       ))}
     </div>
   </div>
@@ -41,77 +39,87 @@ const features = [
 
 <style>
   .features {
-    margin-bottom: var(--section-gap);
+    margin-bottom: var(--gap);
   }
 
   .features-inner {
-    max-width: var(--max-width);
+    max-width: var(--max-w);
     margin: 0 auto;
   }
 
-  .section-title {
-    font-family: var(--font-mono);
-    font-size: clamp(1.3rem, 3vw, 1.8rem);
-    font-weight: 600;
-    margin-bottom: 2.5rem;
-    text-align: center;
-    letter-spacing: -0.01em;
-  }
-
-  .card-grid {
+  .card-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
+    gap: 1px;
+    background: var(--border-dim);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 2.5rem;
   }
 
   .card {
     background: var(--bg-surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.75rem;
-    transition: border-color 0.2s, background 0.2s;
+    padding: 2rem 1.75rem;
+    position: relative;
+    transition: background 0.3s;
   }
 
   .card:hover {
-    border-color: var(--text-muted);
     background: var(--bg-elevated);
   }
 
-  .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.25rem;
+  /* Accent line at top of card on hover */
+  .card-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .card:hover .card-accent {
+    transform: scaleX(1);
+  }
+
+  .card-num-wrap {
+    margin-bottom: 1.5rem;
   }
 
   .card-num {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--accent);
-    font-weight: 600;
-    letter-spacing: 0.05em;
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--border);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    transition: color 0.3s;
   }
 
-  .card-icon {
-    color: var(--text-muted);
-    line-height: 0;
+  .card:hover .card-num {
+    color: var(--accent-dim);
   }
 
   .card-title {
-    font-family: var(--font-mono);
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 0.75rem;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.65rem;
   }
 
   .card-desc {
-    font-size: 0.9rem;
+    font-size: 0.82rem;
     color: var(--text-secondary);
-    line-height: 1.6;
+    line-height: 1.65;
   }
 
   @media (max-width: 768px) {
-    .card-grid {
+    .card-row {
       grid-template-columns: 1fr;
     }
   }
