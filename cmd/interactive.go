@@ -17,6 +17,12 @@ const (
 func shadowTheme() *huh.Theme {
 	t := huh.ThemeCharm()
 	cyan := lipgloss.Color("#36CFC9")
+	white := lipgloss.Color("#FFFDF5")
+
+	// Titles: clean white instead of purple
+	t.Focused.Title = t.Focused.Title.Foreground(white)
+
+	// All interactive accents: cyan instead of fuchsia
 	t.Focused.SelectSelector = t.Focused.SelectSelector.Foreground(cyan)
 	t.Focused.NextIndicator = t.Focused.NextIndicator.Foreground(cyan)
 	t.Focused.PrevIndicator = t.Focused.PrevIndicator.Foreground(cyan)
@@ -24,6 +30,12 @@ func shadowTheme() *huh.Theme {
 	t.Focused.FocusedButton = t.Focused.FocusedButton.Background(cyan)
 	t.Focused.Next = t.Focused.FocusedButton
 	t.Focused.TextInput.Prompt = t.Focused.TextInput.Prompt.Foreground(cyan)
+	t.Focused.TextInput.Cursor = t.Focused.TextInput.Cursor.Foreground(cyan)
+
+	// Selected items: cyan instead of green
+	t.Focused.SelectedOption = t.Focused.SelectedOption.Foreground(cyan)
+	t.Focused.SelectedPrefix = t.Focused.SelectedPrefix.Foreground(cyan)
+
 	return t
 }
 
@@ -59,32 +71,9 @@ func runInteractiveWizard() error {
 func runInteractiveStart() error {
 	fmt.Printf("  %s\n\n", ui.Dim("◗ shadow"))
 
-	const (
-		shareCurrentDir = "current_dir"
-		shareCustomPath = "custom_path"
-	)
-
-	shareChoice := shareCurrentDir
-	customPath := ""
-	path := "."
 	readOnlyJoiners := false
 
 	err := huh.NewForm(
-		huh.NewGroup(
-			huh.NewSelect[string]().
-				Title("What should we share?").
-				Options(
-					huh.NewOption("Entire current folder", shareCurrentDir),
-					huh.NewOption("A specific file or subfolder", shareCustomPath),
-				).
-				Value(&shareChoice),
-		),
-		huh.NewGroup(
-			huh.NewInput().
-				Title("File or subfolder path").
-				Placeholder("e.g. main.go or ./src").
-				Value(&customPath),
-		).WithHideFunc(func() bool { return shareChoice != shareCustomPath }),
 		huh.NewGroup(
 			huh.NewConfirm().
 				Title("Read-only mode for joiners?").
@@ -95,17 +84,8 @@ func runInteractiveStart() error {
 		return err
 	}
 
-	if shareChoice == shareCustomPath {
-		path = strings.TrimSpace(customPath)
-		if path == "" {
-			return fmt.Errorf("path cannot be empty for custom share mode")
-		}
-	} else {
-		path = "."
-	}
-
 	return runStart(StartOptions{
-		Path:            path,
+		Path:            ".",
 		Port:            startPort,
 		ReadOnlyJoiners: readOnlyJoiners,
 	})
