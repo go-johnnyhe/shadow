@@ -43,6 +43,9 @@ func runInteractiveWizard() error {
 	fmt.Printf("\n  %s\n  %s\n\n", ui.Bold("◗ shadow"), ui.Dim("real-time code sharing — no accounts, no setup"))
 
 	var action string
+	var readOnlyJoiners bool
+	var sessionURL string
+
 	err := huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().
@@ -53,6 +56,16 @@ func runInteractiveWizard() error {
 				).
 				Value(&action),
 		),
+		huh.NewGroup(
+			huh.NewConfirm().
+				Title("Read-only mode for joiners?").
+				Value(&readOnlyJoiners),
+		).WithHideFunc(func() bool { return action != interactiveActionStart }),
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Paste the shadow join command or URL").
+				Value(&sessionURL),
+		).WithHideFunc(func() bool { return action != interactiveActionJoin }),
 	).WithTheme(shadowTheme()).Run()
 	if err != nil {
 		return err
@@ -60,62 +73,24 @@ func runInteractiveWizard() error {
 
 	switch action {
 	case interactiveActionStart:
-		return runInteractiveStart()
+		return runStart(StartOptions{
+			Path:            ".",
+			Port:            startPort,
+			ReadOnlyJoiners: readOnlyJoiners,
+		})
 	case interactiveActionJoin:
-		return runInteractiveJoin()
+		sessionURL = strings.TrimSpace(sessionURL)
+		// Handle pasted "shadow join '<url>'" commands
+		sessionURL = strings.TrimPrefix(sessionURL, "shadow join ")
+		sessionURL = strings.Trim(sessionURL, "'\"")
+		sessionURL = strings.TrimSpace(sessionURL)
+		if sessionURL == "" {
+			return fmt.Errorf("session URL cannot be empty")
+		}
+		return runJoin(JoinOptions{
+			SessionURL: sessionURL,
+		})
 	default:
 		return fmt.Errorf("unknown action: %s", action)
 	}
-}
-
-func runInteractiveStart() error {
-	fmt.Printf("  %s\n\n", ui.Dim("◗ shadow"))
-
-	readOnlyJoiners := false
-
-	err := huh.NewForm(
-		huh.NewGroup(
-			huh.NewConfirm().
-				Title("Read-only mode for joiners?").
-				Value(&readOnlyJoiners),
-		),
-	).WithTheme(shadowTheme()).Run()
-	if err != nil {
-		return err
-	}
-
-	return runStart(StartOptions{
-		Path:            ".",
-		Port:            startPort,
-		ReadOnlyJoiners: readOnlyJoiners,
-	})
-}
-
-func runInteractiveJoin() error {
-	fmt.Printf("  %s\n\n", ui.Dim("◗ shadow"))
-
-	var sessionURL string
-
-	err := huh.NewForm(
-		huh.NewGroup(
-			huh.NewInput().
-				Title("Paste the shadow join command or URL").
-				Value(&sessionURL),
-		),
-	).WithTheme(shadowTheme()).Run()
-	if err != nil {
-		return err
-	}
-
-	sessionURL = strings.TrimSpace(sessionURL)
-	// Handle pasted "shadow join '<url>'" commands
-	sessionURL = strings.TrimPrefix(sessionURL, "shadow join ")
-	sessionURL = strings.Trim(sessionURL, "'\"")
-	sessionURL = strings.TrimSpace(sessionURL)
-	if sessionURL == "" {
-		return fmt.Errorf("session URL cannot be empty")
-	}
-	return runJoin(JoinOptions{
-		SessionURL: sessionURL,
-	})
 }

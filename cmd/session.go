@@ -121,7 +121,9 @@ func runStart(opts StartOptions) error {
 	time.Sleep(1 * time.Second)
 
 	spinDone := make(chan struct{})
+	spinExited := make(chan struct{})
 	go func() {
+		defer close(spinExited)
 		frames := []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
 		i := 0
 		for {
@@ -139,6 +141,7 @@ func runStart(opts StartOptions) error {
 
 	tunnelURL, err := tunnel.StartCloudflaredTunnel(ctx, actualPort)
 	close(spinDone)
+	<-spinExited
 	if err != nil {
 		return fmt.Errorf("failed to create tunnel: %w (server is running locally on localhost:%d)", err, actualPort)
 	}
@@ -156,14 +159,14 @@ func runStart(opts StartOptions) error {
 	fmt.Printf("  %s\n", ui.Dim("share this with your partner:"))
 	fmt.Printf("  %s", ui.Bold(joinCmd))
 	if ui.CopyToClipboard(joinCmd) {
-		fmt.Printf(" %s", ui.Dim("(copied to clipboard)"))
+		fmt.Printf("  %s", ui.Bold("✓ copied to clipboard"))
 	}
 	fmt.Print("\n\n")
 	footer := "encrypted end-to-end · ctrl+c to stop"
 	if opts.ReadOnlyJoiners {
 		footer += " · joiners are read-only"
 	}
-	fmt.Printf("  %s\n", ui.Dim(footer))
+	fmt.Printf("  %s\n", ui.Accent(footer))
 
 	var sessionFileCount atomic.Int64
 	sessionStart := time.Now()

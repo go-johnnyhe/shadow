@@ -313,7 +313,7 @@ func (c *Client) readLoop() {
 			if ok && !c.isHost {
 				c.readOnlyJoinerMode.Store(readOnly)
 				if readOnly {
-					fmt.Println(ui.Dim("read-only mode · local edits will not sync"))
+					fmt.Println(ui.Bold("read-only mode · local edits will not sync"))
 				}
 			}
 			if peerCount, ok := protocol.ParsePeerCountControl(parts[1]); ok {
