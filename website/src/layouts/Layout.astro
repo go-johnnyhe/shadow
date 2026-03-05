@@ -5,8 +5,8 @@ interface Props {
 }
 
 const {
-  title = 'Shadow — Encrypted real-time coding for any editor',
-  description = 'Share once, pair in your own tools. Shadow brings encrypted real-time coding to the CLI and VS Code without editor lock-in.',
+  title = 'Shadow — Encrypted pair programming. No lock-in.',
+  description = 'Share once, pair in your own tools. Encrypted real-time coding for CLI and VS Code. No accounts, no lock-in.',
 } = Astro.props;
 
 const posthogKey = import.meta.env.PUBLIC_POSTHOG_KEY;
@@ -22,7 +22,7 @@ const canonicalUrl = new URL(base, Astro.site ?? 'https://go-johnnyhe.github.io'
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#f3eadf" />
+    <meta name="theme-color" content="#0c0e12" />
 
     <!-- Open Graph -->
     <meta property="og:title" content={title} />

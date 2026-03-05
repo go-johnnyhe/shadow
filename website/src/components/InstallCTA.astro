@@ -4,11 +4,10 @@ import { githubUrl, installCmd, marketplaceUrl } from '../consts';
 
 <section class="cta">
   <div class="section-shell cta-inner reveal">
-    <p class="section-kicker">Launch-ready flow</p>
-    <h2 class="section-title">Start the session. Shadow handles the awkward part.</h2>
+    <p class="section-kicker">Get started</p>
+    <h2 class="section-title">Copy. Paste. You're paired.</h2>
     <p class="cta-lead">
-      The join string needs to be long because it carries the E2E key. That should not make the
-      experience feel clunky. Shadow copies the full command, and the extension keeps it visible.
+      Install once, start a session, and share the join command. Shadow copies it for you.
     </p>
 
     <div class="steps reveal r-d1">
@@ -42,7 +41,7 @@ import { githubUrl, installCmd, marketplaceUrl } from '../consts';
         data-copy-target="cli"
         data-copy-surface="website"
       >
-        <span data-copy-label>Copy CLI install</span>
+        <span data-copy-label>Copy install command</span>
       </button>
 
       <a
@@ -76,27 +75,20 @@ import { githubUrl, installCmd, marketplaceUrl } from '../consts';
 
 <style>
   .cta {
-    margin-bottom: calc(var(--gap) * 0.9);
+    margin-bottom: var(--gap);
   }
 
   .cta-inner {
-    padding: 2rem;
-    border-radius: 2rem;
-    background:
-      linear-gradient(180deg, rgba(18, 22, 29, 0.98), rgba(24, 29, 40, 0.96));
-    color: #f8f1e8;
-    box-shadow: var(--shadow-xl);
-  }
-
-  .cta-inner :global(.section-kicker),
-  .cta-inner :global(.section-title) {
-    color: #f8f1e8;
+    padding: 1.75rem 2rem;
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
   }
 
   .cta-lead {
-    max-width: 42rem;
-    margin: 1.2rem 0 1.8rem;
-    color: rgba(248, 241, 232, 0.74);
+    max-width: 36rem;
+    margin: 1rem 0 1.5rem;
+    color: var(--text-secondary);
     font-size: 1rem;
   }
 
@@ -104,45 +96,40 @@ import { githubUrl, installCmd, marketplaceUrl } from '../consts';
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1rem;
-    margin-bottom: 1.8rem;
+    margin-bottom: 1.5rem;
   }
 
   .step {
-    padding: 1.2rem;
-    border-radius: 1.3rem;
-    border: 1px solid rgba(248, 241, 232, 0.1);
-    background: rgba(255, 255, 255, 0.06);
+    padding: 1rem 1.2rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border);
+    background: var(--paper);
   }
 
   .step-n {
     display: inline-block;
-    margin-bottom: 0.7rem;
+    margin-bottom: 0.5rem;
     font-family: var(--font-mono);
     font-size: 0.75rem;
-    color: rgba(248, 241, 232, 0.52);
+    color: var(--text-muted);
     letter-spacing: 0.12em;
   }
 
   .step h3 {
-    font-size: 1.05rem;
-    margin-bottom: 0.45rem;
+    font-size: 1rem;
+    margin-bottom: 0.35rem;
   }
 
   .step p {
-    color: rgba(248, 241, 232, 0.74);
+    color: var(--text-secondary);
     line-height: 1.6;
+    font-size: 0.9rem;
   }
 
   .cta-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 0.9rem;
-  }
-
-  .cta-actions :global(.ghost-button) {
-    border-color: rgba(248, 241, 232, 0.16);
-    background: rgba(255, 255, 255, 0.06);
-    color: #f8f1e8;
   }
 
   @media (max-width: 860px) {
@@ -153,7 +140,7 @@ import { githubUrl, installCmd, marketplaceUrl } from '../consts';
 
   @media (max-width: 640px) {
     .cta-inner {
-      padding: 1.4rem;
+      padding: 1.25rem 1.4rem;
     }
 
     .cta-actions {

@@ -11,7 +11,7 @@ const rows = [
 <section class="comparison">
   <div class="section-shell comparison-inner">
     <div class="comparison-copy reveal">
-      <p class="section-kicker">Why this wins</p>
+      <p class="section-kicker">Why Shadow</p>
       <h2 class="section-title">Better than screensharing when you actually need to ship.</h2>
       <p class="section-lead">
         Shadow is for moments when one person should not have to drive and the other should not
@@ -55,10 +55,10 @@ const rows = [
 
   .table-wrap {
     border: 1px solid var(--border);
-    border-radius: 1.5rem;
+    border-radius: 1rem;
     overflow: hidden;
-    background: var(--paper);
-    box-shadow: var(--shadow-lg);
+    overflow-x: auto;
+    background: var(--bg-elevated);
   }
 
   table {
@@ -66,10 +66,6 @@ const rows = [
     border-collapse: collapse;
     font-size: 0.92rem;
     min-width: 580px;
-  }
-
-  .table-wrap {
-    overflow-x: auto;
   }
 
   thead tr {
@@ -100,7 +96,7 @@ const rows = [
     transition: background 0.2s;
   }
   tbody tr:hover {
-    background: rgba(255, 248, 240, 0.9);
+    background: var(--paper);
   }
 
   .col-label {
@@ -123,7 +119,7 @@ const rows = [
   td.col-shadow {
     color: var(--text);
     font-weight: 500;
-    background: rgba(207, 94, 28, 0.08);
+    background: var(--accent-soft);
   }
 
   @media (max-width: 640px) {

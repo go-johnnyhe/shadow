@@ -5,18 +5,17 @@ import { installCmd, marketplaceUrl } from '../consts';
 <section class="hero">
   <div class="section-shell hero-inner">
     <div class="hero-copy">
-      <span class="eyebrow-chip reveal">Encrypted sessions that feel immediate</span>
-      <p class="hero-label reveal r-d1">Pair live without making everyone switch editors.</p>
+      <span class="eyebrow-chip reveal">Real-time. Encrypted. Your editor.</span>
+      <p class="hero-label reveal r-d1">Pair in your own tools. No screen share.</p>
 
       <h1 class="hero-title reveal r-d2">
         Share once.<br />
-        Pair in <em>your own tools.</em>
+        Pair in <em>your own editor.</em>
       </h1>
 
       <p class="hero-desc reveal r-d3">
-        Shadow gives you real-time coding across the CLI and VS Code, with end-to-end
-        encryption, no accounts, and no editor lock-in. Start the session, send the copied
-        join command, and keep moving.
+        One command to share. End-to-end encrypted. No accounts. Your teammate uses whatever
+        editor they already have.
       </p>
 
       <div class="hero-actions reveal r-d4">
@@ -33,7 +32,7 @@ import { installCmd, marketplaceUrl } from '../consts';
           data-copy-surface="website"
           aria-label="Copy Shadow CLI install command"
         >
-          <span data-copy-label>Copy CLI install</span>
+          <span data-copy-label>Copy install command</span>
         </button>
 
         <a
@@ -52,23 +51,23 @@ import { installCmd, marketplaceUrl } from '../consts';
 
       <div class="hero-proof reveal r-d4">
         <article>
-          <span>Any editor underneath</span>
-          <p>Vim, VS Code, JetBrains, Zed, Neovim, whatever your team already uses.</p>
+          <span>Use any editor</span>
+          <p>Vim, VS Code, JetBrains, Zed — whatever your team already uses.</p>
         </article>
         <article>
-          <span>Clipboard-friendly handoff</span>
-          <p>Hosts get the full join command copied automatically, so the long link never becomes busywork.</p>
+          <span>Join command copied for you</span>
+          <p>No manual URL work. Shadow handles the copy step.</p>
         </article>
         <article>
-          <span>Encrypted by default</span>
-          <p>The relay never sees your code. The key lives in the URL fragment on the client side.</p>
+          <span>E2E key stays in the URL</span>
+          <p>The relay never sees your code. The key lives in the URL fragment.</p>
         </article>
       </div>
     </div>
 
     <aside class="hero-panel reveal r-d3">
       <div class="panel-header">
-        <span class="panel-eyebrow">Launch flow</span>
+        <span class="panel-eyebrow">How it works</span>
         <span class="panel-status">ready to share</span>
       </div>
 
@@ -84,8 +83,8 @@ import { installCmd, marketplaceUrl } from '../consts';
         <div class="panel-step">
           <span class="panel-num">02</span>
           <div>
-            <h2>Shadow copies the awkward part</h2>
-            <p>The join command includes the E2E key, so it is long on purpose. Shadow handles the copy step for you.</p>
+            <h2>Shadow copies it for you</h2>
+            <p>The join command includes the E2E key, so it's long on purpose. Shadow handles the copy step.</p>
           </div>
         </div>
 
@@ -98,7 +97,7 @@ import { installCmd, marketplaceUrl } from '../consts';
           <span class="panel-num">03</span>
           <div>
             <h2>Both sides edit live</h2>
-            <p>Not a screen share. Not editor lock-in. Just the same project updating in real time.</p>
+            <p>Not a screen share. Not editor lock-in. Same project updating in real time.</p>
           </div>
         </div>
       </div>
@@ -114,8 +113,8 @@ import { installCmd, marketplaceUrl } from '../consts';
 
   .hero-inner {
     display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.82fr);
-    gap: 2rem;
+    grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.9fr);
+    gap: 2.5rem;
     align-items: stretch;
   }
 
@@ -128,8 +127,8 @@ import { installCmd, marketplaceUrl } from '../consts';
 
   .hero-title {
     font-family: var(--font-display);
-    font-size: clamp(3.2rem, 7.2vw, 6rem);
-    font-weight: 400;
+    font-size: clamp(3.4rem, 7.5vw, 6.5rem);
+    font-weight: 600;
     line-height: 0.98;
     letter-spacing: -0.04em;
     margin: 1.7rem 0;
@@ -162,17 +161,12 @@ import { installCmd, marketplaceUrl } from '../consts';
     gap: 1rem;
   }
 
-  .hero-proof article,
-  .hero-panel {
-    border: 1px solid var(--border);
-    background: rgba(255, 248, 240, 0.66);
-    backdrop-filter: blur(14px);
-    box-shadow: var(--shadow-lg);
-  }
-
   .hero-proof article {
+    border: 1px solid var(--border);
+    background: var(--paper);
+    backdrop-filter: blur(14px);
+    border-radius: 0.75rem;
     padding: 1.1rem 1.1rem 1.2rem;
-    border-radius: 1.25rem;
   }
 
   .hero-proof span {
@@ -189,11 +183,12 @@ import { installCmd, marketplaceUrl } from '../consts';
   }
 
   .hero-panel {
-    border-radius: 1.8rem;
-    background:
-      linear-gradient(180deg, rgba(18, 22, 29, 0.98), rgba(22, 29, 40, 0.96));
-    color: #f8f1e8;
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    color: var(--text);
     overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03);
   }
 
   .panel-header,
@@ -206,16 +201,16 @@ import { installCmd, marketplaceUrl } from '../consts';
   .panel-header {
     justify-content: space-between;
     padding: 1.2rem 1.3rem;
-    border-bottom: 1px solid rgba(248, 241, 232, 0.1);
+    border-bottom: 1px solid var(--border);
     font-family: var(--font-mono);
     font-size: 0.73rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: rgba(248, 241, 232, 0.62);
+    color: var(--text-muted);
   }
 
   .panel-status {
-    color: #7fe1d3;
+    color: var(--accent);
   }
 
   .panel-body {
@@ -225,7 +220,7 @@ import { installCmd, marketplaceUrl } from '../consts';
   .panel-step {
     gap: 1rem;
     padding: 1rem 0;
-    border-bottom: 1px solid rgba(248, 241, 232, 0.08);
+    border-bottom: 1px solid var(--border);
   }
 
   .panel-step:last-child {
@@ -236,7 +231,7 @@ import { installCmd, marketplaceUrl } from '../consts';
   .panel-num {
     font-family: var(--font-mono);
     font-size: 0.75rem;
-    color: rgba(248, 241, 232, 0.56);
+    color: var(--text-muted);
     flex-shrink: 0;
   }
 
@@ -248,17 +243,17 @@ import { installCmd, marketplaceUrl } from '../consts';
 
   .panel-step p,
   .panel-command span {
-    color: rgba(248, 241, 232, 0.72);
+    color: var(--text-secondary);
   }
 
   .panel-command {
     flex-direction: column;
     gap: 0.65rem;
-    border: 1px solid rgba(248, 241, 232, 0.12);
-    border-radius: 1.2rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
     padding: 1rem;
     margin: 1rem 0;
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--paper);
   }
 
   .panel-command span {
@@ -272,7 +267,7 @@ import { installCmd, marketplaceUrl } from '../consts';
     font-size: 0.78rem;
     line-height: 1.65;
     word-break: break-all;
-    color: #f8f1e8;
+    color: var(--text);
   }
 
   @media (max-width: 980px) {

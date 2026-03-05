@@ -6,11 +6,10 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
 <section class="demo">
   <div class="section-shell demo-inner">
     <div class="demo-copy reveal">
-      <p class="section-kicker">Built for real handoffs</p>
-      <h2 class="section-title">This is a live project session, not a laggy screen share.</h2>
+      <p class="section-kicker">Built for real pairing</p>
+      <h2 class="section-title">Live code sync. Not a laggy screen share.</h2>
       <p class="section-lead">
         Shadow syncs the filesystem itself. Hosts stay in their editor. Joiners stay in theirs.
-        The demo below is the actual product rhythm you want people to imagine from a launch post.
       </p>
 
       <div class="demo-notes">
@@ -20,7 +19,7 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
         </article>
         <article>
           <span>Shares cleanly</span>
-          <p>The copied join command is the handoff, so nobody has to manually reconstruct the long URL.</p>
+          <p>Join command copied to your clipboard — no manual URL work.</p>
         </article>
         <article>
           <span>Stays private</span>
@@ -59,7 +58,7 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
         >
           <span data-demo-label>Pause loop</span>
         </button>
-        <p>Keep this handy for launch replies. It shows the product in one glance.</p>
+        <p>See it in action.</p>
       </div>
     </div>
   </div>
@@ -78,17 +77,18 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
   }
 
   .demo-window {
-    background: var(--surface);
-    border-radius: 1.6rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
     overflow: hidden;
-    box-shadow: var(--shadow-xl);
+    box-shadow: var(--shadow-xl), 0 0 60px rgba(34, 211, 170, 0.06);
   }
 
   .window-chrome {
     display: flex;
     align-items: center;
     padding: 0.95rem 1.1rem;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid var(--border);
   }
 
   .chrome-dots {
@@ -109,7 +109,7 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
     text-align: center;
     font-family: var(--font-mono);
     font-size: 0.68rem;
-    color: rgba(255,255,255,0.4);
+    color: var(--text-muted);
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
@@ -130,7 +130,7 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
   .demo-notes article,
   .demo-footer {
     border: 1px solid var(--border);
-    border-radius: 1.2rem;
+    border-radius: 0.75rem;
     background: var(--paper);
     backdrop-filter: blur(12px);
   }
