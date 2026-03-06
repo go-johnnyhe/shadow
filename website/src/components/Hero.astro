@@ -6,34 +6,38 @@ import { installCmd, marketplaceUrl } from '../consts';
   <div class="section-shell hero-inner">
     <div class="hero-copy">
       <span class="eyebrow-chip reveal">Real-time. Encrypted. Your editor.</span>
-      <p class="hero-label reveal r-d1">Pair in your own tools. No screen share.</p>
 
-      <h1 class="hero-title reveal r-d2">
+      <h1 class="hero-title reveal r-d1">
         Share once.<br />
         Pair in <em>your own editor.</em>
       </h1>
 
-      <p class="hero-desc reveal r-d3">
+      <p class="hero-desc reveal r-d2">
         One command to share. End-to-end encrypted. No accounts. Your teammate uses whatever
         editor they already have.
       </p>
 
-      <div class="hero-actions reveal r-d4">
-        <button
-          type="button"
-          class="primary-button"
-          data-cta
-          data-cta-source="hero"
-          data-cta-target="cli"
-          data-cta-surface="website"
-          data-copy-text={installCmd}
-          data-copy-source="hero"
-          data-copy-target="cli"
-          data-copy-surface="website"
-          aria-label="Copy Shadow CLI install command"
-        >
-          <span data-copy-label>Copy install command</span>
-        </button>
+      <div class="hero-actions reveal r-d3">
+        <div class="hero-install">
+          <div class="cmd-preview">
+            <code>{installCmd}</code>
+            <button
+              type="button"
+              class="cmd-copy-btn"
+              data-cta
+              data-cta-source="hero"
+              data-cta-target="cli"
+              data-cta-surface="website"
+              data-copy-text={installCmd}
+              data-copy-source="hero"
+              data-copy-target="cli"
+              data-copy-surface="website"
+              aria-label="Copy Shadow CLI install command"
+            >
+              <span data-copy-label>Copy</span>
+            </button>
+          </div>
+        </div>
 
         <a
           href={marketplaceUrl}
@@ -45,7 +49,7 @@ import { installCmd, marketplaceUrl } from '../consts';
           data-cta-target="vscode_marketplace"
           data-cta-surface="website"
         >
-          Install VS Code extension
+          or install the VS Code extension &rarr;
         </a>
       </div>
     </div>
@@ -70,12 +74,6 @@ import { installCmd, marketplaceUrl } from '../consts';
     flex-direction: column;
     align-items: center;
     max-width: 52rem;
-  }
-
-  .hero-label {
-    margin: 1.5rem 0 0;
-    font-size: 1.1rem;
-    color: var(--text-secondary);
   }
 
   .hero-title {
@@ -103,9 +101,68 @@ import { installCmd, marketplaceUrl } from '../consts';
 
   .hero-actions {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     gap: 1rem;
+  }
+
+  .hero-install {
+    width: 100%;
+    max-width: 38rem;
+  }
+
+  .cmd-preview {
+    display: flex;
+    align-items: stretch;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-elevated);
+    overflow: hidden;
+  }
+
+  .cmd-preview code {
+    flex: 1;
+    padding: 0.85rem 1.15rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+  }
+
+  .cmd-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem 1.4rem;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.88rem;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .cmd-copy-btn:hover {
+    background: var(--accent-strong);
+  }
+
+  .hero-actions .secondary-button {
+    border: none;
+    padding: 0.5rem 0;
+    min-height: auto;
+    font-size: 0.92rem;
+    color: var(--text-muted);
+  }
+
+  .hero-actions .secondary-button:hover {
+    color: var(--text);
+    background: transparent;
+    transform: none;
   }
 
   @media (max-width: 640px) {
@@ -117,14 +174,8 @@ import { installCmd, marketplaceUrl } from '../consts';
       margin-top: 1.25rem;
     }
 
-    .hero-actions {
-      flex-direction: column;
-      width: 100%;
-      max-width: 22rem;
-    }
-
-    .hero-actions > * {
-      width: 100%;
+    .cmd-preview code {
+      font-size: 0.72rem;
     }
   }
 </style>

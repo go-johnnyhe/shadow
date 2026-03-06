@@ -1,47 +1,55 @@
 ---
-import { githubUrl, installCmd, marketplaceUrl } from '../consts';
+import { githubUrl } from '../consts';
 ---
 
 <section class="cta">
   <div class="section-shell cta-inner reveal">
     <p class="section-kicker">Get started</p>
-    <h2 class="section-title">Copy. Paste. You're paired.</h2>
+    <h2 class="section-title">Pair in under 60 seconds.</h2>
     <p class="cta-lead">
-      Install once, start a session, and share the join command. Shadow handles the rest.
+      That's it. No accounts, no auth flow, no new editor to learn.
     </p>
 
-    <div class="cta-actions reveal r-d1">
-      <button
-        type="button"
-        class="primary-button"
-        data-cta
-        data-cta-source="final_cta"
-        data-cta-target="cli"
-        data-cta-surface="website"
-        data-copy-text={installCmd}
-        data-copy-source="final_cta"
-        data-copy-target="cli"
-        data-copy-surface="website"
-      >
-        <span data-copy-label>Copy install command</span>
-      </button>
+    <div class="quick-steps reveal r-d1">
+      <div class="qs-step">
+        <span class="qs-num">1</span>
+        <div>
+          <p class="qs-title">Install</p>
+          <p class="qs-desc">Run the install script or grab the VS Code extension.</p>
+        </div>
+      </div>
+      <div class="qs-step">
+        <span class="qs-num">2</span>
+        <div>
+          <p class="qs-title">Start a session</p>
+          <p class="qs-desc">Run <code>shadow start .</code> — the join command auto-copies to your clipboard.</p>
+        </div>
+      </div>
+      <div class="qs-step">
+        <span class="qs-num">3</span>
+        <div>
+          <p class="qs-title">Send it to a friend</p>
+          <p class="qs-desc">They paste the command and start editing in their own editor, instantly.</p>
+        </div>
+      </div>
+    </div>
 
+    <div class="cta-links reveal r-d2">
       <a
-        href={marketplaceUrl}
-        class="secondary-button"
+        href={`${githubUrl}#readme`}
+        class="ghost-button"
         target="_blank"
         rel="noopener noreferrer"
         data-cta
         data-cta-source="final_cta"
-        data-cta-target="vscode_marketplace"
+        data-cta-target="github_docs"
         data-cta-surface="website"
       >
-        Install VS Code extension
+        Read the docs on GitHub &rarr;
       </a>
-
       <a
         href={githubUrl}
-        class="ghost-button"
+        class="cta-star"
         target="_blank"
         rel="noopener noreferrer"
         data-cta
@@ -49,7 +57,7 @@ import { githubUrl, installCmd, marketplaceUrl } from '../consts';
         data-cta-target="github"
         data-cta-surface="website"
       >
-        View on GitHub
+        Star the repo &middot; it helps others find Shadow
       </a>
     </div>
   </div>
@@ -69,28 +77,87 @@ import { githubUrl, installCmd, marketplaceUrl } from '../consts';
 
   .cta-lead {
     max-width: 36rem;
-    margin: 1.25rem 0 3rem;
+    margin: 1.25rem 0 0;
     color: var(--text-secondary);
     font-size: 1.15rem;
     line-height: 1.6;
   }
 
-  .cta-actions {
+  .quick-steps {
     display: flex;
-    flex-wrap: wrap;
+    gap: 2.5rem;
+    margin: 3.5rem 0;
+    text-align: left;
+    width: 100%;
+    max-width: 48rem;
+  }
+
+  .qs-step {
+    flex: 1;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .qs-num {
+    display: flex;
+    align-items: center;
     justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .qs-title {
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+    font-size: 0.95rem;
+  }
+
+  .qs-desc {
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
+  .qs-desc code {
+    font-size: 0.82rem;
+    padding: 0.15rem 0.4rem;
+    background: var(--paper-strong);
+    border-radius: 0.25rem;
+    color: var(--text);
+  }
+
+  .cta-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: 1rem;
   }
 
-  @media (max-width: 640px) {
-    .cta-actions {
-      flex-direction: column;
-      width: 100%;
-      max-width: 22rem;
-    }
+  .cta-star {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    transition: color 0.2s ease;
+  }
 
-    .cta-actions > * {
-      width: 100%;
+  .cta-star:hover {
+    color: var(--text-secondary);
+    opacity: 1;
+  }
+
+  @media (max-width: 768px) {
+    .quick-steps {
+      flex-direction: column;
+      gap: 1.5rem;
     }
   }
 </style>
