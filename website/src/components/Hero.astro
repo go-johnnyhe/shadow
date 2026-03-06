@@ -5,20 +5,23 @@ import { installCmd, marketplaceUrl } from '../consts';
 <section class="hero">
   <div class="section-shell hero-inner">
     <div class="hero-copy">
-      <span class="eyebrow-chip reveal">Real-time. Encrypted. Your editor.</span>
-
-      <h1 class="hero-title reveal r-d1">
-        Share once.<br />
-        Pair in <em>your own editor.</em>
+      <h1 class="hero-title reveal">
+        Screensharing ≠<br />pair programming.
       </h1>
 
-      <p class="hero-desc reveal r-d2">
-        One command to share. End-to-end encrypted. No accounts. Your teammate uses whatever
-        editor they already have.
+      <p class="hero-desc reveal r-d1">
+      <span class="desc-muted">Most "pairing" is one person driving. The other is <em class="desc-highlight">stuck</em> in someone else’s setup.</span>
+      <br />
+        <span class="desc-bright">Shadow lets both of you edit live, in your own editor.</span>
       </p>
 
-      <div class="hero-actions reveal r-d3">
+      <p class="editor-support reveal r-d1">
+        VS Code · Neovim · Vim · JetBrains · Zed — keep your setup.
+      </p>
+
+      <div class="hero-actions reveal r-d2">
         <div class="hero-install">
+          <span class="install-label">Install Shadow CLI</span>
           <div class="cmd-preview">
             <code>{installCmd}</code>
             <button
@@ -49,7 +52,7 @@ import { installCmd, marketplaceUrl } from '../consts';
           data-cta-target="vscode_marketplace"
           data-cta-surface="website"
         >
-          or install the VS Code extension &rarr;
+          Prefer VS Code? Install the extension &rarr;
         </a>
       </div>
     </div>
@@ -58,52 +61,75 @@ import { installCmd, marketplaceUrl } from '../consts';
 
 <style>
   .hero {
-    padding-top: clamp(6.5rem, 15vw, 12rem);
-    padding-bottom: clamp(4rem, 10vw, 8rem);
+    padding-top: clamp(8rem, 18vh, 16rem);
+    padding-bottom: clamp(5rem, 12vh, 10rem);
   }
 
   .hero-inner {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
   }
 
   .hero-copy {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    max-width: 52rem;
+    align-items: flex-start;
   }
 
   .hero-title {
     font-family: var(--font-display);
-    font-size: clamp(2.8rem, 6.5vw, 5.5rem);
-    font-weight: 600;
-    line-height: 1.05;
+    font-size: clamp(2.8rem, 7vw, 5rem);
+    font-weight: 700;
+    line-height: 1.08;
     letter-spacing: -0.04em;
-    margin: 1.5rem 0;
     color: var(--text);
-  }
-
-  .hero-title em {
-    font-style: normal;
-    color: var(--accent);
   }
 
   .hero-desc {
     font-size: 1.25rem;
-    color: var(--text-secondary);
-    max-width: 42rem;
-    margin-bottom: 2.8rem;
-    line-height: 1.6;
+    line-height: 1.7;
+    margin-top: 2rem;
+    max-width: 44rem;
+  }
+
+  .desc-muted {
+    color: var(--text-muted);
+  }
+
+  .desc-highlight {
+    color: var(--text);
+    font-style: italic;
+  }
+
+  .desc-bright {
+    color: var(--text);
+  }
+
+  .editor-support {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    margin-top: 1rem;
+  }
+
+  .install-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
   }
 
   .hero-actions {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: 1rem;
+    margin-top: 3.5rem;
   }
 
   .hero-install {
@@ -168,10 +194,19 @@ import { installCmd, marketplaceUrl } from '../consts';
   @media (max-width: 640px) {
     .hero {
       padding-top: 5.5rem;
+      padding-bottom: 4rem;
     }
 
     .hero-title {
-      margin-top: 1.25rem;
+      font-size: clamp(2.2rem, 9vw, 2.8rem);
+    }
+
+    .hero-desc {
+      font-size: 1.1rem;
+    }
+
+    .editor-support {
+      font-size: 0.72rem;
     }
 
     .cmd-preview code {
