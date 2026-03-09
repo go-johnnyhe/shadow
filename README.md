@@ -11,6 +11,8 @@ Screensharing ≠ pair programming. Most "pairing" is one person driving while t
 
 Download [Shadow.dmg](https://github.com/go-johnnyhe/shadow/releases/latest/download/Shadow.dmg) from the latest release. Open it, drag Shadow to Applications, and you're done.
 
+> **First launch:** If macOS says it can't verify the app, right-click Shadow.app and select **Open**, then click **Open** again.
+
 The app lives in your menu bar — click Start, pick a folder, and send the link.
 
 ### CLI
