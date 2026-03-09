@@ -1,40 +1,26 @@
 ---
-import { githubUrl } from '../consts';
+import { dmgUrl, githubUrl } from '../consts';
 ---
 
-<section class="cta">
+<section class="cta" id="install">
   <div class="section-shell cta-inner reveal">
-    <p class="section-kicker">Get started</p>
-    <h2 class="section-title">Pair in under 60 seconds.</h2>
+    <h2 class="section-title">You've scrolled this far.</h2>
     <p class="cta-lead">
-      That's it. No accounts, no auth flow, no new editor to learn.
+      Next time someone says "let's pair," try Shadow.
+      Download, click Start, send the link.
     </p>
 
-    <div class="quick-steps reveal r-d1">
-      <div class="qs-step">
-        <span class="qs-num">1</span>
-        <div>
-          <p class="qs-title">Install</p>
-          <p class="qs-desc">Run the install script or grab the VS Code extension.</p>
-        </div>
-      </div>
-      <div class="qs-step">
-        <span class="qs-num">2</span>
-        <div>
-          <p class="qs-title">Start a session</p>
-          <p class="qs-desc">Run <code>shadow start .</code> — the join command auto-copies to your clipboard.</p>
-        </div>
-      </div>
-      <div class="qs-step">
-        <span class="qs-num">3</span>
-        <div>
-          <p class="qs-title">Send it to a friend</p>
-          <p class="qs-desc">They paste the command and start editing in their own editor, instantly.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="cta-links reveal r-d2">
+    <div class="cta-actions reveal r-d1">
+      <a
+        href={dmgUrl}
+        class="primary-button"
+        data-cta
+        data-cta-source="final_cta"
+        data-cta-target="download_mac"
+        data-cta-surface="website"
+      >
+        Download for Mac
+      </a>
       <a
         href={`${githubUrl}#readme`}
         class="ghost-button"
@@ -47,9 +33,14 @@ import { githubUrl } from '../consts';
       >
         Read the docs on GitHub &rarr;
       </a>
+    </div>
+
+    <div class="cta-muted reveal r-d2">
+      <span>Also available as a <a href={`${githubUrl}#install`} class="muted-link" target="_blank" rel="noopener noreferrer">CLI</a></span>
+      <span class="sep">&middot;</span>
       <a
         href={githubUrl}
-        class="cta-star"
+        class="muted-link"
         target="_blank"
         rel="noopener noreferrer"
         data-cta
@@ -57,7 +48,7 @@ import { githubUrl } from '../consts';
         data-cta-target="github"
         data-cta-surface="website"
       >
-        Star the repo &middot; it helps others find Shadow
+        Star the repo &mdash; it helps others find Shadow
       </a>
     </div>
   </div>
@@ -77,87 +68,45 @@ import { githubUrl } from '../consts';
 
   .cta-lead {
     max-width: 36rem;
-    margin: 1.25rem 0 0;
+    margin: 1.25rem 0 2.5rem;
     color: var(--text-secondary);
     font-size: 1.15rem;
     line-height: 1.6;
   }
 
-  .quick-steps {
-    display: flex;
-    gap: 2.5rem;
-    margin: 3.5rem 0;
-    text-align: left;
-    width: 100%;
-    max-width: 48rem;
-  }
-
-  .qs-step {
-    flex: 1;
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-  }
-
-  .qs-num {
+  .cta-actions {
     display: flex;
     align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
     justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    background: var(--accent-soft);
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    font-weight: 600;
-    flex-shrink: 0;
-    margin-top: 0.1rem;
   }
 
-  .qs-title {
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 0.3rem;
-    font-size: 0.95rem;
-  }
-
-  .qs-desc {
-    color: var(--text-secondary);
-    font-size: 0.88rem;
-    line-height: 1.55;
-  }
-
-  .qs-desc code {
-    font-size: 0.82rem;
-    padding: 0.15rem 0.4rem;
-    background: var(--paper-strong);
-    border-radius: 0.25rem;
-    color: var(--text);
-  }
-
-  .cta-links {
+  .cta-muted {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
-  .cta-star {
-    font-size: 0.88rem;
-    color: var(--text-muted);
+  .muted-link {
+    color: var(--text-secondary);
+    text-decoration: underline;
+    text-decoration-color: var(--border-strong);
+    text-underline-offset: 2px;
     transition: color 0.2s ease;
   }
 
-  .cta-star:hover {
-    color: var(--text-secondary);
+  .muted-link:hover {
+    color: var(--text);
     opacity: 1;
   }
 
-  @media (max-width: 768px) {
-    .quick-steps {
-      flex-direction: column;
-      gap: 1.5rem;
-    }
+  .sep {
+    color: var(--border-strong);
   }
 </style>

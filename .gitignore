@@ -16,3 +16,9 @@ vscode-extension/node_modules/
 vscode-extension/out/
 vscode-extension/*.vsix
 vscode-extension/*.tgz
+
+# macOS app build artifacts
+macos/build/
+macos/DerivedData/
+macos/**/*.xcuserdata
+macos/**/*.xcworkspacedata

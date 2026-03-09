@@ -1,0 +1,444 @@
+---
+---
+
+<div class="mockup-wrap">
+  <!-- Menu bar strip -->
+  <!-- <div class="menubar"> -->
+  <!--   <div class="menubar-inner"> -->
+  <!--     <div class="menubar-icon" aria-hidden="true"> -->
+  <!--       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"> -->
+  <!--         <circle cx="7" cy="7" r="5" fill="#22d3aa" opacity="0.9"/> -->
+  <!--         <circle cx="7" cy="7" r="2.5" fill="#22d3aa"/> -->
+  <!--       </svg> -->
+  <!--     </div> -->
+  <!--   </div> -->
+  <!-- </div> -->
+  <!---->
+  <!-- Popover arrow -->
+  <div class="popover-arrow" aria-hidden="true"></div>
+
+  <!-- Popover body -->
+  <div class="popover">
+    <!-- Idle State -->
+    <div class="state state-idle">
+      <div class="pop-header">
+        <div class="app-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect width="28" height="28" rx="6" fill="rgba(34,211,170,0.12)"/>
+            <circle cx="14" cy="14" r="6" fill="#22d3aa" opacity="0.8"/>
+            <circle cx="14" cy="14" r="3" fill="#1e1e1e"/>
+          </svg>
+        </div>
+        <div class="app-meta">
+          <span class="app-title">Shadow</span>
+          <span class="app-subtitle">Real-time file collaboration</span>
+        </div>
+      </div>
+
+      <div class="pop-divider"></div>
+
+      <div class="pop-actions">
+        <button class="mac-btn mac-btn-blue start-btn" type="button" tabindex="-1">Start Session</button>
+        <button class="mac-btn mac-btn-secondary" type="button" tabindex="-1">Join Session</button>
+      </div>
+
+      <label class="checkbox-row">
+        <span class="checkbox-box" aria-hidden="true">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M2 5.5L4 7.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="checkbox-label">Read-only for joiners</span>
+      </label>
+
+      <div class="pop-divider"></div>
+
+      <div class="pop-footer">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="lock-icon">
+          <rect x="2" y="4.5" width="6" height="4.5" rx="1" fill="#6b7280"/>
+          <path d="M3.5 4.5V3C3.5 1.62 4.34 1 5 1C5.66 1 6.5 1.62 6.5 3V4.5" stroke="#6b7280" stroke-width="1" fill="none" stroke-linecap="round"/>
+        </svg>
+        <span>End-to-end encrypted</span>
+      </div>
+    </div>
+
+    <!-- Active State -->
+    <div class="state state-active">
+      <div class="status-bar">
+        <span class="status-dot"></span>
+        <span class="status-text">Sharing</span>
+      </div>
+
+      <div class="pop-divider"></div>
+
+      <div class="info-rows">
+        <div class="info-row">
+          <span class="info-label">Directory</span>
+          <span class="info-value">~/project</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Role</span>
+          <span class="info-value">Host</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Files synced</span>
+          <span class="info-value info-value-accent">12</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Security</span>
+          <span class="info-value info-value-accent">E2E encrypted</span>
+        </div>
+      </div>
+
+      <div class="pop-divider"></div>
+
+      <div class="active-actions">
+        <button class="mac-btn mac-btn-blue mac-btn-full" type="button" tabindex="-1">Copy Invite Link</button>
+        <button class="mac-btn mac-btn-danger mac-btn-full" type="button" tabindex="-1">Stop Session</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ambient glow -->
+  <div class="mockup-glow" aria-hidden="true"></div>
+</div>
+
+<style>
+  .mockup-wrap {
+    position: relative;
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  /* ---- Menu Bar Strip ---- */
+  .menubar {
+    width: 280px;
+    height: 26px;
+    background: rgba(30, 30, 30, 0.7);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-radius: 6px 6px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: none;
+  }
+
+  .menubar-inner {
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+  }
+
+  .menubar-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: menuIconPulse 8s ease-in-out infinite;
+  }
+
+  @keyframes menuIconPulse {
+    0%, 37.5% { opacity: 1; }
+    43.75%, 87.5% { opacity: 1; filter: drop-shadow(0 0 4px rgba(34, 211, 170, 0.6)); }
+    100% { opacity: 1; }
+  }
+
+  /* ---- Popover Arrow ---- */
+  .popover-arrow {
+    width: 16px;
+    height: 8px;
+    position: relative;
+    right: -100px;
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    background: rgba(30, 30, 30, 0.85);
+  }
+
+  /* ---- Popover Body ---- */
+  .popover {
+    position: relative;
+    width: 280px;
+    background: rgba(30, 30, 30, 0.85);
+    backdrop-filter: blur(20px) saturate(1.5);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 24px 80px rgba(0, 0, 0, 0.55),
+      0 0 1px rgba(255, 255, 255, 0.1) inset;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---- State Cycling ---- */
+  .state {
+    padding: 14px;
+  }
+
+  .state-idle {
+    animation: idleState 8s ease-in-out infinite;
+  }
+
+  .state-active {
+    position: absolute;
+    inset: 0;
+    padding: 14px;
+    animation: activeState 8s ease-in-out infinite;
+  }
+
+  @keyframes idleState {
+    0% { opacity: 1; transform: translateY(0); }
+    34% { opacity: 1; transform: translateY(0); }
+    42% { opacity: 0; transform: translateY(-6px); }
+    84% { opacity: 0; transform: translateY(6px); }
+    94% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes activeState {
+    0% { opacity: 0; transform: translateY(6px); }
+    34% { opacity: 0; transform: translateY(6px); }
+    44% { opacity: 1; transform: translateY(0); }
+    82% { opacity: 1; transform: translateY(0); }
+    92% { opacity: 0; transform: translateY(-6px); }
+    100% { opacity: 0; transform: translateY(6px); }
+  }
+
+  /* ---- Start Button Pulse ---- */
+  .start-btn {
+    animation: startPulse 8s ease-in-out infinite;
+  }
+
+  @keyframes startPulse {
+    0%, 25% { box-shadow: 0 0 0 0 rgba(10, 132, 255, 0); }
+    28% { box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.35); }
+    32% { box-shadow: 0 0 0 0 rgba(10, 132, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(10, 132, 255, 0); }
+  }
+
+  /* ---- Shared Elements ---- */
+  .pop-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .app-icon {
+    flex-shrink: 0;
+  }
+
+  .app-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .app-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f0f0f0;
+    letter-spacing: -0.01em;
+  }
+
+  .app-subtitle {
+    font-size: 11px;
+    color: #8e8e93;
+    letter-spacing: -0.01em;
+  }
+
+  .pop-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 0 -14px;
+    margin-bottom: 12px;
+  }
+
+  /* ---- macOS Buttons ---- */
+  .mac-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    padding: 0 14px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 500;
+    font-family: inherit;
+    letter-spacing: -0.01em;
+    cursor: default;
+    border: none;
+    transition: filter 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .mac-btn-blue {
+    background: #0A84FF;
+    color: #fff;
+  }
+
+  .mac-btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f0f0f0;
+    border: 0.5px solid rgba(255, 255, 255, 0.15);
+  }
+
+  .mac-btn-danger {
+    background: transparent;
+    color: #FF453A;
+    border: 0.5px solid rgba(255, 69, 58, 0.4);
+  }
+
+  .mac-btn-full {
+    width: 100%;
+  }
+
+  /* ---- Idle-State Layout ---- */
+  .pop-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 12px;
+    cursor: default;
+  }
+
+  .checkbox-box {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background: #0A84FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .checkbox-label {
+    font-size: 11.5px;
+    color: #d1d1d6;
+    letter-spacing: -0.01em;
+  }
+
+  .pop-footer {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding-top: 0;
+  }
+
+  .pop-footer span {
+    font-size: 10.5px;
+    color: #636366;
+    letter-spacing: -0.01em;
+  }
+
+  .lock-icon {
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+
+  /* ---- Active-State Layout ---- */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22d3aa;
+    box-shadow: 0 0 0 3px rgba(34, 211, 170, 0.2);
+    animation: dotPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes dotPulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(34, 211, 170, 0.2); }
+    50% { box-shadow: 0 0 0 5px rgba(34, 211, 170, 0.1); }
+  }
+
+  .status-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #22d3aa;
+    letter-spacing: -0.01em;
+  }
+
+  .info-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .info-label {
+    font-size: 11.5px;
+    color: #8e8e93;
+    letter-spacing: -0.01em;
+  }
+
+  .info-value {
+    font-size: 11.5px;
+    color: #d1d1d6;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  .info-value-accent {
+    color: #22d3aa;
+  }
+
+  .active-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ---- Ambient Glow ---- */
+  .mockup-glow {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: radial-gradient(circle, rgba(34, 211, 170, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 900px) {
+    .mockup-wrap {
+      transform: scale(0.92);
+      transform-origin: top center;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .mockup-wrap {
+      transform: scale(0.85);
+      transform-origin: top center;
+    }
+  }
+</style>

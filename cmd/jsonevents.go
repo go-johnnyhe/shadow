@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"os"
 	"time"
+
+	"github.com/go-johnnyhe/shadow/internal/tunnel"
 )
 
 // Event name constants — single source of truth for the JSON protocol.
@@ -18,6 +20,8 @@ const (
 	EventReadOnly         = "read_only"
 	EventWarning          = "warning"
 	EventError            = "error"
+	EventDownloadingDep   = "downloading_dependency"
+	EventDependencyReady  = "dependency_ready"
 )
 
 // JSONEvent represents a structured event emitted in --json mode.
@@ -53,5 +57,14 @@ func jsonOnEvent(jsonMode bool) func(string, string, string) {
 	}
 	return func(eventType, relPath, message string) {
 		emitJSON(JSONEvent{Event: eventType, RelPath: relPath, Message: message})
+	}
+}
+
+func tunnelStatusReporter(jsonMode bool) tunnel.StatusReporter {
+	if !jsonMode {
+		return nil
+	}
+	return func(event, message string) {
+		emitJSON(JSONEvent{Event: event, Message: message})
 	}
 }

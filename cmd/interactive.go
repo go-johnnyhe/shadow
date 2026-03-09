@@ -8,6 +8,7 @@ import (
 
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/go-johnnyhe/shadow/internal/runtimehome"
 	"github.com/go-johnnyhe/shadow/internal/ui"
 )
 
@@ -42,16 +43,14 @@ func shadowTheme() *huh.Theme {
 }
 
 func showFirstRunWelcome() {
-	homeDir, err := os.UserHomeDir()
+	runtimeDir, err := runtimehome.Ensure()
 	if err != nil {
 		return
 	}
-	sentinel := filepath.Join(homeDir, ".shadow", ".welcome")
+	sentinel := filepath.Join(runtimeDir, ".welcome")
 	if _, err := os.Stat(sentinel); err == nil {
 		return
 	}
-	// Ensure ~/.shadow/ exists (may already from cloudflared setup)
-	os.MkdirAll(filepath.Join(homeDir, ".shadow"), 0755)
 
 	fmt.Println()
 	fmt.Println("  Welcome to shadow!")
@@ -66,7 +65,7 @@ func showFirstRunWelcome() {
 	fmt.Println("  To get started, cd into the project you want to share and run: shadow")
 	fmt.Println()
 
-	os.WriteFile(sentinel, []byte{}, 0644)
+	os.WriteFile(sentinel, []byte{}, 0o644)
 }
 
 func runInteractiveWizard() error {

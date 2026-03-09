@@ -1,24 +1,22 @@
 ---
-import { githubUrl, marketplaceUrl } from '../consts';
+import { dmgUrl, githubUrl, marketplaceUrl } from '../consts';
 ---
 
 <footer class="footer">
   <div class="section-shell footer-inner">
     <div>
       <span class="footer-name">Shadow</span>
-      <p class="footer-copy">Encrypted pair programming for any editor.</p>
+      <p class="footer-copy">Pair programming without the editor hostage situation.</p>
     </div>
     <div class="footer-links">
       <a
-        href={marketplaceUrl}
-        target="_blank"
-        rel="noopener noreferrer"
+        href={dmgUrl}
         data-cta
         data-cta-source="footer"
-        data-cta-target="vscode_marketplace"
+        data-cta-target="download_mac"
         data-cta-surface="website"
       >
-        VS Code
+        Download
       </a>
       <span class="sep">&middot;</span>
       <a
@@ -31,6 +29,18 @@ import { githubUrl, marketplaceUrl } from '../consts';
         data-cta-surface="website"
       >
         GitHub
+      </a>
+      <span class="sep">&middot;</span>
+      <a
+        href={marketplaceUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        data-cta
+        data-cta-source="footer"
+        data-cta-target="vscode_marketplace"
+        data-cta-surface="website"
+      >
+        VS Code
       </a>
       <span class="sep">&middot;</span>
       <span>MIT License</span>

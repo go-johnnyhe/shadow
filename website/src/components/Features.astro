@@ -1,14 +1,24 @@
 ---
-import { installCmd, marketplaceUrl } from '../consts';
-
 const features = [
   {
-    title: 'Any editor under the hood',
-    desc: 'Shadow syncs the project itself, so one person can stay in Vim while the other joins from VS Code or JetBrains.',
+    title: 'Any editor, full control',
+    desc: "Your teammate's Vim config doesn't affect your VS Code. Shadow syncs the files underneath — everyone keeps their own setup, keybindings, and extensions.",
+    accent: true,
   },
   {
-    title: 'The long link is doing real work',
-    desc: 'It carries the E2E key in the URL fragment. That is why it looks long, and why the relay never gets the secret.',
+    title: 'Zero-knowledge encryption',
+    desc: "The encryption key lives in the URL fragment — it never touches the server. The relay sees ciphertext. Not even we can read your code.",
+    accent: false,
+  },
+  {
+    title: 'No accounts. Ever.',
+    desc: 'No email, no OAuth, no onboarding wizard. Download, click Start, pair. The code is MIT-licensed and fully open source.',
+    accent: false,
+  },
+  {
+    title: 'Lightweight by design',
+    desc: 'A native macOS app that sits in your menu bar. No Electron. Start sessions without touching a terminal or leaving your editor.',
+    accent: true,
   },
 ];
 ---
@@ -16,68 +26,12 @@ const features = [
 <section class="features">
   <div class="section-shell features-inner">
     <div class="feature-intro reveal">
-      <p class="section-kicker">Installation</p>
-      <h2 class="section-title">Zero friction for your team.</h2>
-      <p class="section-lead">
-        Lead with the path that matches the person in front of you. The CLI works everywhere.
-        The VS Code extension brings Shadow directly into their editor.
-      </p>
-    </div>
-
-    <div class="paths-grid">
-      <article class="bento-card cli reveal r-d1">
-        <span class="path-label">Standalone CLI</span>
-        <h3>Terminal install</h3>
-        <p>
-          Best when you want the fastest path to a live session. Install once, run `shadow`, and
-          keep using the editor you already love.
-        </p>
-        <div class="code-wrap">
-          <code>{installCmd}</code>
-          <button
-            type="button"
-            class="primary-button"
-            data-cta
-            data-cta-source="install_paths"
-            data-cta-target="cli"
-            data-cta-surface="website"
-            data-copy-text={installCmd}
-            data-copy-source="install_paths"
-            data-copy-target="cli"
-            data-copy-surface="website"
-          >
-            <span data-copy-label>Copy</span>
-          </button>
-        </div>
-      </article>
-
-      <article class="bento-card vscode reveal r-d2">
-        <span class="path-label">Native Extension</span>
-        <h3>VS Code Marketplace</h3>
-        <p>
-          Start, join, retry, and copy the share command from the Activity Bar. Great for teammates
-          who want the product to feel native immediately.
-        </p>
-        <div class="code-wrap align-bottom">
-          <a
-            href={marketplaceUrl}
-            class="ghost-button"
-            target="_blank"
-            rel="noopener noreferrer"
-            data-cta
-            data-cta-source="install_paths"
-            data-cta-target="vscode_marketplace"
-            data-cta-surface="website"
-          >
-            Open VS Code Marketplace
-          </a>
-        </div>
-      </article>
+      <h2 class="section-title">The details that matter.</h2>
     </div>
 
     <div class="features-grid">
       {features.map((f, i) => (
-        <article class={`bento-feature reveal r-d${i + 1}`}>
+        <article class={`bento-feature reveal r-d${i + 1}${f.accent ? ' bento-accent' : ''}`}>
           <h3 class="feature-title">{f.title}</h3>
           <p class="feature-desc">{f.desc}</p>
         </article>
@@ -99,96 +53,25 @@ const features = [
     align-items: center;
   }
 
-  .paths-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 2rem;
-    margin-bottom: 2rem;
-  }
-
   .features-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 2rem;
   }
 
-  .bento-card,
   .bento-feature {
     background: rgba(255, 255, 255, 0.02);
     border-radius: 1.5rem;
-    padding: 3rem;
+    padding: 2.5rem 3rem;
   }
 
-  .bento-card {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .vscode {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04));
-  }
-
-  .cli {
+  .bento-accent {
     background: linear-gradient(135deg, rgba(34, 211, 170, 0.05), rgba(255, 255, 255, 0.02));
   }
 
-  .bento-feature {
-    padding: 2.5rem;
-  }
-
-  .bento-card h3 {
-    font-size: 2rem;
-    font-family: var(--font-display);
-    line-height: 1.1;
-    margin-bottom: 1rem;
-    color: var(--text);
-  }
-
-  .bento-card p {
-    color: var(--text-secondary);
-    font-size: 1.1rem;
-    line-height: 1.6;
-    margin-bottom: 2rem;
-    max-width: 28rem;
-    flex: 1; /* Pushes the button/code block down */
-  }
-
-  .code-wrap {
-    display: flex;
-    gap: 1rem;
-    width: 100%;
-    max-width: 32rem;
-  }
-
-  .code-wrap.align-bottom {
-    margin-top: auto;
-  }
-
-  .code-wrap code {
-    flex: 1;
-    padding: 0.95rem 1.25rem;
-    border-radius: 0.5rem;
-    background: var(--bg-elevated);
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-
-  .path-label {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--accent);
-    margin-bottom: 1rem;
-    display: block;
-  }
-
   .feature-title {
-    font-size: 1.25rem;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
     font-weight: 600;
     margin-bottom: 0.75rem;
     color: var(--text);
@@ -198,20 +81,16 @@ const features = [
     font-size: 1rem;
     color: var(--text-secondary);
     line-height: 1.6;
+    max-width: 32rem;
   }
 
   @media (max-width: 960px) {
-    .paths-grid,
     .features-grid {
       grid-template-columns: 1fr;
     }
-    
-    .bento-card, .bento-feature {
-      padding: 2rem;
-    }
 
-    .code-wrap {
-      flex-direction: column;
+    .bento-feature {
+      padding: 2rem;
     }
   }
 </style>

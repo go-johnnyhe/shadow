@@ -16,8 +16,8 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
-	"syscall"
 	"sync/atomic"
+	"syscall"
 	"time"
 )
 
@@ -161,7 +161,7 @@ func runStart(opts StartOptions) error {
 		}()
 	}
 
-	tunnelURL, err := tunnel.StartCloudflaredTunnel(ctx, actualPort)
+	tunnelURL, err := tunnel.StartCloudflaredTunnel(ctx, actualPort, tunnelStatusReporter(opts.JSONMode))
 	close(spinDone)
 	<-spinExited
 	if err != nil {

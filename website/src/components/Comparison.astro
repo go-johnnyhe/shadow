@@ -1,20 +1,21 @@
 ---
 const rows = [
-  { label: 'Editor freedom', shadow: 'Any editor (Vim, VS Code, JetBrains)', liveshare: 'VS Code only', screen: 'View-only for others' },
-  { label: 'Share step', shadow: 'Copy & paste one link', liveshare: 'Invite via Microsoft auth', screen: 'Send meeting link' },
-  { label: 'Both people can edit', shadow: 'Yes', liveshare: 'Yes', screen: 'No' },
-  { label: 'Latency', shadow: 'Near-zero (direct file sync)', liveshare: 'Low', screen: 'High (video encoding)' },
-  { label: 'Privacy', shadow: 'End-to-End Encrypted', liveshare: 'Relayed via Microsoft', screen: 'Varies by provider' },
+{ label: 'Can you use your own editor?', shadow: 'Yes, any IDE!', liveshare: 'VS Code only', screen: 'You just watch' },
+  { label: 'How do you share?', shadow: 'Click Start, paste the link', liveshare: 'Microsoft auth invite', screen: 'Meeting link + screen share app' },
+  { label: 'Can both people type?', shadow: 'Yes', liveshare: 'Yes', screen: 'No' },
+  { label: 'How fast does it feel?', shadow: 'Near-instant (file sync)', liveshare: 'Low latency', screen: 'Video-encoding lag' },
+  { label: 'Who sees your code?', shadow: 'Nobody, E2E encrypted', liveshare: 'Relayed through Microsoft', screen: 'Depends on the provider' },
 ];
 ---
 
 <section class="comparison">
   <div class="section-shell comparison-inner">
     <div class="comparison-copy reveal">
-      <p class="section-kicker">Why Shadow</p>
-      <h2 class="section-title">Built for shipping, not just watching.</h2>
+      <p class="section-kicker">The alternatives, honestly</p>
+      <h2 class="section-title">You already know the workarounds. They all have a catch.</h2>
       <p class="section-lead">
-        Screensharing is great for presentations, but terrible for actual coding. Shadow syncs the files themselves, so you both have full control without giving up your personalized setups.
+        Screen share and one of you just watches. Live Share and one of you abandons their editor.
+        Shadow syncs the actual files, so both people keep full control of their own setup.
       </p>
     </div>
 

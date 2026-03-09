@@ -1,60 +1,43 @@
 ---
-import { installCmd, marketplaceUrl } from '../consts';
+import { dmgUrl } from '../consts';
+import AppMockup from './AppMockup.astro';
 ---
 
 <section class="hero">
   <div class="section-shell hero-inner">
     <div class="hero-copy">
-      <h1 class="hero-title reveal">
-        Screensharing ≠<br />pair programming.
+      <span class="eyebrow-chip reveal">for developers who pair</span>
+
+      <h1 class="hero-title reveal r-d1">
+        Pair program without<br />
+        <em>leaving your editor.</em>
       </h1>
 
-      <p class="hero-desc reveal r-d1">
-      <span class="desc-muted">Most "pairing" is one person driving. The other is <em class="desc-highlight">stuck</em> in someone else’s setup.</span>
-      <br />
-        <span class="desc-bright">Shadow lets both of you edit live, in your own editor.</span>
-      </p>
-
-      <p class="editor-support reveal r-d1">
-        VS Code · Neovim · Vim · JetBrains · Zed — keep your setup.
+      <p class="hero-desc reveal r-d2">
+        Shadow syncs your project files to your teammate's machine in real time.
+        One click to start, one link to share.
       </p>
 
       <div class="hero-actions reveal r-d2">
-        <div class="hero-install">
-          <span class="install-label">Install Shadow CLI</span>
-          <div class="cmd-preview">
-            <code>{installCmd}</code>
-            <button
-              type="button"
-              class="cmd-copy-btn"
-              data-cta
-              data-cta-source="hero"
-              data-cta-target="cli"
-              data-cta-surface="website"
-              data-copy-text={installCmd}
-              data-copy-source="hero"
-              data-copy-target="cli"
-              data-copy-surface="website"
-              aria-label="Copy Shadow CLI install command"
-            >
-              <span data-copy-label>Copy</span>
-            </button>
-          </div>
-        </div>
-
         <a
-          href={marketplaceUrl}
-          class="secondary-button"
-          target="_blank"
-          rel="noopener noreferrer"
+          href={dmgUrl}
+          class="primary-button"
           data-cta
           data-cta-source="hero"
-          data-cta-target="vscode_marketplace"
+          data-cta-target="download_mac"
           data-cta-surface="website"
         >
-          Prefer VS Code? Install the extension &rarr;
+          Download for Mac
         </a>
+
+        <span class="hero-muted">
+          Requires macOS 13+. Also available as a <a href="#install" class="muted-link">CLI</a>.
+        </span>
       </div>
+    </div>
+
+    <div class="hero-mockup reveal r-d3">
+      <AppMockup />
     </div>
   </div>
 </section>
@@ -66,15 +49,22 @@ import { installCmd, marketplaceUrl } from '../consts';
   }
 
   .hero-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 4rem;
   }
 
   .hero-copy {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .hero-mockup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .hero-title {
@@ -90,38 +80,8 @@ import { installCmd, marketplaceUrl } from '../consts';
     font-size: 1.25rem;
     line-height: 1.7;
     margin-top: 2rem;
-    max-width: 44rem;
-  }
-
-  .desc-muted {
-    color: var(--text-muted);
-  }
-
-  .desc-highlight {
-    color: var(--text);
-    font-style: italic;
-  }
-
-  .desc-bright {
-    color: var(--text);
-  }
-
-  .editor-support {
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    letter-spacing: 0.04em;
-    color: var(--text-muted);
-    margin-top: 1rem;
-  }
-
-  .install-label {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 0.6rem;
+    max-width: 38rem;
+    color: var(--text-secondary);
   }
 
   .hero-actions {
@@ -129,66 +89,36 @@ import { installCmd, marketplaceUrl } from '../consts';
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
-    margin-top: 3.5rem;
+    margin-top: 3rem;
   }
 
-  .hero-install {
-    width: 100%;
-    max-width: 38rem;
-  }
-
-  .cmd-preview {
-    display: flex;
-    align-items: stretch;
-    border-radius: 0.5rem;
-    border: 1px solid var(--border-strong);
-    background: var(--bg-elevated);
-    overflow: hidden;
-  }
-
-  .cmd-preview code {
-    flex: 1;
-    padding: 0.85rem 1.15rem;
+  .hero-muted {
     font-size: 0.82rem;
-    color: var(--text-secondary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: flex;
-    align-items: center;
-  }
-
-  .cmd-copy-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.85rem 1.4rem;
-    background: var(--accent);
-    color: var(--bg);
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.88rem;
-    transition: background 0.2s ease;
-    flex-shrink: 0;
-  }
-
-  .cmd-copy-btn:hover {
-    background: var(--accent-strong);
-  }
-
-  .hero-actions .secondary-button {
-    border: none;
-    padding: 0.5rem 0;
-    min-height: auto;
-    font-size: 0.92rem;
     color: var(--text-muted);
   }
 
-  .hero-actions .secondary-button:hover {
+  .muted-link {
+    color: var(--text-secondary);
+    text-decoration: underline;
+    text-decoration-color: var(--border-strong);
+    text-underline-offset: 2px;
+    transition: color 0.2s ease;
+  }
+
+  .muted-link:hover {
     color: var(--text);
-    background: transparent;
-    transform: none;
+    opacity: 1;
+  }
+
+  @media (max-width: 900px) {
+    .hero-inner {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+    }
+
+    .hero-mockup {
+      justify-content: flex-start;
+    }
   }
 
   @media (max-width: 640px) {
@@ -203,14 +133,6 @@ import { installCmd, marketplaceUrl } from '../consts';
 
     .hero-desc {
       font-size: 1.1rem;
-    }
-
-    .editor-support {
-      font-size: 0.72rem;
-    }
-
-    .cmd-preview code {
-      font-size: 0.72rem;
     }
   }
 </style>

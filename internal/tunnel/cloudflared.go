@@ -16,34 +16,52 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-johnnyhe/shadow/internal/runtimehome"
 	"github.com/go-johnnyhe/shadow/internal/ui"
 )
 
-func getCloudflaredBinary() (string, error) {
+const (
+	StatusDownloadingDependency = "downloading_dependency"
+	StatusDependencyReady       = "dependency_ready"
+)
+
+type StatusReporter func(event, message string)
+
+func reportStatus(reporter StatusReporter, event, message string) {
+	if reporter != nil {
+		reporter(event, message)
+		return
+	}
+	fmt.Printf("  %s\n", ui.Dim(message))
+}
+
+func CloudflaredBinaryPath() (string, error) {
 	binaryName := "cloudflared"
 	if runtime.GOOS == "windows" {
 		binaryName = "cloudflared.exe"
 	}
 
-	homeDir, err := os.UserHomeDir()
+	runtimeDir, err := runtimehome.Resolve()
 	if err != nil {
-		return "", fmt.Errorf("failed to get home directory: %v", err)
+		return "", err
+	}
+	return filepath.Join(runtimeDir, binaryName), nil
+}
+
+func getCloudflaredBinary(reporter StatusReporter) (string, error) {
+	if _, err := runtimehome.Ensure(); err != nil {
+		return "", err
 	}
 
-	shadowDir := filepath.Join(homeDir, ".shadow")
-	if err := os.MkdirAll(shadowDir, 0755); err != nil {
-		return "", fmt.Errorf("failed to create .shadow directory: %v", err)
+	binaryPath, err := CloudflaredBinaryPath()
+	if err != nil {
+		return "", err
 	}
-
-	binaryPath := filepath.Join(shadowDir, binaryName)
-	// if runtime.GOOS != "windows" {
-	// 	binaryPath = "./" + binaryName
-	// }
 
 	if _, err := os.Stat(binaryPath); err == nil {
 		return binaryPath, nil
 	}
-	fmt.Printf("  %s\n", ui.Dim("first run: downloading tunnel binary (~15MB)..."))
+	reportStatus(reporter, StatusDownloadingDependency, "Downloading cloudflared (~15MB)...")
 
 	var downloadURL string
 	var needsExtraction bool
@@ -102,7 +120,7 @@ func getCloudflaredBinary() (string, error) {
 		}
 	}
 
-	fmt.Printf("  %s\n", ui.Dim("tunnel ready."))
+	reportStatus(reporter, StatusDependencyReady, "cloudflared ready")
 	return binaryPath, nil
 }
 
@@ -139,8 +157,8 @@ func extractCloudflaredFromTgz(reader io.Reader, outputPath string) error {
 	return fmt.Errorf("cloudflared binary not found in the downloaded archive")
 }
 
-func StartCloudflaredTunnel(ctx context.Context, port int) (string, error) {
-	binary, err := getCloudflaredBinary()
+func StartCloudflaredTunnel(ctx context.Context, port int, reporter StatusReporter) (string, error) {
+	binary, err := getCloudflaredBinary(reporter)
 	if err != nil {
 		return "", fmt.Errorf("error getting cloudflared binary: %v", err)
 	}

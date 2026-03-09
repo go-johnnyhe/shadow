@@ -1,0 +1,76 @@
+---
+---
+
+<section class="aside">
+  <div class="section-shell aside-inner">
+    <div class="aside-block">
+      <p class="reveal">Your mentor pings you: <em>"hey, let's pair on this bug."</em></p>
+      <p class="reveal r-d1">You say sure. They send a Live Share link.</p>
+      <p class="aside-frustration reveal r-d2">You've been using WebStorm for three years. You open VS Code for the first time since college. You can't find the terminal. The keybindings are wrong. Your extensions aren't there. You spend ten minutes getting oriented.</p>
+      <p class="aside-beat reveal r-d3">The bug fix takes fifteen minutes.</p>
+      <p class="aside-punchline reveal r-d4">Shadow exists so that never happens again.</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .aside {
+    margin-bottom: var(--gap);
+  }
+
+  .aside-inner {
+    display: flex;
+    justify-content: center;
+  }
+
+  .aside-block {
+    max-width: 38rem;
+    margin: 0 auto;
+    border-left: 2px solid var(--accent);
+    padding-left: 2.5rem;
+  }
+
+  .aside-block p {
+    font-size: 1.15rem;
+    line-height: 2;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .aside-block em {
+    font-style: italic;
+    color: var(--text);
+  }
+
+  .aside-frustration {
+    color: var(--text-muted) !important;
+  }
+
+  .aside-beat {
+    margin-top: 0.75rem !important;
+    color: var(--text) !important;
+    font-weight: 500;
+  }
+
+  .aside-punchline {
+    margin-top: 0.75rem !important;
+    font-family: var(--font-display);
+    font-size: 1.3rem !important;
+    color: var(--accent) !important;
+    font-weight: 500;
+  }
+
+  @media (max-width: 640px) {
+    .aside-block {
+      padding-left: 1.5rem;
+    }
+
+    .aside-block p {
+      font-size: 1.05rem;
+    }
+
+    .aside-punchline {
+      font-size: 1.15rem !important;
+    }
+  }
+</style>

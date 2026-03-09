@@ -181,6 +181,44 @@ func TestJsonOnEvent(t *testing.T) {
 	}
 }
 
+func TestTunnelStatusReporter(t *testing.T) {
+	reporter := tunnelStatusReporter(false)
+	if reporter != nil {
+		t.Fatal("tunnelStatusReporter(false) should return nil")
+	}
+
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	origStdout := os.Stdout
+	os.Stdout = w
+
+	reporter = tunnelStatusReporter(true)
+	if reporter == nil {
+		t.Fatal("tunnelStatusReporter(true) should return non-nil")
+	}
+	reporter(EventDownloadingDep, "Downloading cloudflared (~15MB)...")
+
+	w.Close()
+	os.Stdout = origStdout
+
+	buf := make([]byte, 4096)
+	n, _ := r.Read(buf)
+	output := strings.TrimSpace(string(buf[:n]))
+
+	var evt JSONEvent
+	if err := json.Unmarshal([]byte(output), &evt); err != nil {
+		t.Fatalf("output is not valid JSON: %v", err)
+	}
+	if evt.Event != EventDownloadingDep {
+		t.Fatalf("event = %q, want %q", evt.Event, EventDownloadingDep)
+	}
+	if evt.Message == "" {
+		t.Fatal("message should not be empty")
+	}
+}
+
 func TestStartOptions_JSONModeExists(t *testing.T) {
 	opts := StartOptions{JSONMode: true}
 	if !opts.JSONMode {

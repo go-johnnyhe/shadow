@@ -1,0 +1,429 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10001 /* ShadowApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10001; };
+		A10002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10002; };
+		A10003 /* ShadowEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10003; };
+		A10004 /* SessionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10004; };
+		A10005 /* SessionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10005; };
+		A10006 /* ShadowProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10006; };
+		A10007 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10007; };
+		A10008 /* SessionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10008; };
+		A10009 /* PopoverContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10009; };
+		A10010 /* IdleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10010; };
+		A10011 /* StartingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10011; };
+		A10012 /* ActiveSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10012; };
+		A10013 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10013; };
+		A10014 /* JoinInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10014; };
+		A10015 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10015; };
+		A10016 /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10019; };
+		A10017 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10020; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B10001 /* ShadowApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowApp.swift; sourceTree = "<group>"; };
+		B10002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B10003 /* ShadowEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowEvent.swift; sourceTree = "<group>"; };
+		B10004 /* SessionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionState.swift; sourceTree = "<group>"; };
+		B10005 /* SessionInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionInfo.swift; sourceTree = "<group>"; };
+		B10006 /* ShadowProcess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowProcess.swift; sourceTree = "<group>"; };
+		B10007 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		B10008 /* SessionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionViewModel.swift; sourceTree = "<group>"; };
+		B10009 /* PopoverContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverContentView.swift; sourceTree = "<group>"; };
+		B10010 /* IdleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdleView.swift; sourceTree = "<group>"; };
+		B10011 /* StartingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartingView.swift; sourceTree = "<group>"; };
+		B10012 /* ActiveSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSessionView.swift; sourceTree = "<group>"; };
+		B10013 /* ErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
+		B10014 /* JoinInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinInputView.swift; sourceTree = "<group>"; };
+		B10015 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B10016 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B10017 /* Shadow.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Shadow.entitlements; sourceTree = "<group>"; };
+		B10018 /* build-cli.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-cli.sh"; sourceTree = "<group>"; };
+		B10019 /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
+		B10020 /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
+		B10099 /* Shadow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shadow.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C10001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D10000 = {
+			isa = PBXGroup;
+			children = (
+				D10001 /* Shadow */,
+				D10099 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D10001 /* Shadow */ = {
+			isa = PBXGroup;
+			children = (
+				D10002 /* App */,
+				D10003 /* Models */,
+				D10004 /* Services */,
+				D10005 /* ViewModels */,
+				D10006 /* Views */,
+				D10007 /* Resources */,
+				D10008 /* Scripts */,
+				B10017 /* Shadow.entitlements */,
+			);
+			path = Shadow;
+			sourceTree = "<group>";
+		};
+		D10002 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				B10001 /* ShadowApp.swift */,
+				B10002 /* AppDelegate.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		D10003 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B10003 /* ShadowEvent.swift */,
+				B10004 /* SessionState.swift */,
+				B10005 /* SessionInfo.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		D10004 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B10006 /* ShadowProcess.swift */,
+				B10007 /* NotificationService.swift */,
+				B10019 /* AnalyticsService.swift */,
+				B10020 /* Secrets.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		D10005 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				B10008 /* SessionViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		D10006 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B10009 /* PopoverContentView.swift */,
+				B10010 /* IdleView.swift */,
+				B10011 /* StartingView.swift */,
+				B10012 /* ActiveSessionView.swift */,
+				B10013 /* ErrorView.swift */,
+				B10014 /* JoinInputView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		D10007 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B10015 /* Assets.xcassets */,
+				B10016 /* Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		D10008 /* Scripts */ = {
+			isa = PBXGroup;
+			children = (
+				B10018 /* build-cli.sh */,
+			);
+			path = Scripts;
+			sourceTree = "<group>";
+		};
+		D10099 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B10099 /* Shadow.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E10001 /* Shadow */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F10003 /* Build configuration list for PBXNativeTarget "Shadow" */;
+			buildPhases = (
+				E10002 /* Build Go CLI */,
+				E10003 /* Sources */,
+				C10001 /* Frameworks */,
+				E10004 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Shadow;
+			packageProductDependencies = (
+				P10002 /* PostHog */,
+			);
+			productName = Shadow;
+			productReference = B10099 /* Shadow.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		G10001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					E10001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = F10001 /* Build configuration list for PBXProject "Shadow" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D10000;
+			packageReferences = (
+				P10001 /* XCRemoteSwiftPackageReference "posthog-ios" */,
+			);
+			productRefGroup = D10099 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E10001 /* Shadow */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E10004 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10015 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		E10002 /* Build Go CLI */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Build Go CLI";
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/shadow",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "\"${SRCROOT}/Shadow/Scripts/build-cli.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E10003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10001 /* ShadowApp.swift in Sources */,
+				A10002 /* AppDelegate.swift in Sources */,
+				A10003 /* ShadowEvent.swift in Sources */,
+				A10004 /* SessionState.swift in Sources */,
+				A10005 /* SessionInfo.swift in Sources */,
+				A10006 /* ShadowProcess.swift in Sources */,
+				A10007 /* NotificationService.swift in Sources */,
+				A10008 /* SessionViewModel.swift in Sources */,
+				A10009 /* PopoverContentView.swift in Sources */,
+				A10010 /* IdleView.swift in Sources */,
+				A10011 /* StartingView.swift in Sources */,
+				A10012 /* ActiveSessionView.swift in Sources */,
+				A10013 /* ErrorView.swift in Sources */,
+				A10014 /* JoinInputView.swift in Sources */,
+				A10016 /* AnalyticsService.swift in Sources */,
+				A10017 /* Secrets.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		H10001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		H10002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		H10003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Shadow/Shadow.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Shadow/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.shadow.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		H10004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Shadow/Shadow.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Shadow/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.shadow.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F10001 /* Build configuration list for PBXProject "Shadow" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				H10001 /* Debug */,
+				H10002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F10003 /* Build configuration list for PBXNativeTarget "Shadow" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				H10003 /* Debug */,
+				H10004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		P10001 /* XCRemoteSwiftPackageReference "posthog-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/PostHog/posthog-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		P10002 /* PostHog */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = P10001 /* XCRemoteSwiftPackageReference "posthog-ios" */;
+			productName = PostHog;
+		};
+/* End XCSwiftPackageProductDependency section */
+
+	};
+	rootObject = G10001 /* Project object */;
+}
