@@ -6,6 +6,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
     private let viewModel = SessionViewModel()
+    private let updateService = UpdateService()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         AnalyticsService.setup()
@@ -20,7 +21,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
 
-        let contentView = PopoverContentView(viewModel: viewModel)
+        let contentView = PopoverContentView(viewModel: viewModel, updateService: updateService)
         popover = NSPopover()
         popover.contentSize = NSSize(width: 300, height: 400)
         popover.behavior = .transient
@@ -29,6 +30,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Observe state changes to update menu bar icon
         viewModel.onStateChange = { [weak self] state in
             self?.updateMenuBarIcon(state: state)
+        }
+
+        // Check for updates after a short delay
+        Task {
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            updateService.checkForUpdate()
         }
     }
 
@@ -57,6 +64,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         case .idle, .error:
             menu.addItem(NSMenuItem(title: "Start Session...", action: #selector(menuStart), keyEquivalent: ""))
             menu.addItem(NSMenuItem(title: "Join Session...", action: #selector(menuJoin), keyEquivalent: ""))
+            menu.addItem(NSMenuItem.separator())
+            menu.addItem(NSMenuItem(title: "Check for Updates...", action: #selector(menuCheckForUpdates), keyEquivalent: ""))
         case .runningHost, .runningJoiner:
             if viewModel.session.joinCommand != nil {
                 menu.addItem(NSMenuItem(title: "Copy Invite Link", action: #selector(menuCopyInvite), keyEquivalent: ""))
@@ -99,6 +108,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func menuStop() {
         viewModel.stopSession()
+    }
+
+    @objc private func menuCheckForUpdates() {
+        // Open the popover so user can see update UI
+        if !popover.isShown, let button = statusItem.button {
+            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            popover.contentViewController?.view.window?.makeKey()
+        }
+        updateService.checkForUpdate()
     }
 
     @objc private func menuQuit() {

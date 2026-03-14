@@ -3,12 +3,13 @@ import SwiftUI
 /// Root popover view that switches on session state.
 struct PopoverContentView: View {
     @ObservedObject var viewModel: SessionViewModel
+    @ObservedObject var updateService: UpdateService
 
     var body: some View {
         Group {
             switch viewModel.state {
             case .idle:
-                IdleView(viewModel: viewModel)
+                IdleView(viewModel: viewModel, updateService: updateService)
             case .starting:
                 StartingView(label: "Starting session...")
             case .stopping:

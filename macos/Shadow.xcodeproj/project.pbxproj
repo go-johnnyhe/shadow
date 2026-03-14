@@ -24,6 +24,7 @@
 		A10015 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10015; };
 		A10016 /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10019; };
 		A10017 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10020; };
+		A10018 /* UpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10021; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +48,7 @@
 		B10018 /* build-cli.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-cli.sh"; sourceTree = "<group>"; };
 		B10019 /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
 		B10020 /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
+		B10021 /* UpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateService.swift; sourceTree = "<group>"; };
 		B10099 /* Shadow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shadow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -110,6 +112,7 @@
 				B10007 /* NotificationService.swift */,
 				B10019 /* AnalyticsService.swift */,
 				B10020 /* Secrets.swift */,
+				B10021 /* UpdateService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -271,6 +274,7 @@
 				A10014 /* JoinInputView.swift in Sources */,
 				A10016 /* AnalyticsService.swift in Sources */,
 				A10017 /* Secrets.swift in Sources */,
+				A10018 /* UpdateService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

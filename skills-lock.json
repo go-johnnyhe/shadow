@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "skills": {
+    "firecrawl": {
+      "source": "firecrawl/cli",
+      "sourceType": "github",
+      "computedHash": "f79f957689cc705613a2731f2f35360192fc9a6a28bc3de73484c973621df5ed"
+    },
+    "firecrawl-agent": {
+      "source": "firecrawl/cli",
+      "sourceType": "github",
+      "computedHash": "9ac41c69e38a007c0948472d8c7954377639119caab611ad6decb94017de1200"
+    },
+    "firecrawl-browser": {
+      "source": "firecrawl/cli",
+      "sourceType": "github",
+      "computedHash": "7129fbae5d4db7063641a39ca01756e85e911735dfff3ba31145b5b4bc4f247e"
+    },
+    "firecrawl-crawl": {
+      "source": "firecrawl/cli",
+      "sourceType": "github",
+      "computedHash": "9a0e53d6ded771af4a782670ef5b17f924d42f90c2e95de677effba5c83503b4"
+    },
+    "firecrawl-download": {
+      "source": "firecrawl/cli",
+      "sourceType": "github",
+      "computedHash": "82c403305fc798c1a29883f660a794cadce62416cf4391a02e1218ca7a6e831b"
+    },
+    "firecrawl-map": {
+      "source": "firecrawl/cli",
+      "sourceType": "github",
+      "computedHash": "29510c43a9119eacfd90aaddce91c87d02f83b5b6979b52181e7b4a1293a52a4"
+    },
+    "firecrawl-scrape": {
+      "source": "firecrawl/cli",
+      "sourceType": "github",
+      "computedHash": "16140e3afef515dcada6a0ee520fb76a8daf75f673e80aa1efef8746ad84fcb7"
+    },
+    "firecrawl-search": {
+      "source": "firecrawl/cli",
+      "sourceType": "github",
+      "computedHash": "7e2f8e9594b4322d2afcd13dd9bbcff0977c47a75b3f2e5d7e1ff8b05e83da68"
+    }
+  }
+}
