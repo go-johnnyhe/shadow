@@ -95,5 +95,12 @@ if [ "$AUTO_SETUP" = true ]; then
   fi
 fi
 
+# Auto-setup MCP for AI agents (Claude Code, Cursor)
+if "$INSTALL_DIR/$BIN" mcp install 2>/dev/null; then
+  echo "done: MCP configured for AI agents"
+else
+  echo "note: could not configure MCP (you can run 'shadow mcp install' manually later)"
+fi
+
 echo ""
 echo "shadow is ready! run: shadow"

@@ -42,3 +42,5 @@ brews:
     description: "A CLI tool collab coding"
     install: |
       bin.install "shadow"
+    post_install: |
+      system "#{bin}/shadow", "mcp", "install"

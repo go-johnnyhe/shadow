@@ -107,6 +107,10 @@ func runUpdate() error {
 	}
 
 	fmt.Printf("  %s\n", ui.Accent("updated to v"+latest))
+
+	// Auto-configure MCP for AI agents if any are detected.
+	runMCPInstall()
+
 	return nil
 }
 
