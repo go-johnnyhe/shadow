@@ -64,6 +64,25 @@ struct ActiveSessionView: View {
                 .padding(.vertical, 4)
             }
 
+            // Open in editor
+            if let dir = session.directoryPath {
+                let editors = EditorService.availableEditors()
+                if !editors.isEmpty {
+                    Menu {
+                        ForEach(editors) { editor in
+                            Button(editor.name) {
+                                EditorService.open(editor, directory: dir)
+                            }
+                        }
+                    } label: {
+                        Label("Open In…", systemImage: "square.and.arrow.up.on.square")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .menuStyle(.borderedButton)
+                    .controlSize(.large)
+                }
+            }
+
             // Copy invite (host only)
             if isHost, session.joinCommand != nil || session.joinUrl != nil {
                 Button {

@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"github.com/go-johnnyhe/shadow/internal/client"
 	"github.com/go-johnnyhe/shadow/internal/e2e"
+	"github.com/go-johnnyhe/shadow/internal/opener"
 	"github.com/go-johnnyhe/shadow/internal/tunnel"
 	"github.com/go-johnnyhe/shadow/internal/ui"
 	"github.com/go-johnnyhe/shadow/server"
@@ -253,6 +255,11 @@ func runStart(opts StartOptions) error {
 		<-runCtx.Done()
 	}(ctx, actualPort)
 
+	if !opts.JSONMode && isInteractiveSession() {
+		promptOpenIn(absSharePath)
+		fmt.Println()
+	}
+
 	<-ctx.Done()
 	srv.Shutdown(context.Background())
 	time.Sleep(100 * time.Millisecond)
@@ -326,8 +333,18 @@ func runJoin(opts JoinOptions) error {
 	if err != nil {
 		return fmt.Errorf("error initializing E2E client: %w", err)
 	}
+	absJoinDir, _ := filepath.Abs(joinBaseDir)
+	if absJoinDir == "" {
+		absJoinDir = joinBaseDir
+	}
+
 	sessionStart := time.Now()
 	c.Start(ctx)
+
+	if !opts.JSONMode && isInteractiveSession() {
+		promptOpenIn(absJoinDir)
+		fmt.Println()
+	}
 
 	<-ctx.Done()
 	elapsed := time.Since(sessionStart).Truncate(time.Second)
@@ -382,6 +399,45 @@ func appendURLFragment(rawURL, fragment string) (string, error) {
 	}
 	parsed.Fragment = fragment
 	return parsed.String(), nil
+}
+
+func promptOpenIn(dir string) {
+	editors := opener.Available()
+	// Only the Skip option means nothing useful to offer.
+	if len(editors) <= 1 {
+		return
+	}
+
+	fmt.Printf("\n  %s\n", ui.Dim("open directory in:"))
+	for i, e := range editors {
+		if e.Command == "__skip__" {
+			fmt.Printf("  %s  %s\n", ui.Accent("s"), e.Name)
+		} else {
+			fmt.Printf("  %s  %s\n", ui.Accent(fmt.Sprintf("%d", i+1)), e.Name)
+		}
+	}
+	fmt.Printf("  %s ", ui.Accent(">"))
+
+	scanner := bufio.NewScanner(os.Stdin)
+	if !scanner.Scan() {
+		return
+	}
+	input := strings.TrimSpace(scanner.Text())
+	if input == "" || input == "s" || input == "S" {
+		return
+	}
+
+	idx := 0
+	if _, err := fmt.Sscanf(input, "%d", &idx); err != nil || idx < 1 || idx > len(editors) {
+		return
+	}
+	selected := editors[idx-1]
+	if selected.Command == "__skip__" {
+		return
+	}
+	if err := opener.Open(selected, dir); err != nil {
+		fmt.Printf("  %s\n", ui.Dim("could not open "+selected.Name+": "+err.Error()))
+	}
 }
 
 func findAvailablePort(startPort int) (int, net.Listener, error) {
