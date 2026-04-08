@@ -7,7 +7,7 @@ import AppMockup from './AppMockup.astro';
   <div class="section-shell hero-inner">
     <div class="hero-copy">
       <h1 class="hero-title reveal r-d1">
-        Screensharing &ne;<br />
+        Screensharing <span class="ne">&ne;</span><br />
         pair programming.
       </h1>
 
@@ -79,6 +79,10 @@ import AppMockup from './AppMockup.astro';
     line-height: 1.08;
     letter-spacing: -0.04em;
     color: var(--text);
+  }
+
+  .ne {
+    color: var(--accent);
   }
 
   .hero-desc {

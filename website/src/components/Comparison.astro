@@ -46,7 +46,7 @@ const rows = [
 
 <style>
   .comparison {
-    margin-bottom: var(--gap);
+    margin-bottom: clamp(6rem, 10vw, 10rem);
   }
 
   .comparison-copy {
@@ -121,11 +121,11 @@ const rows = [
   td.col-shadow {
     color: var(--text);
     font-weight: 500;
-    background: rgba(34, 211, 170, 0.02);
+    background: rgba(228, 146, 75, 0.03);
   }
 
   tbody tr:hover td.col-shadow {
-    background: rgba(34, 211, 170, 0.04);
+    background: rgba(228, 146, 75, 0.05);
   }
 
   /* Round corners for the shadow column */

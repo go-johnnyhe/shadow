@@ -23,6 +23,7 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
         </div>
         <video
           src={`${base}demo.mp4`}
+          aria-label="Demo of real-time file synchronization between two editors"
           autoplay
           loop
           muted
@@ -31,12 +32,13 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
           data-demo-video
         ></video>
       </div>
+    </div>
   </div>
 </section>
 
 <style>
   .demo {
-    margin-bottom: var(--gap);
+    margin-bottom: clamp(5rem, 8vw, 8rem);
   }
 
   .demo-inner {
@@ -64,7 +66,7 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
     border: 1px solid var(--border);
     border-radius: 1rem;
     overflow: hidden;
-    box-shadow: var(--shadow-xl), 0 0 80px rgba(34, 211, 170, 0.08);
+    box-shadow: var(--shadow-xl), 0 0 80px rgba(228, 146, 75, 0.06);
   }
 
   .window-chrome {

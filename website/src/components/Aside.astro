@@ -15,7 +15,7 @@
 
 <style>
   .aside {
-    margin-bottom: var(--gap);
+    margin-bottom: clamp(9rem, 14vw, 14rem);
   }
 
   .aside-inner {
@@ -42,21 +42,21 @@
     color: var(--text);
   }
 
-  .aside-frustration {
-    color: var(--text-muted) !important;
+  .aside-block p.aside-frustration {
+    color: var(--text-muted);
   }
 
-  .aside-beat {
-    margin-top: 0.75rem !important;
-    color: var(--text) !important;
+  .aside-block p.aside-beat {
+    margin-top: 0.75rem;
+    color: var(--text);
     font-weight: 500;
   }
 
-  .aside-punchline {
-    margin-top: 0.75rem !important;
+  .aside-block p.aside-punchline {
+    margin-top: 0.75rem;
     font-family: var(--font-display);
-    font-size: 1.3rem !important;
-    color: var(--accent) !important;
+    font-size: 1.3rem;
+    color: var(--accent);
     font-weight: 500;
   }
 
@@ -69,8 +69,8 @@
       font-size: 1.05rem;
     }
 
-    .aside-punchline {
-      font-size: 1.15rem !important;
+    .aside-block p.aside-punchline {
+      font-size: 1.15rem;
     }
   }
 </style>

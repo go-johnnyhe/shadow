@@ -7,31 +7,30 @@
 }
 
 :root {
-  --bg: #0c0e12;
-  --bg-elevated: #14181f;
+  --bg: #101010;
+  --bg-elevated: #1a1a1a;
   --paper: rgba(255, 255, 255, 0.03);
   --paper-strong: rgba(255, 255, 255, 0.06);
-  --surface: #14181f;
-  --surface-soft: #1a1f28;
-  --text: #e8ecf0;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
+  --surface: #1a1a1a;
+  --surface-soft: #222222;
+  --text: #ede9e3;
+  --text-secondary: #a8a29e;
+  --text-muted: #8c8580;
   --border: rgba(255, 255, 255, 0.06);
   --border-strong: rgba(255, 255, 255, 0.12);
-  --accent: #22d3aa;
-  --accent-strong: #34e3b8;
-  --accent-soft: rgba(34, 211, 170, 0.12);
-  --signal: #22d3aa;
-  --signal-soft: rgba(34, 211, 170, 0.14);
-  --shadow-xl: 0 22px 80px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 18px 44px rgba(0, 0, 0, 0.25);
+  --accent: #e4924b;
+  --accent-strong: #f0a85f;
+  --accent-soft: rgba(228, 146, 75, 0.12);
+  --signal: #e4924b;
+  --signal-soft: rgba(228, 146, 75, 0.14);
+  --shadow-xl: 0 22px 80px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 18px 44px rgba(0, 0, 0, 0.3);
 
   --font-display: 'Syne', sans-serif;
   --font-sans: 'Sora', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   --max-w: 1180px;
   --narrow-w: 960px;
-  --gap: 12rem;
 }
 
 html {
@@ -57,12 +56,7 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 64px 64px;
-  mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0, 0, 0, 0.6), transparent 70%);
-  opacity: 0.15;
+  background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(228, 146, 75, 0.04), transparent 70%);
 }
 
 a {
@@ -88,7 +82,7 @@ section {
 }
 
 ::selection {
-  background: rgba(34, 211, 170, 0.25);
+  background: rgba(228, 146, 75, 0.25);
   color: var(--text);
 }
 
@@ -100,6 +94,38 @@ code {
   font-family: var(--font-mono);
 }
 
+/* ---- Focus ---- */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+a:focus-visible {
+  opacity: 1;
+  border-radius: 2px;
+}
+
+/* ---- Skip Link ---- */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: 999;
+  padding: 0.75rem 1.25rem;
+  background: var(--accent);
+  color: var(--bg);
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-decoration: none;
+  opacity: 1;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* ---- Shared ---- */
 .section-shell {
   max-width: var(--max-w);
   margin: 0 auto;
@@ -137,29 +163,7 @@ code {
   max-width: 40rem;
 }
 
-.eyebrow-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.42rem 0.72rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--border);
-  background: var(--paper);
-  backdrop-filter: blur(12px);
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-}
-
-.eyebrow-chip::before {
-  content: '';
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 999px;
-  background: var(--accent);
-  box-shadow: 0 0 0 4px var(--accent-soft);
-}
-
+/* ---- Buttons ---- */
 .primary-button,
 .secondary-button,
 .ghost-button {
@@ -179,6 +183,7 @@ code {
   background: var(--accent);
   color: var(--bg);
   border-color: var(--accent);
+  font-weight: 600;
 }
 
 .secondary-button {
@@ -217,6 +222,7 @@ code {
   color: var(--bg) !important;
 }
 
+/* ---- Reveal ---- */
 .reveal {
   opacity: 0;
   transform: translateY(20px);
@@ -233,6 +239,7 @@ code {
 .r-d3 { transition-delay: 0.3s; }
 .r-d4 { transition-delay: 0.4s; }
 
+/* ---- Scrollbar ---- */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-elevated); }
 ::-webkit-scrollbar-thumb {
@@ -240,16 +247,31 @@ code {
   border-radius: 999px;
 }
 
-@media (max-width: 768px) {
-  :root { --gap: 8rem; }
-
-  section {
-    padding: 0 1.15rem;
+/* ---- Reduced Motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 
-  body::before {
-    opacity: 0.1;
-    background-size: 44px 44px;
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 768px) {
+  section {
+    padding: 0 1.15rem;
   }
 
   .section-title {
