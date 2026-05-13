@@ -1,5 +1,5 @@
 ---
-import { dmgUrl, githubUrl } from '../consts';
+import { dmgUrl, githubUrl, installCmd } from '../consts';
 ---
 
 <section class="cta" id="install">
@@ -35,7 +35,21 @@ import { dmgUrl, githubUrl } from '../consts';
       </a>
     </div>
 
-    <div class="cta-muted reveal r-d2">
+    <div class="cli-copy reveal r-d2">
+      <code>{installCmd}</code>
+      <button
+        type="button"
+        class="secondary-button copy-button"
+        data-copy-text={installCmd}
+        data-copy-source="final_cta"
+        data-copy-target="cli_install"
+        data-copy-surface="website"
+      >
+        <span data-copy-label>Copy CLI install</span>
+      </button>
+    </div>
+
+    <div class="cta-muted reveal r-d3">
       <span>Also available as a <a href={`${githubUrl}#install`} class="muted-link" target="_blank" rel="noopener noreferrer">CLI</a></span>
       <span class="sep">&middot;</span>
       <a
@@ -82,6 +96,37 @@ import { dmgUrl, githubUrl } from '../consts';
     justify-content: center;
   }
 
+  .cli-copy {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    width: min(100%, 46rem);
+    margin-top: 1.4rem;
+    padding: 0.55rem;
+    border: 1px solid var(--border);
+    border-radius: 0.7rem;
+    background: var(--paper);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.12);
+  }
+
+  .cli-copy code {
+    padding-left: 0.8rem;
+    overflow: hidden;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .copy-button {
+    min-height: 2.65rem;
+    padding: 0.65rem 0.95rem;
+    white-space: nowrap;
+  }
+
   .cta-muted {
     display: flex;
     align-items: center;
@@ -108,5 +153,23 @@ import { dmgUrl, githubUrl } from '../consts';
 
   .sep {
     color: var(--border-strong);
+  }
+
+  @media (max-width: 720px) {
+    .cli-copy {
+      grid-template-columns: 1fr;
+      padding: 0.8rem;
+    }
+
+    .cli-copy code {
+      width: 100%;
+      padding: 0;
+      white-space: normal;
+      word-break: break-all;
+    }
+
+    .copy-button {
+      width: 100%;
+    }
   }
 </style>

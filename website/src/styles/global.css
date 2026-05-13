@@ -167,6 +167,7 @@ a:focus-visible {
 .primary-button,
 .secondary-button,
 .ghost-button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -176,7 +177,8 @@ a:focus-visible {
   border: 1px solid transparent;
   cursor: pointer;
   min-height: 3.2rem;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  overflow: hidden;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .primary-button {
@@ -184,6 +186,7 @@ a:focus-visible {
   color: var(--bg);
   border-color: var(--accent);
   font-weight: 600;
+  box-shadow: 0 0 0 rgba(228, 146, 75, 0);
 }
 
 .secondary-button {
@@ -202,6 +205,7 @@ a:focus-visible {
   background: var(--accent-strong);
   border-color: var(--accent-strong);
   transform: translateY(-1px);
+  box-shadow: 0 12px 36px rgba(228, 146, 75, 0.16);
 }
 
 .secondary-button:hover {
@@ -216,10 +220,32 @@ a:focus-visible {
   transform: translateY(-1px);
 }
 
+.primary-button:active,
+.secondary-button:active,
+.ghost-button:active {
+  transform: translateY(1px) scale(0.99);
+}
+
 [data-copy-state='copied'] {
   background: var(--accent) !important;
   border-color: var(--accent) !important;
   color: var(--bg) !important;
+}
+
+[data-copy-state='copied']::after {
+  content: '';
+  position: absolute;
+  inset: -50% auto auto -30%;
+  width: 46%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  transform: rotate(18deg);
+  animation: copy-sheen 0.7s ease both;
+}
+
+@keyframes copy-sheen {
+  from { translate: 0 0; }
+  to { translate: 330% 0; }
 }
 
 /* ---- Reveal ---- */
@@ -238,6 +264,21 @@ a:focus-visible {
 .r-d2 { transition-delay: 0.2s; }
 .r-d3 { transition-delay: 0.3s; }
 .r-d4 { transition-delay: 0.4s; }
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}
 
 /* ---- Scrollbar ---- */
 ::-webkit-scrollbar { width: 8px; }

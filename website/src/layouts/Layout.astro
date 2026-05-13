@@ -86,6 +86,32 @@ const canonicalUrl = new URL(base, Astro.site ?? 'https://go-johnnyhe.github.io'
         label.textContent = copied ? 'Copied' : button.dataset.defaultLabel;
       }
 
+      async function copyText(text) {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+          try {
+            await navigator.clipboard.writeText(text);
+            return true;
+          } catch (_) {}
+        }
+
+        var textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.top = '-9999px';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        try {
+          return document.execCommand('copy');
+        } catch (_) {
+          return false;
+        } finally {
+          document.body.removeChild(textarea);
+        }
+      }
+
       document.addEventListener('DOMContentLoaded', () => {
         shadowCapture('landing_page_viewed', { surface: 'website' });
 
@@ -122,7 +148,8 @@ const canonicalUrl = new URL(base, Astro.site ?? 'https://go-johnnyhe.github.io'
           if (!text) return;
 
           try {
-            await navigator.clipboard.writeText(text);
+            var didCopy = await copyText(text);
+            if (!didCopy) return;
             updateCopyButtonState(copyButton, true);
             shadowCapture('install_command_copied', {
               source: copyButton.getAttribute('data-copy-source') || 'unknown',
