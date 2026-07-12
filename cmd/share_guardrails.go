@@ -48,6 +48,9 @@ func validateShareBaseDir(baseDir string) error {
 	}
 
 	candidate := filepath.Clean(baseDir)
+	if filepath.IsAbs(candidate) && filepath.Dir(candidate) == candidate {
+		return fmt.Errorf("refusing to share %q: choose a project subdirectory instead", candidate)
+	}
 	if _, ok := blocked[candidate]; ok {
 		return fmt.Errorf("refusing to share %q: choose a project subdirectory instead", candidate)
 	}

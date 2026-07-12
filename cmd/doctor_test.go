@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/go-johnnyhe/shadow/internal/runtimehome"
@@ -20,7 +21,11 @@ func TestBuildDoctorReportUsesShadowHomeOverride(t *testing.T) {
 	if report.RuntimeHome != tmpDir {
 		t.Fatalf("runtime_home = %q, want %q", report.RuntimeHome, tmpDir)
 	}
-	if report.CloudflaredPath != filepath.Join(tmpDir, "cloudflared") {
+	cloudflaredName := "cloudflared"
+	if runtime.GOOS == "windows" {
+		cloudflaredName += ".exe"
+	}
+	if report.CloudflaredPath != filepath.Join(tmpDir, cloudflaredName) {
 		t.Fatalf("cloudflared_path = %q", report.CloudflaredPath)
 	}
 	if !report.SupportsJSON {

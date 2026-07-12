@@ -3,6 +3,7 @@ package runtimehome
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -23,6 +24,9 @@ func TestResolveFallsBackToHomeShadowDir(t *testing.T) {
 	tmpHome := t.TempDir()
 	t.Setenv(EnvVar, "")
 	t.Setenv("HOME", tmpHome)
+	if runtime.GOOS == "windows" {
+		t.Setenv("USERPROFILE", tmpHome)
+	}
 
 	got, err := Resolve()
 	if err != nil {

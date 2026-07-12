@@ -10,8 +10,10 @@ import (
 )
 
 func TestValidateShareBaseDirBlocksDangerousPaths(t *testing.T) {
-	if err := validateShareBaseDir("/"); err == nil {
-		t.Fatalf("expected / to be blocked")
+	tmpDir := t.TempDir()
+	root := filepath.VolumeName(tmpDir) + string(filepath.Separator)
+	if err := validateShareBaseDir(root); err == nil {
+		t.Fatalf("expected filesystem root %q to be blocked", root)
 	}
 
 	home, err := os.UserHomeDir()

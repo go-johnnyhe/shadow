@@ -4,10 +4,14 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
 func TestAtomicWriteFilePreservesExistingMode(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows does not preserve Unix permission bits")
+	}
 	tmpDir := t.TempDir()
 	dest := filepath.Join(tmpDir, "script.sh")
 
