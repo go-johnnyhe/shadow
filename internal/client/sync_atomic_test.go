@@ -31,7 +31,7 @@ func TestAtomicWriteFilePreservesExistingMode(t *testing.T) {
 	}
 }
 
-func TestAtomicWriteFileUpdatesSymlinkTarget(t *testing.T) {
+func TestAtomicWriteFileReplacesSymlinkWithoutUpdatingTarget(t *testing.T) {
 	tmpDir := t.TempDir()
 	target := filepath.Join(tmpDir, "target.txt")
 	link := filepath.Join(tmpDir, "link.txt")
@@ -53,17 +53,41 @@ func TestAtomicWriteFileUpdatesSymlinkTarget(t *testing.T) {
 
 	linkInfo, err := os.Lstat(link)
 	if err != nil {
-		t.Fatalf("failed to lstat symlink path: %v", err)
+		t.Fatalf("failed to lstat replaced path: %v", err)
 	}
-	if linkInfo.Mode()&os.ModeSymlink == 0 {
-		t.Fatalf("expected symlink to remain symlink")
+	if linkInfo.Mode()&os.ModeSymlink != 0 {
+		t.Fatalf("expected incoming file to replace symlink")
 	}
 
 	got, err := os.ReadFile(target)
 	if err != nil {
 		t.Fatalf("failed to read target after write: %v", err)
 	}
+	if string(got) != "old" {
+		t.Fatalf("expected symlink target to remain unchanged, got %q", string(got))
+	}
+	got, err = os.ReadFile(link)
+	if err != nil {
+		t.Fatalf("failed to read replacement file: %v", err)
+	}
 	if string(got) != "new" {
-		t.Fatalf("expected target content to be updated, got %q", string(got))
+		t.Fatalf("expected replacement content, got %q", string(got))
+	}
+}
+
+func TestSecureIncomingDestinationRejectsSymlinkedParent(t *testing.T) {
+	baseDir := t.TempDir()
+	outsideDir := t.TempDir()
+	linkedDir := filepath.Join(baseDir, "linked")
+	if err := os.Symlink(outsideDir, linkedDir); err != nil {
+		var pathErr *os.PathError
+		if errors.As(err, &pathErr) {
+			t.Skipf("symlink unsupported in this environment: %v", err)
+		}
+		t.Fatalf("failed to create directory symlink: %v", err)
+	}
+
+	if _, err := secureIncomingDestination(baseDir, "linked/outside.txt"); err == nil {
+		t.Fatalf("expected symlinked parent directory to be rejected")
 	}
 }

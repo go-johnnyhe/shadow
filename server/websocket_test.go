@@ -104,3 +104,24 @@ func TestBroadcastTextPrunesFailedPeers(t *testing.T) {
 		t.Fatalf("failed peer should be pruned")
 	}
 }
+
+func TestRelayAcceptsOnlyEncryptedClientMessages(t *testing.T) {
+	tests := []struct {
+		name string
+		msg  string
+		want bool
+	}{
+		{name: "encrypted", msg: "__shadow_e2e__|ciphertext", want: true},
+		{name: "empty encrypted payload", msg: "__shadow_e2e__|", want: false},
+		{name: "spoofed control", msg: "__shadow_control__|read_only_joiners=1", want: false},
+		{name: "plaintext file", msg: "file.txt|contents", want: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isRelayableClientMessage([]byte(tt.msg)); got != tt.want {
+				t.Fatalf("isRelayableClientMessage(%q) = %v, want %v", tt.msg, got, tt.want)
+			}
+		})
+	}
+}

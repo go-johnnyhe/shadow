@@ -135,5 +135,5 @@ Shadow uses a client-server model where the server is a pure message relay:
 
 - **Tunnel**: Cloudflared creates a public HTTPS endpoint (downloaded automatically on first run to `~/.shadow/`)
 - **Transport**: WebSocket with 30s heartbeat ping/pong
-- **Encryption**: AES-256-GCM with HMAC-SHA256 key derivation, random 12-byte nonce per message
+- **Encryption**: AES-256-GCM with domain-separated SHA-256 key derivation and a random 12-byte nonce per message
 - **Sync**: fsnotify file watcher with 50ms debounce, SHA256 dedup to avoid redundant sends

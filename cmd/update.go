@@ -10,9 +10,15 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/go-johnnyhe/shadow/internal/ui"
 	"github.com/spf13/cobra"
+)
+
+var (
+	updateMetadataHTTPClient = &http.Client{Timeout: 15 * time.Second}
+	updateDownloadHTTPClient = &http.Client{Timeout: 2 * time.Minute}
 )
 
 var updateCmd = &cobra.Command{
@@ -37,7 +43,7 @@ type githubRelease struct {
 func runUpdate() error {
 	fmt.Printf("  %s\n", ui.Dim("checking for updates..."))
 
-	resp, err := http.Get("https://api.github.com/repos/go-johnnyhe/shadow/releases/latest")
+	resp, err := updateMetadataHTTPClient.Get("https://api.github.com/repos/go-johnnyhe/shadow/releases/latest")
 	if err != nil {
 		return fmt.Errorf("failed to check for updates: %v", err)
 	}
@@ -71,7 +77,7 @@ func runUpdate() error {
 		latest, latest, runtime.GOOS, runtime.GOARCH,
 	)
 
-	dlResp, err := http.Get(archiveURL)
+	dlResp, err := updateDownloadHTTPClient.Get(archiveURL)
 	if err != nil {
 		return fmt.Errorf("failed to download release: %v", err)
 	}

@@ -29,9 +29,12 @@ mkdir -p "$OUTPUT_DIR"
 
 echo "Building shadow binary (GOARCH=$GOARCH)..."
 
+SHADOW_VERSION="${SHADOW_VERSION:-dev}"
+SHADOW_VERSION="${SHADOW_VERSION#v}"
+
 CGO_ENABLED=0 GOOS=darwin GOARCH="$GOARCH" \
     go build \
-    -ldflags "-s -w" \
+    -ldflags "-s -w -X main.version=$SHADOW_VERSION" \
     -o "$OUTPUT_DIR/shadow" \
     "$GO_PROJECT_ROOT"
 

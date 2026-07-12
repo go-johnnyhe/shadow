@@ -3,6 +3,7 @@ package client_test
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"os"
 	"path/filepath"
 	"strings"
@@ -95,6 +96,105 @@ func TestSmokeSyncNearLimitFile(t *testing.T) {
 	}
 
 	t.Fatalf("timed out waiting for %s to sync", joinFilePath)
+}
+
+func TestHostSyncsExistingFilesWhenJoinerConnectsLater(t *testing.T) {
+	server.SetReadOnlyJoiners(false)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/ws", server.StartServer)
+	httpServer := httptest.NewServer(mux)
+	defer httpServer.Close()
+
+	wsURL := "ws" + strings.TrimPrefix(httpServer.URL, "http") + "/ws"
+	hostDir := t.TempDir()
+	joinDir := t.TempDir()
+	hostFilePath := filepath.Join(hostDir, "existing.txt")
+	want := []byte("created before the joiner connected")
+	if err := os.WriteFile(hostFilePath, want, 0o644); err != nil {
+		t.Fatalf("failed to create host file: %v", err)
+	}
+
+	hostConn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("host dial failed: %v", err)
+	}
+	defer hostConn.Close()
+
+	key := "late-join-test-key"
+	hostClient, err := client.NewClient(hostConn, client.Options{
+		IsHost:  true,
+		E2EKey:  key,
+		BaseDir: hostDir,
+	})
+	if err != nil {
+		t.Fatalf("failed to create host client: %v", err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	hostClient.Start(ctx)
+	if count, snapshotErr := hostClient.SendInitialSnapshot(); snapshotErr != nil || count != 1 {
+		t.Fatalf("initial snapshot before join = (%d, %v), want (1, nil)", count, snapshotErr)
+	}
+
+	joinConn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("join dial failed: %v", err)
+	}
+	defer joinConn.Close()
+	joinClient, err := client.NewClient(joinConn, client.Options{
+		E2EKey:  key,
+		BaseDir: joinDir,
+	})
+	if err != nil {
+		t.Fatalf("failed to create join client: %v", err)
+	}
+	joinClient.Start(ctx)
+
+	waitForFileContent(t, filepath.Join(joinDir, "existing.txt"), want, 6*time.Second)
+}
+
+func TestClientRejectsPlaintextFileMessage(t *testing.T) {
+	server.SetReadOnlyJoiners(false)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/ws", server.StartServer)
+	httpServer := httptest.NewServer(mux)
+	defer httpServer.Close()
+
+	wsURL := "ws" + strings.TrimPrefix(httpServer.URL, "http") + "/ws"
+	attackerConn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("attacker dial failed: %v", err)
+	}
+	defer attackerConn.Close()
+
+	joinDir := t.TempDir()
+	joinConn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("join dial failed: %v", err)
+	}
+	defer joinConn.Close()
+	joinClient, err := client.NewClient(joinConn, client.Options{
+		E2EKey:  "key-the-attacker-does-not-have",
+		BaseDir: joinDir,
+	})
+	if err != nil {
+		t.Fatalf("failed to create join client: %v", err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	joinClient.Start(ctx)
+
+	plaintext := "injected.txt|" + base64.StdEncoding.EncodeToString([]byte("not encrypted"))
+	if err := attackerConn.WriteMessage(websocket.TextMessage, []byte(plaintext)); err != nil {
+		t.Fatalf("failed to send plaintext attack message: %v", err)
+	}
+	time.Sleep(250 * time.Millisecond)
+	if _, err := os.Stat(filepath.Join(joinDir, "injected.txt")); !os.IsNotExist(err) {
+		t.Fatalf("plaintext message created a file: %v", err)
+	}
 }
 
 func TestSmokeSyncRenameAndDelete(t *testing.T) {

@@ -12,6 +12,12 @@
 
 set -euo pipefail
 
+# Prefer the full Xcode installation even when xcode-select still points at the
+# standalone Command Line Tools. Callers can override DEVELOPER_DIR.
+if [ -z "${DEVELOPER_DIR:-}" ] && [ -d /Applications/Xcode.app/Contents/Developer ]; then
+    export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 MACOS_DIR="$(dirname "$SCRIPT_DIR")"
 PROJECT_ROOT="$(dirname "$MACOS_DIR")"
@@ -20,9 +26,32 @@ APP_NAME="Shadow"
 APP_PATH="$BUILD_DIR/$APP_NAME.app"
 DMG_PATH="$BUILD_DIR/$APP_NAME.dmg"
 
+# Xcode's embedded CLI build uses this value for `shadow --version` and update
+# checks. A tag checkout resolves automatically; callers may override it.
+SHADOW_VERSION="${SHADOW_VERSION:-$(git -C "$PROJECT_ROOT" describe --tags --exact-match 2>/dev/null || echo dev)}"
+export SHADOW_VERSION
+RELEASE_VERSION="${SHADOW_VERSION#v}"
+
 # Defaults from your local cert (override via env vars)
 DEVELOPER_ID="${DEVELOPER_ID:-Developer ID Application: Mingao He (W2HXB3MG88)}"
 TEAM_ID="${TEAM_ID:-W2HXB3MG88}"
+
+NOTARY_PROFILE="${NOTARY_PROFILE:-}"
+if [ -n "$NOTARY_PROFILE" ]; then
+    NOTARY_ARGS=(--keychain-profile "$NOTARY_PROFILE")
+else
+    if [ -z "${APPLE_ID:-}" ] || [ -z "${APP_PASSWORD:-}" ]; then
+        echo "ERROR: Set NOTARY_PROFILE, or APPLE_ID and APP_PASSWORD, for notarization."
+        exit 1
+    fi
+    NOTARY_ARGS=(--apple-id "$APPLE_ID" --password "$APP_PASSWORD" --team-id "$TEAM_ID")
+fi
+
+if ! security find-identity -v -p codesigning | grep -Fq "${DEVELOPER_ID}"; then
+    echo "ERROR: Developer ID signing identity is not installed:"
+    echo "  $DEVELOPER_ID"
+    exit 1
+fi
 
 echo "==> Cleaning build directory"
 rm -rf "$BUILD_DIR"
@@ -38,6 +67,7 @@ xcodebuild \
     CONFIGURATION_BUILD_DIR="$BUILD_DIR" \
     CODE_SIGN_IDENTITY="$DEVELOPER_ID" \
     DEVELOPMENT_TEAM="$TEAM_ID" \
+    MARKETING_VERSION="$RELEASE_VERSION" \
     CODE_SIGN_STYLE=Manual \
     ENABLE_HARDENED_RUNTIME=YES \
     CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO \
@@ -63,17 +93,8 @@ ZIP_PATH="$BUILD_DIR/$APP_NAME.zip"
 ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
 
 echo "==> Submitting for notarization"
-if [ -z "${APPLE_ID:-}" ] || [ -z "${APP_PASSWORD:-}" ]; then
-    echo "ERROR: Set APPLE_ID and APP_PASSWORD environment variables."
-    echo "  export APPLE_ID=your@email.com"
-    echo "  export APP_PASSWORD=xxxx-xxxx-xxxx-xxxx"
-    exit 1
-fi
-
 xcrun notarytool submit "$ZIP_PATH" \
-    --apple-id "$APPLE_ID" \
-    --password "$APP_PASSWORD" \
-    --team-id "$TEAM_ID" \
+    "${NOTARY_ARGS[@]}" \
     --wait
 
 echo "==> Stapling notarization ticket"
@@ -105,9 +126,7 @@ codesign --sign "$DEVELOPER_ID" --timestamp "$DMG_PATH"
 
 echo "==> Notarizing DMG"
 xcrun notarytool submit "$DMG_PATH" \
-    --apple-id "$APPLE_ID" \
-    --password "$APP_PASSWORD" \
-    --team-id "$TEAM_ID" \
+    "${NOTARY_ARGS[@]}" \
     --wait
 
 xcrun stapler staple "$DMG_PATH"

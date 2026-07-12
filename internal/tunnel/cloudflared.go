@@ -25,6 +25,8 @@ const (
 	StatusDependencyReady       = "dependency_ready"
 )
 
+var cloudflaredDownloadHTTPClient = &http.Client{Timeout: 2 * time.Minute}
+
 type StatusReporter func(event, message string)
 
 func reportStatus(reporter StatusReporter, event, message string) {
@@ -83,7 +85,7 @@ func getCloudflaredBinary(reporter StatusReporter) (string, error) {
 	}
 
 	// download the binary
-	resp, err := http.Get(downloadURL)
+	resp, err := cloudflaredDownloadHTTPClient.Get(downloadURL)
 	if err != nil {
 		return "", fmt.Errorf("error downloading cloudflared binary: %v", err)
 	}

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/go-johnnyhe/shadow/internal/protocol"
@@ -11,6 +12,8 @@ import (
 	"sync"
 	"time"
 )
+
+const maxRelayMessageBytes = 20 * 1024 * 1024
 
 type clientPeer interface {
 	Write(msgType int, msg []byte) error
@@ -106,6 +109,11 @@ func broadcastText(exclude clientPeer, msgType int, msg []byte) {
 	broadcastPeerCount(nil, peerCount)
 }
 
+func isRelayableClientMessage(msg []byte) bool {
+	prefix := []byte(protocol.EncryptedChannel + "|")
+	return len(msg) > len(prefix) && bytes.HasPrefix(msg, prefix)
+}
+
 func StartServer(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -114,6 +122,7 @@ func StartServer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+	conn.SetReadLimit(maxRelayMessageBytes)
 	conn.SetPongHandler(func(string) error {
 		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 		return nil
@@ -165,7 +174,7 @@ func StartServer(w http.ResponseWriter, r *http.Request) {
 			}
 			break
 		}
-		if msgType == websocket.TextMessage {
+		if msgType == websocket.TextMessage && isRelayableClientMessage(msg) {
 			broadcastText(p, msgType, msg)
 		}
 	}

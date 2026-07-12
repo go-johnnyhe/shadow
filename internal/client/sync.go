@@ -47,9 +47,11 @@ type Client struct {
 	outboundIgnore        *OutboundIgnore
 	fileTimers            map[string]*time.Timer
 	fileTimersMu          sync.Mutex
+	snapshotMu            sync.Mutex
 	isWritingReceivedFile atomic.Bool
 	isHost                bool
 	readOnlyJoinerMode    atomic.Bool
+	connectedPeers        atomic.Int64
 	lastHash              sync.Map
 	readyCh               chan struct{}
 	readyOnce             sync.Once
@@ -141,10 +143,20 @@ func (c *Client) stopAllFileTimers() {
 }
 
 func (c *Client) SendInitialSnapshot() (int, error) {
+	return c.sendSnapshot(false)
+}
+
+// sendSnapshot walks the shared path and sends its current contents. A forced
+// snapshot is used when a new peer joins: the normal hash deduplication cannot
+// be used because that peer has not seen files sent before it connected.
+func (c *Client) sendSnapshot(force bool) (int, error) {
+	c.snapshotMu.Lock()
+	defer c.snapshotMu.Unlock()
+
 	sentCount := 0
 
 	if c.singleFileRel != "" {
-		if c.sendFile(filepath.Join(c.baseDir, filepath.FromSlash(c.singleFileRel)), false) {
+		if c.sendFile(filepath.Join(c.baseDir, filepath.FromSlash(c.singleFileRel)), false, force) {
 			sentCount++
 		}
 		return sentCount, nil
@@ -177,7 +189,7 @@ func (c *Client) SendInitialSnapshot() (int, error) {
 		if err != nil || !info.Mode().IsRegular() {
 			return nil
 		}
-		if c.sendFile(currentPath, false) {
+		if c.sendFile(currentPath, false, force) {
 			sentCount++
 		}
 		return nil
@@ -194,10 +206,10 @@ func fileHash(b []byte) string {
 }
 
 func (c *Client) SendFile(filePath string) {
-	c.sendFile(filePath, true)
+	c.sendFile(filePath, true, false)
 }
 
-func (c *Client) sendFile(filePath string, verbose bool) bool {
+func (c *Client) sendFile(filePath string, verbose, force bool) bool {
 	if c.readOnlyJoinerMode.Load() {
 		return false
 	}
@@ -235,11 +247,12 @@ func (c *Client) sendFile(filePath string, verbose bool) bool {
 
 	newHash := fileHash(content)
 
-	if prevContent, ok := c.lastHash.Load(relPath); ok && prevContent.(string) == newHash {
-		return false
+	if !force {
+		if prevContent, ok := c.lastHash.Load(relPath); ok && prevContent.(string) == newHash {
+			return false
+		}
 	}
 
-	c.lastHash.Store(relPath, newHash)
 	encodedContent := base64.StdEncoding.EncodeToString(content)
 	plaintextMessage := []byte(fmt.Sprintf("%s|%s", relPath, encodedContent))
 	encryptedPayload, err := c.codec.Encrypt(plaintextMessage)
@@ -253,6 +266,7 @@ func (c *Client) sendFile(filePath string, verbose bool) bool {
 		log.Println("error writing the file: ", err)
 		return false
 	}
+	c.lastHash.Store(relPath, newHash)
 
 	if verbose {
 		c.notifyFileSent(relPath, false)
@@ -321,7 +335,15 @@ func (c *Client) readLoop() {
 			}
 			if peerCount, ok := protocol.ParsePeerCountControl(parts[1]); ok {
 				others := peerCount - 1
+				previous := c.connectedPeers.Swap(int64(others))
 				c.notifyPeerCount(others)
+				if c.isHost && others > int(previous) {
+					go func() {
+						if _, snapshotErr := c.sendSnapshot(true); snapshotErr != nil {
+							log.Printf("failed to sync new peer: %v", snapshotErr)
+						}
+					}()
+				}
 			}
 			c.markReady()
 			continue
@@ -329,17 +351,19 @@ func (c *Client) readLoop() {
 
 		c.markReady()
 
-		if parts[0] == protocol.EncryptedChannel {
-			decryptedBytes, decryptErr := c.codec.Decrypt(parts[1])
-			if decryptErr != nil {
-				log.Printf("failed to decrypt E2E message: %v\n", decryptErr)
-				continue
-			}
-			parts = strings.SplitN(string(decryptedBytes), "|", 2)
-			if len(parts) != 2 {
-				log.Printf("Received invalid decrypted message format: %s\n", string(decryptedBytes))
-				continue
-			}
+		if parts[0] != protocol.EncryptedChannel {
+			log.Printf("ignored message on unsupported channel %q\n", parts[0])
+			continue
+		}
+		decryptedBytes, decryptErr := c.codec.Decrypt(parts[1])
+		if decryptErr != nil {
+			log.Printf("failed to decrypt E2E message: %v\n", decryptErr)
+			continue
+		}
+		parts = strings.SplitN(string(decryptedBytes), "|", 2)
+		if len(parts) != 2 {
+			log.Printf("Received invalid decrypted message format: %s\n", string(decryptedBytes))
+			continue
 		}
 
 		relPath, pathErr := normalizeIncomingPath(parts[0])
@@ -351,7 +375,12 @@ func (c *Client) readLoop() {
 			continue
 		}
 
-		destPath := filepath.Join(c.baseDir, filepath.FromSlash(relPath))
+		destPath, destErr := secureIncomingDestination(c.baseDir, relPath)
+		if destErr != nil {
+			log.Printf("unsafe incoming destination %q: %v\n", relPath, destErr)
+			c.notifyWarning(fmt.Sprintf("⚠ skipped unsafe path %s", relPath))
+			continue
+		}
 		if parts[1] == deletePayloadMarker {
 			if err := os.RemoveAll(destPath); err != nil && !os.IsNotExist(err) {
 				log.Printf("error deleting %s: %v\n", relPath, err)
@@ -727,32 +756,43 @@ func normalizeIncomingPath(rawPath string) (string, error) {
 	return cleanPath, nil
 }
 
+// secureIncomingDestination prevents an existing symlinked directory inside a
+// join folder from redirecting writes or deletions outside that folder. The
+// base directory itself is trusted because it is explicitly chosen by the user.
+func secureIncomingDestination(baseDir, relPath string) (string, error) {
+	parts := strings.Split(filepath.FromSlash(relPath), string(filepath.Separator))
+	current := filepath.Clean(baseDir)
+	for _, part := range parts[:len(parts)-1] {
+		current = filepath.Join(current, part)
+		info, err := os.Lstat(current)
+		if errors.Is(err, os.ErrNotExist) {
+			break
+		}
+		if err != nil {
+			return "", err
+		}
+		if info.Mode()&os.ModeSymlink != 0 {
+			return "", fmt.Errorf("parent directory is a symlink")
+		}
+		if !info.IsDir() {
+			return "", fmt.Errorf("parent path is not a directory")
+		}
+	}
+	return filepath.Join(baseDir, filepath.FromSlash(relPath)), nil
+}
+
 func atomicWriteFile(destPath string, data []byte, perm os.FileMode) error {
-	writePath := destPath
 	targetPerm := perm
 
 	if info, err := os.Lstat(destPath); err == nil {
-		if info.Mode()&os.ModeSymlink != 0 {
-			linkTarget, readErr := os.Readlink(destPath)
-			if readErr != nil {
-				return readErr
-			}
-			if filepath.IsAbs(linkTarget) {
-				writePath = linkTarget
-			} else {
-				writePath = filepath.Join(filepath.Dir(destPath), linkTarget)
-			}
-			if targetInfo, statErr := os.Stat(writePath); statErr == nil {
-				targetPerm = targetInfo.Mode().Perm()
-			}
-		} else {
+		if info.Mode()&os.ModeSymlink == 0 {
 			targetPerm = info.Mode().Perm()
 		}
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
 
-	tmpFile, err := os.CreateTemp(filepath.Dir(writePath), "."+filepath.Base(writePath)+".shadow_tmp_*.tmp")
+	tmpFile, err := os.CreateTemp(filepath.Dir(destPath), "."+filepath.Base(destPath)+".shadow_tmp_*.tmp")
 	if err != nil {
 		return err
 	}
@@ -776,10 +816,10 @@ func atomicWriteFile(destPath string, data []byte, perm os.FileMode) error {
 		return err
 	}
 
-	if err := os.Rename(tmpPath, writePath); err != nil {
+	if err := os.Rename(tmpPath, destPath); err != nil {
 		// Windows may reject rename-over-existing. Fallback keeps behavior working.
-		if removeErr := os.Remove(writePath); removeErr == nil || errors.Is(removeErr, os.ErrNotExist) {
-			if retryErr := os.Rename(tmpPath, writePath); retryErr == nil {
+		if removeErr := os.Remove(destPath); removeErr == nil || errors.Is(removeErr, os.ErrNotExist) {
+			if retryErr := os.Rename(tmpPath, destPath); retryErr == nil {
 				cleanup = false
 				return nil
 			}
