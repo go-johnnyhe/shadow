@@ -55,3 +55,8 @@ macos/build/
 macos/DerivedData/
 macos/**/*.xcuserdata
 macos/**/*.xcworkspacedata
+.gstack/
+
+# Agent instruction files (kept local, not published)
+CLAUDE.md
+AGENTS.md
