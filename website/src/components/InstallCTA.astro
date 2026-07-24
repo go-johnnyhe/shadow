@@ -1,10 +1,18 @@
 ---
 import { dmgUrl, githubUrl, installCmd } from '../consts';
+
+const rawBase = import.meta.env.BASE_URL;
+const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
+const iconSrc = `${base}shadow-icon.png`;
 ---
 
 <section class="cta" id="install">
   <div class="section-shell cta-inner reveal">
-    <h2 class="section-title">You've scrolled this far.</h2>
+    <div class="brand-mark reveal" data-brand-mark data-particle-src={iconSrc} aria-hidden="true">
+      <canvas class="brand-mark-canvas" data-brand-canvas></canvas>
+      <img class="brand-mark-fallback" src={iconSrc} alt="" width="200" height="200" loading="lazy" decoding="async" />
+    </div>
+
     <p class="cta-lead">
       Next time someone says "let's pair," try Shadow.
       Download, click Start, send the link.
@@ -62,11 +70,87 @@ import { dmgUrl, githubUrl, installCmd } from '../consts';
         data-cta-target="github"
         data-cta-surface="website"
       >
-        Star the repo &mdash; it helps others find Shadow
+        Star the repo, it helps others find Shadow
       </a>
     </div>
   </div>
 </section>
+
+<script>
+  const mount = document.querySelector('[data-brand-mark]');
+  const canvas = mount?.querySelector('[data-brand-canvas]');
+  const src = mount?.getAttribute('data-particle-src') ?? '';
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function webglAvailable() {
+    try {
+      const test = document.createElement('canvas');
+      return (
+        !!window.WebGLRenderingContext &&
+        !!(test.getContext('webgl') || test.getContext('experimental-webgl'))
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  // Only enhance when it's safe: real canvas, an asset, motion allowed, WebGL present.
+  // Otherwise the static icon (fallback <img>) stays exactly as-is.
+  if (mount && canvas instanceof HTMLCanvasElement && src && !reduceMotion && webglAvailable()) {
+    let started = false;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting || started) continue;
+          started = true;
+          io.disconnect();
+
+          // Dynamic import keeps three.js in its own lazily-loaded chunk,
+          // off the initial page load.
+          import('./canvasui/ParticleObjectVanilla')
+            .then(({ createParticleObject }) => {
+              const instance = createParticleObject(
+                { canvas },
+                {
+                  src,
+                  count: 12000,
+                  size: 2.2,
+                  color: '',
+                  background: '',
+                  orbit: false,
+                  zoom: false,
+                  autoRotate: false,
+                  floatIntensity: 1.1,
+                  rotationIntensity: 0.5,
+                  floatSpeed: 1.4,
+                  swirl: 0.7,
+                  onLoad: () => {
+                    mount.setAttribute('data-state', 'ready');
+                    instance?.resize();
+                  },
+                }
+              );
+
+              // createParticleObject returns null if WebGL init fails — keep the static icon.
+              if (!instance) return;
+
+              const onResize = () => instance.resize();
+              window.addEventListener('resize', onResize, { passive: true });
+              instance.resize();
+            })
+            .catch(() => {
+              /* import/init failed — the static icon stays visible */
+            });
+        }
+      },
+      { rootMargin: '200px 0px' }
+    );
+
+    io.observe(mount);
+  }
+</script>
 
 <style>
   .cta {
@@ -78,6 +162,53 @@ import { dmgUrl, githubUrl, installCmd } from '../consts';
     flex-direction: column;
     align-items: center;
     text-align: center;
+  }
+
+  /* ---- Brand mark (Canvas UI particle object) ---- */
+  .brand-mark {
+    position: relative;
+    width: clamp(190px, 28vw, 300px);
+    aspect-ratio: 1;
+    margin-bottom: clamp(2.25rem, 5vw, 3.75rem);
+  }
+
+  .brand-mark-canvas,
+  .brand-mark-fallback {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .brand-mark-canvas {
+    opacity: 0;
+    transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    touch-action: pan-y;
+  }
+
+  .brand-mark-fallback {
+    object-fit: contain;
+    border-radius: 22%;
+    opacity: 1;
+    transition: opacity 0.7s ease;
+  }
+
+  .brand-mark[data-state='ready'] .brand-mark-canvas {
+    opacity: 1;
+  }
+
+  .brand-mark[data-state='ready'] .brand-mark-fallback {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .brand-mark-canvas {
+      display: none;
+    }
+
+    .brand-mark-fallback {
+      opacity: 1;
+    }
   }
 
   .cta-lead {

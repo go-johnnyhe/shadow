@@ -8,6 +8,10 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "astro": "^7.0.7"
+    "astro": "^7.0.7",
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.180.0"
   }
 }
