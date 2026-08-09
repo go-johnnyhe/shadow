@@ -2,7 +2,7 @@
   "name": "shadow-vscode",
   "displayName": "Shadow Sync",
   "description": "Encrypted real-time coding sessions for VS Code, with clipboard-friendly sharing",
-  "version": "0.4.5",
+  "version": "0.7.0",
   "publisher": "go-johnnyhe77",
   "icon": "media/shadow-icon.png",
   "license": "MIT",
