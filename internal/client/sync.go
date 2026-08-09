@@ -3,7 +3,6 @@ package client
 import (
 	"context"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -12,6 +11,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -28,34 +28,54 @@ import (
 const (
 	maxSyncedFileBytes      = 10 * 1024 * 1024
 	maxIncomingMessageBytes = 20 * 1024 * 1024
-	deletePayloadMarker     = "__shadow_delete__"
+	missingState            = "missing"
+	directoryState          = "directory"
+	otherState              = "other"
+	conflictDirectory       = ".shadow-conflicts"
+	renameRescanDelay       = 100 * time.Millisecond
+	maxProtocolPathBytes    = 4096
+	maxQueuedSnapshots      = 4
 )
 
-type incomingFileTooLargeError struct {
-	size int
-}
-
-func (e incomingFileTooLargeError) Error() string {
-	return fmt.Sprintf("decoded file payload exceeds %d-byte limit", maxSyncedFileBytes)
-}
-
 type Client struct {
-	conn                  *wsutil.Peer
-	codec                 *e2e.Codec
-	baseDir               string
-	singleFileRel         string
-	outboundIgnore        *OutboundIgnore
-	fileTimers            map[string]*time.Timer
-	fileTimersMu          sync.Mutex
-	snapshotMu            sync.Mutex
-	isWritingReceivedFile atomic.Bool
-	isHost                bool
-	readOnlyJoinerMode    atomic.Bool
-	connectedPeers        atomic.Int64
-	lastHash              sync.Map
-	readyCh               chan struct{}
-	readyOnce             sync.Once
-	onEvent               func(eventType, relPath, message string)
+	conn               *wsutil.Peer
+	codec              *e2e.Codec
+	baseDir            string
+	singleFileRel      string
+	singleFileMu       sync.RWMutex
+	outboundIgnore     *OutboundIgnore
+	fileTimers         map[string]*time.Timer
+	fileTimersMu       sync.Mutex
+	snapshotMu         sync.Mutex
+	outboundMu         sync.Mutex
+	renameRescanTimer  *time.Timer
+	renameRescanMu     sync.Mutex
+	rescan             func()
+	isHost             bool
+	readOnlyJoinerMode atomic.Bool
+	syncReady          atomic.Bool
+	connectedPeers     atomic.Int64
+	lastHash           sync.Map
+	pendingMu          sync.Mutex
+	pending            map[string][]pendingOperation
+	clientID           string
+	nextOperation      atomic.Uint64
+	lastSequence       atomic.Uint64
+	readyCh            chan struct{}
+	readyOnce          sync.Once
+	watcherReadyCh     chan struct{}
+	watcherReadyOnce   sync.Once
+	snapshotRequests   chan string
+	manifestReceived   bool
+	doneCh             chan struct{}
+	doneOnce           sync.Once
+	stopping           atomic.Bool
+	onEvent            func(eventType, relPath, message string)
+}
+
+type pendingOperation struct {
+	id           string
+	desiredState string
 }
 
 type Options struct {
@@ -77,6 +97,10 @@ func NewClient(conn *websocket.Conn, opts ...Options) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	clientID, err := e2e.GenerateShareKey()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create client identity: %w", err)
+	}
 
 	baseDir := opt.BaseDir
 	if strings.TrimSpace(baseDir) == "" {
@@ -96,17 +120,28 @@ func NewClient(conn *websocket.Conn, opts ...Options) (*Client, error) {
 	}
 
 	c := &Client{
-		conn:           wsutil.NewPeer(conn),
-		codec:          codec,
-		baseDir:        baseDirAbs,
-		singleFileRel:  singleFileRel,
-		outboundIgnore: NewOutboundIgnore(baseDirAbs),
-		isHost:         opt.IsHost,
-		readyCh:        make(chan struct{}),
-		fileTimers:     make(map[string]*time.Timer),
-		onEvent:        opt.OnEvent,
+		conn:             wsutil.NewPeer(conn),
+		codec:            codec,
+		baseDir:          baseDirAbs,
+		singleFileRel:    singleFileRel,
+		outboundIgnore:   NewOutboundIgnore(baseDirAbs),
+		isHost:           opt.IsHost,
+		clientID:         clientID,
+		readyCh:          make(chan struct{}),
+		watcherReadyCh:   make(chan struct{}),
+		snapshotRequests: make(chan string, maxQueuedSnapshots),
+		doneCh:           make(chan struct{}),
+		fileTimers:       make(map[string]*time.Timer),
+		pending:          make(map[string][]pendingOperation),
+		onEvent:          opt.OnEvent,
+	}
+	c.rescan = func() {
+		if _, snapshotErr := c.SendInitialSnapshot(); snapshotErr != nil {
+			log.Printf("failed to rescan after rename: %v", snapshotErr)
+		}
 	}
 	if c.isHost {
+		c.syncReady.Store(true)
 		c.markReady()
 	}
 	return c, nil
@@ -114,52 +149,105 @@ func NewClient(conn *websocket.Conn, opts ...Options) (*Client, error) {
 
 func (c *Client) Start(ctx context.Context) {
 	go c.readLoop()
-	go func() {
-		if !c.isHost {
-			select {
-			case <-c.readyCh:
-			case <-time.After(10 * time.Second):
-				// Safety fallback: start monitoring even if control
-				// message hasn't arrived (e.g. high-latency tunnel).
-			case <-ctx.Done():
-				return
-			}
-		}
-		c.monitorFiles(ctx)
-	}()
+	go c.monitorFiles(ctx)
+	if c.isHost {
+		go c.processSnapshotRequests()
+	}
 	go func() {
 		<-ctx.Done()
+		c.stopping.Store(true)
 		c.stopAllFileTimers()
+		c.outboundIgnore.Close()
+		_ = c.conn.Close()
 	}()
+}
+
+func (c *Client) processSnapshotRequests() {
+	for {
+		select {
+		case target := <-c.snapshotRequests:
+			if _, err := c.sendSnapshot(true, target); err != nil {
+				log.Printf("failed to sync new peer: %v", err)
+			}
+		case <-c.doneCh:
+			return
+		}
+	}
+}
+
+func (c *Client) WaitReady(ctx context.Context) error {
+	select {
+	case <-c.readyCh:
+		return nil
+	case <-c.doneCh:
+		return fmt.Errorf("Disconnected")
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+func (c *Client) Done() <-chan struct{} {
+	return c.doneCh
 }
 
 func (c *Client) stopAllFileTimers() {
 	c.fileTimersMu.Lock()
-	defer c.fileTimersMu.Unlock()
 	for _, t := range c.fileTimers {
 		t.Stop()
 	}
 	c.fileTimers = make(map[string]*time.Timer)
+	c.fileTimersMu.Unlock()
+
+	c.renameRescanMu.Lock()
+	if c.renameRescanTimer != nil {
+		c.renameRescanTimer.Stop()
+		c.renameRescanTimer = nil
+	}
+	c.renameRescanMu.Unlock()
 }
 
 func (c *Client) SendInitialSnapshot() (int, error) {
-	return c.sendSnapshot(false)
+	return c.sendSnapshot(false, "")
 }
 
-// sendSnapshot walks the shared path and sends its current contents. A forced
-// snapshot is used when a new peer joins: the normal hash deduplication cannot
-// be used because that peer has not seen files sent before it connected.
-func (c *Client) sendSnapshot(force bool) (int, error) {
+// sendSnapshot walks the shared path and sends its current contents. A target
+// identifies a new peer that is receiving an isolated bootstrap snapshot.
+func (c *Client) sendSnapshot(force bool, target string) (int, error) {
 	c.snapshotMu.Lock()
 	defer c.snapshotMu.Unlock()
+	c.outboundMu.Lock()
+	defer c.outboundMu.Unlock()
 
 	sentCount := 0
-
-	if c.singleFileRel != "" {
-		if c.sendFile(filepath.Join(c.baseDir, filepath.FromSlash(c.singleFileRel)), false, force) {
+	singleFileRel := c.singleFileScope()
+	if singleFileRel != "" {
+		manifestPaths := make([]string, 0, 1)
+		if target != "" {
+			if _, err := os.Lstat(filepath.Join(c.baseDir, filepath.FromSlash(singleFileRel))); err == nil {
+				manifestPaths = append(manifestPaths, singleFileRel)
+			}
+			if err := c.sendBootstrapManifestUnlocked(target, manifestPaths, nil); err != nil {
+				return sentCount, err
+			}
+		}
+		if c.sendFileUnlocked(filepath.Join(c.baseDir, filepath.FromSlash(singleFileRel)), false, force, target) {
 			sentCount++
 		}
+		if target != "" {
+			if err := c.conn.Write(websocket.TextMessage, protocol.EncodeSyncDone(target)); err != nil {
+				return sentCount, err
+			}
+		}
 		return sentCount, nil
+	}
+	if target != "" {
+		manifestPaths, directories, manifestErr := c.snapshotManifest()
+		if manifestErr != nil {
+			return sentCount, manifestErr
+		}
+		if err := c.sendBootstrapManifestUnlocked(target, manifestPaths, directories); err != nil {
+			return sentCount, err
+		}
 	}
 
 	walkErr := filepath.WalkDir(c.baseDir, func(currentPath string, d fs.DirEntry, walkErr error) error {
@@ -181,15 +269,15 @@ func (c *Client) sendSnapshot(force bool) (int, error) {
 			}
 			return nil
 		}
-
 		if d.IsDir() {
+			c.lastHash.Store(relPath, directoryState)
 			return nil
 		}
 		info, err := d.Info()
 		if err != nil || !info.Mode().IsRegular() {
 			return nil
 		}
-		if c.sendFile(currentPath, false, force) {
+		if c.sendFileUnlocked(currentPath, false, force, target) {
 			sentCount++
 		}
 		return nil
@@ -197,7 +285,54 @@ func (c *Client) sendSnapshot(force bool) (int, error) {
 	if walkErr != nil {
 		return sentCount, walkErr
 	}
+	if target != "" {
+		if err := c.conn.Write(websocket.TextMessage, protocol.EncodeSyncDone(target)); err != nil {
+			return sentCount, err
+		}
+	}
 	return sentCount, nil
+}
+
+func (c *Client) snapshotManifest() ([]string, []string, error) {
+	paths := make([]string, 0)
+	directories := make([]string, 0)
+	err := filepath.WalkDir(c.baseDir, func(currentPath string, d fs.DirEntry, walkErr error) error {
+		if walkErr != nil || currentPath == c.baseDir {
+			return nil
+		}
+		relPath, err := c.relativeProtocolPath(currentPath)
+		if err != nil {
+			return nil
+		}
+		if c.shouldIgnoreOutboundRel(relPath, d.IsDir()) {
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		info, err := d.Info()
+		if err != nil || (!d.IsDir() && !info.Mode().IsRegular()) {
+			return nil
+		}
+		paths = append(paths, relPath)
+		if d.IsDir() {
+			directories = append(directories, relPath)
+		}
+		return nil
+	})
+	return paths, directories, err
+}
+
+func (c *Client) sendBootstrapManifestUnlocked(target string, paths, directories []string) error {
+	plaintext, err := protocol.EncodeBootstrapManifest(paths, directories, c.singleFileScope())
+	if err != nil {
+		return err
+	}
+	encrypted, err := c.codec.Encrypt(plaintext)
+	if err != nil {
+		return err
+	}
+	return c.conn.Write(websocket.TextMessage, protocol.EncodeTargetedEncrypted(target, encrypted))
 }
 
 func fileHash(b []byte) string {
@@ -206,15 +341,13 @@ func fileHash(b []byte) string {
 }
 
 func (c *Client) SendFile(filePath string) {
-	c.sendFile(filePath, true, false)
+	c.outboundMu.Lock()
+	defer c.outboundMu.Unlock()
+	c.sendFileUnlocked(filePath, true, false, "")
 }
 
-func (c *Client) sendFile(filePath string, verbose, force bool) bool {
-	if c.readOnlyJoinerMode.Load() {
-		return false
-	}
-
-	if c.isWritingReceivedFile.Load() {
+func (c *Client) sendFileUnlocked(filePath string, verbose, force bool, target string) bool {
+	if (target == "" && !c.syncReady.Load()) || c.readOnlyJoinerMode.Load() {
 		return false
 	}
 
@@ -247,26 +380,41 @@ func (c *Client) sendFile(filePath string, verbose, force bool) bool {
 
 	newHash := fileHash(content)
 
-	if !force {
-		if prevContent, ok := c.lastHash.Load(relPath); ok && prevContent.(string) == newHash {
-			return false
-		}
+	if !force && c.latestPathState(relPath) == newHash {
+		return false
 	}
 
-	encodedContent := base64.StdEncoding.EncodeToString(content)
-	plaintextMessage := []byte(fmt.Sprintf("%s|%s", relPath, encodedContent))
+	operation := protocol.SyncOperation{
+		ID:          c.nextOperationID(),
+		Path:        relPath,
+		BaseState:   c.latestPathState(relPath),
+		DesiredHash: newHash,
+		Content:     content,
+	}
+	plaintextMessage, err := protocol.EncodeSyncOperation(operation)
+	if err != nil {
+		log.Println("error encoding the file: ", err)
+		return false
+	}
 	encryptedPayload, err := c.codec.Encrypt(plaintextMessage)
 	if err != nil {
 		log.Println("error encrypting the file: ", err)
 		return false
 	}
-	message := fmt.Sprintf("%s|%s", protocol.EncryptedChannel, encryptedPayload)
+	message := protocol.EncodeEncrypted(encryptedPayload)
+	if target != "" {
+		message = protocol.EncodeTargetedEncrypted(target, encryptedPayload)
+	} else {
+		c.addPending(relPath, pendingOperation{id: operation.ID, desiredState: newHash})
+	}
 
-	if err := c.conn.Write(websocket.TextMessage, []byte(message)); err != nil {
+	if err := c.conn.Write(websocket.TextMessage, message); err != nil {
+		if target == "" {
+			c.removePending(relPath, operation.ID)
+		}
 		log.Println("error writing the file: ", err)
 		return false
 	}
-	c.lastHash.Store(relPath, newHash)
 
 	if verbose {
 		c.notifyFileSent(relPath, false)
@@ -275,29 +423,47 @@ func (c *Client) sendFile(filePath string, verbose, force bool) bool {
 }
 
 func (c *Client) sendDelete(relPath string, verbose bool) bool {
-	if c.readOnlyJoinerMode.Load() {
-		return false
-	}
-	if c.isWritingReceivedFile.Load() {
+	c.outboundMu.Lock()
+	defer c.outboundMu.Unlock()
+	return c.sendDeleteUnlocked(relPath, verbose)
+}
+
+func (c *Client) sendDeleteUnlocked(relPath string, verbose bool) bool {
+	if !c.syncReady.Load() || c.readOnlyJoinerMode.Load() {
 		return false
 	}
 	if c.shouldIgnoreOutboundRel(relPath, false) {
 		return false
 	}
+	if c.latestPathState(relPath) == missingState {
+		return false
+	}
 
-	plaintextMessage := []byte(fmt.Sprintf("%s|%s", relPath, deletePayloadMarker))
+	operation := protocol.SyncOperation{
+		ID:          c.nextOperationID(),
+		Path:        relPath,
+		BaseState:   c.latestPathState(relPath),
+		DesiredHash: missingState,
+		Delete:      true,
+	}
+	plaintextMessage, err := protocol.EncodeSyncOperation(operation)
+	if err != nil {
+		log.Println("error encoding delete message: ", err)
+		return false
+	}
 	encryptedPayload, err := c.codec.Encrypt(plaintextMessage)
 	if err != nil {
 		log.Println("error encrypting delete message: ", err)
 		return false
 	}
-	message := fmt.Sprintf("%s|%s", protocol.EncryptedChannel, encryptedPayload)
+	message := protocol.EncodeEncrypted(encryptedPayload)
+	c.addPending(relPath, pendingOperation{id: operation.ID, desiredState: missingState})
 
-	if err := c.conn.Write(websocket.TextMessage, []byte(message)); err != nil {
+	if err := c.conn.Write(websocket.TextMessage, message); err != nil {
+		c.removePending(relPath, operation.ID)
 		log.Println("error writing delete message: ", err)
 		return false
 	}
-	c.dropPathHashes(relPath)
 
 	if verbose {
 		c.notifyFileSent(relPath, true)
@@ -306,22 +472,24 @@ func (c *Client) sendDelete(relPath string, verbose bool) bool {
 }
 
 func (c *Client) readLoop() {
+	defer c.doneOnce.Do(func() { close(c.doneCh) })
+	defer c.conn.Close()
 	for {
-		_, msg, err := c.conn.ReadMessage()
+		_, message, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseMessageTooBig) || strings.Contains(err.Error(), "read limit exceeded") {
 				c.notifyWarning("⚠ incoming data exceeded transport limit")
 				return
 			}
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				c.notifyWarning("⚠ connection lost")
+			if !c.stopping.Load() {
+				c.notifyDisconnected()
 			}
 			return
 		}
 
-		parts := strings.SplitN(string(msg), "|", 2)
+		parts := strings.SplitN(string(message), "|", 2)
 		if len(parts) != 2 {
-			log.Printf("Received invalid message format: %s\n", string(msg))
+			log.Printf("received invalid message format\n")
 			continue
 		}
 
@@ -335,94 +503,572 @@ func (c *Client) readLoop() {
 			}
 			if peerCount, ok := protocol.ParsePeerCountControl(parts[1]); ok {
 				others := peerCount - 1
-				previous := c.connectedPeers.Swap(int64(others))
+				c.connectedPeers.Store(int64(others))
 				c.notifyPeerCount(others)
-				if c.isHost && others > int(previous) {
-					go func() {
-						if _, snapshotErr := c.sendSnapshot(true); snapshotErr != nil {
-							log.Printf("failed to sync new peer: %v", snapshotErr)
-						}
-					}()
+			}
+			if targetID, ok := protocol.ParseSyncRequestControl(parts[1]); ok && c.isHost {
+				select {
+				case c.snapshotRequests <- targetID:
+				default:
+					log.Printf("ignored sync request for peer %s: snapshot queue is full", targetID)
 				}
 			}
-			c.markReady()
-			continue
-		}
-
-		c.markReady()
-
-		if parts[0] != protocol.EncryptedChannel {
-			log.Printf("ignored message on unsupported channel %q\n", parts[0])
-			continue
-		}
-		decryptedBytes, decryptErr := c.codec.Decrypt(parts[1])
-		if decryptErr != nil {
-			log.Printf("failed to decrypt E2E message: %v\n", decryptErr)
-			continue
-		}
-		parts = strings.SplitN(string(decryptedBytes), "|", 2)
-		if len(parts) != 2 {
-			log.Printf("Received invalid decrypted message format: %s\n", string(decryptedBytes))
-			continue
-		}
-
-		relPath, pathErr := normalizeIncomingPath(parts[0])
-		if pathErr != nil {
-			log.Printf("invalid incoming path %q: %v\n", parts[0], pathErr)
-			continue
-		}
-		if c.shouldIgnoreInboundRel(relPath) {
-			continue
-		}
-
-		destPath, destErr := secureIncomingDestination(c.baseDir, relPath)
-		if destErr != nil {
-			log.Printf("unsafe incoming destination %q: %v\n", relPath, destErr)
-			c.notifyWarning(fmt.Sprintf("⚠ skipped unsafe path %s", relPath))
-			continue
-		}
-		if parts[1] == deletePayloadMarker {
-			if err := os.RemoveAll(destPath); err != nil && !os.IsNotExist(err) {
-				log.Printf("error deleting %s: %v\n", relPath, err)
-			} else {
-				c.notifyFileReceived(relPath, true)
+			if baseline, ok := protocol.ParseSyncBaselineControl(parts[1]); ok && !c.isHost && !c.syncReady.Load() {
+				c.lastSequence.Store(baseline)
 			}
-			c.dropPathHashes(relPath)
+			if protocol.ParseSyncCompleteControl(parts[1]) && !c.isHost {
+				if !c.manifestReceived {
+					c.notifyDisconnected()
+					return
+				}
+				<-c.watcherReadyCh
+				c.syncReady.Store(true)
+				if _, snapshotErr := c.SendInitialSnapshot(); snapshotErr != nil {
+					log.Printf("failed to rescan after bootstrap: %v", snapshotErr)
+					c.notifyDisconnected()
+					return
+				}
+				c.markReady()
+			}
 			continue
 		}
 
-		decodedContent, err := decodeIncomingFileContent(parts[1])
+		if sequence, encryptedPayload, ok := protocol.ParseOrderedEncrypted(message); ok {
+			previous := c.lastSequence.Load()
+			if sequence != previous+1 {
+				log.Printf("invalid operation sequence: got %d after %d", sequence, previous)
+				c.notifyDisconnected()
+				return
+			}
+			if err := c.applyEncryptedOperation(encryptedPayload, false); err != nil {
+				log.Printf("failed to apply operation %d: %v", sequence, err)
+				c.notifyDisconnected()
+				return
+			}
+			c.lastSequence.Store(sequence)
+			continue
+		}
+		if encryptedPayload, ok := protocol.ParseBootstrapEncrypted(message); ok {
+			if err := c.applyEncryptedOperation(encryptedPayload, true); err != nil {
+				log.Printf("failed to apply bootstrap: %v", err)
+				c.notifyDisconnected()
+				return
+			}
+			continue
+		}
+		log.Printf("ignored message on unsupported channel %q\n", parts[0])
+	}
+}
+
+func (c *Client) applyEncryptedOperation(encryptedPayload string, bootstrap bool) error {
+	c.outboundMu.Lock()
+	defer c.outboundMu.Unlock()
+
+	decrypted, err := c.codec.Decrypt(encryptedPayload)
+	if err != nil {
+		return fmt.Errorf("decrypt: %w", err)
+	}
+	if bootstrap {
+		manifest, isManifest, manifestErr := protocol.DecodeBootstrapManifest(decrypted)
+		if manifestErr != nil {
+			return manifestErr
+		}
+		if isManifest {
+			if c.manifestReceived {
+				return fmt.Errorf("duplicate bootstrap manifest")
+			}
+			if err := c.applyBootstrapManifest(manifest); err != nil {
+				return err
+			}
+			c.manifestReceived = true
+			return nil
+		}
+	}
+	operation, err := protocol.DecodeSyncOperation(decrypted)
+	if err != nil {
+		return err
+	}
+	relPath, err := normalizeIncomingPath(operation.Path)
+	if err != nil {
+		return err
+	}
+	if c.shouldIgnoreInboundRel(relPath) {
+		return fmt.Errorf("operation uses an ignored path")
+	}
+	if singleFileRel := c.singleFileScope(); singleFileRel != "" && relPath != singleFileRel {
+		return fmt.Errorf("operation is outside file scope")
+	}
+	if !validPathState(operation.BaseState) || !validPathState(operation.DesiredHash) {
+		return fmt.Errorf("invalid state hash for %s", relPath)
+	}
+	if operation.Delete {
+		if operation.DesiredHash != missingState || len(operation.Content) != 0 {
+			return fmt.Errorf("invalid delete operation for %s", relPath)
+		}
+	} else {
+		if len(operation.Content) > maxSyncedFileBytes {
+			return fmt.Errorf("file exceeds size limit")
+		}
+		if fileHash(operation.Content) != operation.DesiredHash {
+			return fmt.Errorf("content hash mismatch for %s", relPath)
+		}
+	}
+
+	parentConflicts, err := c.prepareIncomingParents(relPath, operation.ID)
+	if err != nil {
+		return err
+	}
+	for _, conflictRel := range parentConflicts {
+		c.notifyWarning(fmt.Sprintf("Conflict: kept local copy at %s", conflictRel))
+	}
+	destPath, err := secureIncomingDestination(c.baseDir, relPath)
+	if err != nil {
+		return fmt.Errorf("unsafe path %s: %w", relPath, err)
+	}
+	currentState, err := pathState(destPath)
+	if err != nil {
+		return fmt.Errorf("inspect %s: %w", relPath, err)
+	}
+	committedState := c.committedPathState(relPath)
+	ownOperation, newerPending := c.ackPending(relPath, operation.ID)
+
+	if ownOperation && newerPending {
+		c.lastHash.Store(relPath, operation.DesiredHash)
+		return nil
+	}
+	if ownOperation && currentState != committedState && currentState != operation.DesiredHash {
+		// The user changed the path again before this echo arrived. Commit the
+		// ordered echo, keep the newer local bytes, and send them as the next op.
+		c.lastHash.Store(relPath, operation.DesiredHash)
+		c.scheduleCurrentPath(relPath, destPath)
+		return nil
+	}
+	if currentState == operation.DesiredHash {
+		c.storeAppliedState(relPath, operation.DesiredHash)
+		return nil
+	}
+
+	conflicts, err := c.installIncomingOperation(destPath, relPath, operation, bootstrap)
+	if err != nil {
+		return err
+	}
+	for _, conflictRel := range conflicts {
+		c.notifyWarning(fmt.Sprintf("Conflict: kept local copy at %s", conflictRel))
+	}
+
+	if operation.Delete {
+		c.dropPathHashes(relPath)
+		c.lastHash.Store(relPath, missingState)
+		c.notifyFileReceived(relPath, true)
+		return nil
+	}
+
+	now := time.Now()
+	_ = os.Chtimes(destPath, now, now)
+	c.storeAppliedState(relPath, operation.DesiredHash)
+	c.notifyFileReceived(relPath, false)
+	return nil
+}
+
+func (c *Client) applyBootstrapManifest(manifest protocol.BootstrapManifest) error {
+	allowed := make(map[string]struct{}, len(manifest.Paths))
+	for _, rawPath := range manifest.Paths {
+		relPath, err := normalizeIncomingPath(rawPath)
+		if err != nil || relPath != rawPath || c.shouldIgnoreInboundRel(relPath) {
+			return fmt.Errorf("invalid path in bootstrap manifest")
+		}
+		allowed[relPath] = struct{}{}
+	}
+
+	singleFile := ""
+	if manifest.SingleFile != "" {
+		var err error
+		singleFile, err = normalizeIncomingPath(manifest.SingleFile)
+		if err != nil || singleFile != manifest.SingleFile || c.shouldIgnoreInboundRel(singleFile) {
+			return fmt.Errorf("invalid single-file scope")
+		}
+		for relPath := range allowed {
+			if relPath != singleFile {
+				return fmt.Errorf("bootstrap path is outside file scope")
+			}
+		}
+		if len(manifest.Directories) != 0 {
+			return fmt.Errorf("single-file manifest contains directories")
+		}
+	}
+	c.setSingleFileScope(singleFile)
+
+	if singleFile != "" {
+		if _, exists := allowed[singleFile]; !exists {
+			destination, err := secureIncomingDestination(c.baseDir, singleFile)
+			if err != nil {
+				return fmt.Errorf("unsafe single-file path: %w", err)
+			}
+			if _, err := os.Lstat(destination); err == nil {
+				conflictRel, err := c.preserveConflict(destination, singleFile, "bootstrap-manifest")
+				if err != nil {
+					return err
+				}
+				c.notifyWarning(fmt.Sprintf("Conflict: kept local copy at %s", conflictRel))
+			} else if !errors.Is(err, os.ErrNotExist) {
+				return err
+			}
+			c.lastHash.Store(singleFile, missingState)
+		}
+		return nil
+	}
+
+	absent := make([]string, 0)
+	err := filepath.WalkDir(c.baseDir, func(currentPath string, d fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if currentPath == c.baseDir {
+			return nil
+		}
+		relPath, err := c.relativeProtocolPath(currentPath)
 		if err != nil {
-			var tooLarge incomingFileTooLargeError
-			if errors.As(err, &tooLarge) {
-				sizeMB := float64(tooLarge.size) / (1024 * 1024)
-				c.notifySkipped(relPath, sizeMB)
+			return err
+		}
+		if c.shouldIgnoreOutboundRel(relPath, d.IsDir()) {
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if _, exists := allowed[relPath]; exists {
+			return nil
+		}
+		absent = append(absent, relPath)
+		if d.IsDir() {
+			return filepath.SkipDir
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("inspect bootstrap destination: %w", err)
+	}
+	for _, relPath := range absent {
+		destination, err := secureIncomingDestination(c.baseDir, relPath)
+		if err != nil {
+			return err
+		}
+		conflictRel, err := c.preserveConflict(destination, relPath, "bootstrap-manifest")
+		if err != nil {
+			return err
+		}
+		c.dropPathHashes(relPath)
+		c.notifyWarning(fmt.Sprintf("Conflict: kept local copy at %s", conflictRel))
+	}
+
+	directories := append([]string(nil), manifest.Directories...)
+	sort.Slice(directories, func(i, j int) bool {
+		return strings.Count(directories[i], "/") < strings.Count(directories[j], "/")
+	})
+	for _, rawPath := range directories {
+		relPath, err := normalizeIncomingPath(rawPath)
+		if err != nil || relPath != rawPath {
+			return fmt.Errorf("invalid directory in bootstrap manifest")
+		}
+		if _, exists := allowed[relPath]; !exists {
+			return fmt.Errorf("bootstrap directory is not in path set")
+		}
+		parentConflicts, err := c.prepareIncomingParents(path.Join(relPath, ".placeholder"), "bootstrap-manifest")
+		if err != nil {
+			return err
+		}
+		for _, conflictRel := range parentConflicts {
+			c.notifyWarning(fmt.Sprintf("Conflict: kept local copy at %s", conflictRel))
+		}
+		destination := filepath.Join(c.baseDir, filepath.FromSlash(relPath))
+		state, err := pathState(destination)
+		if err != nil {
+			return err
+		}
+		if state != missingState && state != directoryState {
+			conflictRel, err := c.preserveConflict(destination, relPath, "bootstrap-manifest")
+			if err != nil {
+				return err
+			}
+			c.notifyWarning(fmt.Sprintf("Conflict: kept local copy at %s", conflictRel))
+		}
+		if err := os.MkdirAll(destination, 0o755); err != nil {
+			return err
+		}
+		c.lastHash.Store(relPath, directoryState)
+	}
+	return nil
+}
+
+func (c *Client) prepareIncomingParents(relPath, operationID string) ([]string, error) {
+	parts := strings.Split(filepath.FromSlash(relPath), string(filepath.Separator))
+	current := filepath.Clean(c.baseDir)
+	conflicts := make([]string, 0)
+	for index, part := range parts[:len(parts)-1] {
+		current = filepath.Join(current, part)
+		parentRel := filepath.ToSlash(filepath.Join(parts[:index+1]...))
+		for attempt := 0; attempt < 4; attempt++ {
+			info, err := os.Lstat(current)
+			if errors.Is(err, os.ErrNotExist) {
+				if err := os.Mkdir(current, 0o755); err == nil || errors.Is(err, os.ErrExist) {
+					continue
+				} else {
+					return nil, err
+				}
+			}
+			if err != nil {
+				return nil, err
+			}
+			if info.IsDir() && info.Mode()&os.ModeSymlink == 0 {
+				break
+			}
+			conflictRel, err := c.preserveConflict(current, parentRel, operationID)
+			if errors.Is(err, os.ErrNotExist) {
 				continue
 			}
-			log.Printf("error decoding content for %s: %v\n", relPath, err)
-			continue
-		}
-
-		if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
-			log.Printf("error creating parent directories for %s: %v\n", relPath, err)
-			continue
-		}
-
-		c.isWritingReceivedFile.Store(true)
-		func() {
-			defer c.isWritingReceivedFile.Store(false)
-			if err = atomicWriteFile(destPath, decodedContent, 0644); err != nil {
-				log.Printf("error writing this file: %s: %v\n", relPath, err)
-			} else {
-				// Nudge IDE file watchers (JetBrains VFS, etc.) that may miss
-				// the atomic rename. A Chtimes on the final path emits a clean
-				// metadata event on the real inode.
-				now := time.Now()
-				_ = os.Chtimes(destPath, now, now)
-				c.notifyFileReceived(relPath, false)
+			if err != nil {
+				return nil, err
 			}
-		}()
-		c.lastHash.Store(relPath, fileHash(decodedContent))
+			conflicts = append(conflicts, conflictRel)
+		}
+		info, err := os.Lstat(current)
+		if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+			return nil, fmt.Errorf("could not create safe parent %s", parentRel)
+		}
+	}
+	return conflicts, nil
+}
+
+func (c *Client) installIncomingOperation(destPath, relPath string, operation protocol.SyncOperation, bootstrap bool) ([]string, error) {
+	conflicts := make([]string, 0)
+	temporaryPath := ""
+	if !operation.Delete {
+		permission := os.FileMode(0o644)
+		if info, err := os.Lstat(destPath); err == nil && info.Mode().IsRegular() {
+			permission = info.Mode().Perm()
+		}
+		temporary, err := os.CreateTemp(filepath.Dir(destPath), ".shadow-incoming-*")
+		if err != nil {
+			return nil, err
+		}
+		temporaryPath = temporary.Name()
+		defer os.Remove(temporaryPath)
+		if err := temporary.Chmod(permission); err != nil {
+			_ = temporary.Close()
+			return nil, err
+		}
+		if _, err := temporary.Write(operation.Content); err != nil {
+			_ = temporary.Close()
+			return nil, err
+		}
+		if err := temporary.Close(); err != nil {
+			return nil, err
+		}
+	}
+
+	for attempt := 0; attempt < 32; attempt++ {
+		if operation.Delete {
+			if _, err := os.Lstat(destPath); errors.Is(err, os.ErrNotExist) {
+				return conflicts, nil
+			} else if err != nil {
+				return nil, err
+			}
+		} else {
+			if err := os.Link(temporaryPath, destPath); err == nil {
+				return conflicts, nil
+			} else if !errors.Is(err, os.ErrExist) {
+				return nil, fmt.Errorf("install incoming file without replacement: %w", err)
+			}
+		}
+
+		conflictRel, err := c.preserveConflict(destPath, relPath, operation.ID)
+		if errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		conflictPath := filepath.Join(c.baseDir, filepath.FromSlash(conflictRel))
+		movedState, err := pathState(conflictPath)
+		if err != nil {
+			return nil, err
+		}
+		keepConflict := bootstrap || movedState == directoryState || movedState == otherState || movedState != operation.BaseState || attempt > 0
+		if movedState == operation.DesiredHash {
+			keepConflict = false
+		}
+		if keepConflict {
+			conflicts = append(conflicts, conflictRel)
+		} else if err := os.RemoveAll(conflictPath); err != nil {
+			return nil, err
+		}
+	}
+	return nil, fmt.Errorf("path %s changed repeatedly while applying an update", relPath)
+}
+
+func validPathState(state string) bool {
+	if state == missingState || state == directoryState || state == otherState {
+		return true
+	}
+	if len(state) != sha256.Size*2 {
+		return false
+	}
+	_, err := hex.DecodeString(state)
+	return err == nil
+}
+
+func pathState(filePath string) (string, error) {
+	info, err := os.Lstat(filePath)
+	if errors.Is(err, os.ErrNotExist) {
+		return missingState, nil
+	}
+	if err != nil {
+		return "", err
+	}
+	if info.IsDir() {
+		return directoryState, nil
+	}
+	if !info.Mode().IsRegular() || info.Size() > maxSyncedFileBytes {
+		return otherState, nil
+	}
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", err
+	}
+	return fileHash(content), nil
+}
+
+func (c *Client) nextOperationID() string {
+	return fmt.Sprintf("%s-%d", c.clientID, c.nextOperation.Add(1))
+}
+
+func (c *Client) committedPathState(relPath string) string {
+	if state, ok := c.lastHash.Load(relPath); ok {
+		return state.(string)
+	}
+	return missingState
+}
+
+func (c *Client) latestPathState(relPath string) string {
+	c.pendingMu.Lock()
+	defer c.pendingMu.Unlock()
+	if pending := c.pending[relPath]; len(pending) > 0 {
+		return pending[len(pending)-1].desiredState
+	}
+	return c.committedPathState(relPath)
+}
+
+func (c *Client) addPending(relPath string, operation pendingOperation) {
+	c.pendingMu.Lock()
+	c.pending[relPath] = append(c.pending[relPath], operation)
+	c.pendingMu.Unlock()
+}
+
+func (c *Client) removePending(relPath, operationID string) {
+	c.pendingMu.Lock()
+	defer c.pendingMu.Unlock()
+	pending := c.pending[relPath]
+	for i := range pending {
+		if pending[i].id == operationID {
+			pending = append(pending[:i], pending[i+1:]...)
+			break
+		}
+	}
+	if len(pending) == 0 {
+		delete(c.pending, relPath)
+	} else {
+		c.pending[relPath] = pending
+	}
+}
+
+func (c *Client) ackPending(relPath, operationID string) (bool, bool) {
+	c.pendingMu.Lock()
+	defer c.pendingMu.Unlock()
+	pending := c.pending[relPath]
+	for i := range pending {
+		if pending[i].id != operationID {
+			continue
+		}
+		newer := i < len(pending)-1
+		pending = append(pending[:i], pending[i+1:]...)
+		if len(pending) == 0 {
+			delete(c.pending, relPath)
+		} else {
+			c.pending[relPath] = pending
+		}
+		return true, newer
+	}
+	return false, false
+}
+
+func (c *Client) storeAppliedState(relPath, state string) {
+	c.lastHash.Store(relPath, state)
+	parent := path.Dir(relPath)
+	for parent != "." && parent != "/" {
+		c.lastHash.Store(parent, directoryState)
+		parent = path.Dir(parent)
+	}
+}
+
+func (c *Client) scheduleCurrentPath(relPath, destPath string) {
+	c.scheduleFileTimer(relPath, func() {
+		state, err := pathState(destPath)
+		if err != nil {
+			return
+		}
+		switch state {
+		case missingState:
+			c.sendDelete(relPath, true)
+		case directoryState:
+			c.scheduleRenameRescan()
+		default:
+			c.SendFile(destPath)
+		}
+	})
+}
+
+func (c *Client) preserveConflict(destPath, relPath, operationID string) (string, error) {
+	conflictRoot := filepath.Join(c.baseDir, conflictDirectory)
+	if info, err := os.Lstat(conflictRoot); err == nil {
+		if !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+			return "", fmt.Errorf("conflict path is not a safe directory")
+		}
+	} else if errors.Is(err, os.ErrNotExist) {
+		if err := os.Mkdir(conflictRoot, 0o700); err != nil && !errors.Is(err, os.ErrExist) {
+			return "", err
+		}
+	} else {
+		return "", err
+	}
+
+	safeID := strings.Map(func(r rune) rune {
+		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '-' || r == '_' {
+			return r
+		}
+		return '-'
+	}, operationID)
+	conflictRel := path.Join(conflictDirectory, relPath+"."+safeID)
+	for suffix := 0; ; suffix++ {
+		candidateRel := conflictRel
+		if suffix > 0 {
+			candidateRel = fmt.Sprintf("%s-%d", conflictRel, suffix)
+		}
+		candidate, err := secureIncomingDestination(c.baseDir, candidateRel)
+		if err != nil {
+			return "", err
+		}
+		if _, err := os.Lstat(candidate); err == nil {
+			continue
+		} else if !errors.Is(err, os.ErrNotExist) {
+			return "", err
+		}
+		if err := os.MkdirAll(filepath.Dir(candidate), 0o700); err != nil {
+			return "", err
+		}
+		if err := os.Rename(destPath, candidate); err != nil {
+			return "", err
+		}
+		return filepath.ToSlash(candidateRel), nil
 	}
 }
 
@@ -488,6 +1134,14 @@ func (c *Client) notifyWarning(msg string) {
 	fmt.Println(ui.Warn(msg))
 }
 
+func (c *Client) notifyDisconnected() {
+	if c.onEvent != nil {
+		c.onEvent("disconnected", "", "Disconnected")
+		return
+	}
+	fmt.Println("Disconnected")
+}
+
 func (c *Client) notifySkipped(relPath string, sizeMB float64) {
 	if c.onEvent != nil {
 		c.onEvent("warning", relPath, fmt.Sprintf("skipped (%.0fMB, exceeds 10MB limit)", sizeMB))
@@ -504,6 +1158,7 @@ func (c *Client) notifyInfo(msg string) {
 }
 
 func (c *Client) monitorFiles(ctx context.Context) {
+	defer c.watcherReadyOnce.Do(func() { close(c.watcherReadyCh) })
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		msg := fmt.Sprintf("cannot create file watcher: %v", err)
@@ -571,7 +1226,7 @@ func (c *Client) addWatchRecursive(watcher *fsnotify.Watcher, root string) error
 			return nil
 		}
 
-		if c.singleFileRel != "" && currentPath != c.baseDir {
+		if c.singleFileScope() != "" && currentPath != c.baseDir {
 			return filepath.SkipDir
 		}
 
@@ -615,6 +1270,10 @@ func (c *Client) processFileEvents(ctx context.Context, watcher *fsnotify.Watche
 
 			if event.Op&fsnotify.Create != 0 {
 				if info, err := os.Stat(event.Name); err == nil && info.IsDir() {
+					relPath, relErr := c.relativeProtocolPath(event.Name)
+					if relErr == nil && c.shouldIgnoreOutboundRel(relPath, true) {
+						continue
+					}
 					if err := c.addWatchRecursive(watcher, event.Name); err != nil {
 						log.Printf("failed to recursively watch %s: %v", event.Name, err)
 					}
@@ -659,6 +1318,28 @@ func (c *Client) scheduleFileTimer(relPath string, fn func()) {
 	c.fileTimers[relPath] = t
 }
 
+func (c *Client) scheduleRenameRescan() {
+	c.renameRescanMu.Lock()
+	defer c.renameRescanMu.Unlock()
+	if c.renameRescanTimer != nil {
+		c.renameRescanTimer.Stop()
+	}
+	var timer *time.Timer
+	timer = time.AfterFunc(renameRescanDelay, func() {
+		c.renameRescanMu.Lock()
+		if c.renameRescanTimer != timer {
+			c.renameRescanMu.Unlock()
+			return
+		}
+		c.renameRescanTimer = nil
+		c.renameRescanMu.Unlock()
+		if !c.stopping.Load() {
+			c.rescan()
+		}
+	})
+	c.renameRescanTimer = timer
+}
+
 func (c *Client) handleFileEvent(event fsnotify.Event) {
 	filePath := event.Name
 
@@ -692,6 +1373,9 @@ func (c *Client) handleFileEvent(event fsnotify.Event) {
 	if err != nil {
 		return
 	}
+	if filepath.Base(filePath) == ".gitignore" {
+		c.outboundIgnore.Invalidate()
+	}
 	if c.shouldIgnoreOutboundRel(relPath, false) {
 		return
 	}
@@ -709,6 +1393,9 @@ func (c *Client) handleDeleteEvent(event fsnotify.Event) {
 	if c.shouldIgnoreOutboundRel(relPath, false) {
 		return
 	}
+	if wasRename {
+		c.scheduleRenameRescan()
+	}
 
 	c.scheduleFileTimer(relPath, func() {
 		// Rename often emits delete before create; avoid false delete if file reappears.
@@ -717,11 +1404,6 @@ func (c *Client) handleDeleteEvent(event fsnotify.Event) {
 			return
 		}
 		c.sendDelete(relPath, true)
-		if wasRename {
-			if _, snapshotErr := c.SendInitialSnapshot(); snapshotErr != nil {
-				log.Printf("failed to rescan after rename %s: %v", relPath, snapshotErr)
-			}
-		}
 	})
 }
 
@@ -736,19 +1418,34 @@ func (c *Client) relativeProtocolPath(filePath string) (string, error) {
 		return "", err
 	}
 	relSlash := path.Clean(filepath.ToSlash(relPath))
-	if relSlash == "." || relSlash == ".." || strings.HasPrefix(relSlash, "../") || strings.HasPrefix(relSlash, "/") {
+	if relSlash == "." || relSlash == ".." || len(relSlash) > maxProtocolPathBytes || strings.Contains(relSlash, "\\") || strings.HasPrefix(relSlash, "../") || strings.HasPrefix(relSlash, "/") {
 		return "", fmt.Errorf("path %q is outside base directory", filePath)
 	}
 
-	if c.singleFileRel != "" && relSlash != c.singleFileRel {
+	if singleFileRel := c.singleFileScope(); singleFileRel != "" && relSlash != singleFileRel {
 		return "", fmt.Errorf("path %q is outside file scope", filePath)
 	}
 
 	return relSlash, nil
 }
 
+func (c *Client) singleFileScope() string {
+	c.singleFileMu.RLock()
+	defer c.singleFileMu.RUnlock()
+	return c.singleFileRel
+}
+
+func (c *Client) setSingleFileScope(relPath string) {
+	c.singleFileMu.Lock()
+	c.singleFileRel = relPath
+	c.singleFileMu.Unlock()
+}
+
 func normalizeIncomingPath(rawPath string) (string, error) {
-	slashPath := strings.ReplaceAll(strings.TrimSpace(rawPath), "\\", "/")
+	if rawPath == "" || len(rawPath) > maxProtocolPathBytes || strings.ContainsRune(rawPath, '\x00') {
+		return "", fmt.Errorf("unsafe path")
+	}
+	slashPath := strings.ReplaceAll(rawPath, "\\", "/")
 	cleanPath := path.Clean(slashPath)
 	if cleanPath == "" || cleanPath == "." || cleanPath == ".." || strings.HasPrefix(cleanPath, "../") || strings.HasPrefix(cleanPath, "/") {
 		return "", fmt.Errorf("unsafe path")
@@ -828,17 +1525,6 @@ func atomicWriteFile(destPath string, data []byte, perm os.FileMode) error {
 	}
 	cleanup = false
 	return nil
-}
-
-func decodeIncomingFileContent(encoded string) ([]byte, error) {
-	decodedContent, err := base64.StdEncoding.DecodeString(encoded)
-	if err != nil {
-		return nil, err
-	}
-	if len(decodedContent) > maxSyncedFileBytes {
-		return nil, incomingFileTooLargeError{size: len(decodedContent)}
-	}
-	return decodedContent, nil
 }
 
 func (c *Client) dropPathHashes(relPath string) {

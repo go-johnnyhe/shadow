@@ -5,15 +5,19 @@ import (
 	"bufio"
 	"compress/gzip"
 	"context"
+	"crypto/sha256"
+	"crypto/subtle"
+	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"regexp"
 	"runtime"
-	"strings"
 	"time"
 
 	"github.com/go-johnnyhe/shadow/internal/runtimehome"
@@ -23,7 +27,24 @@ import (
 const (
 	StatusDownloadingDependency = "downloading_dependency"
 	StatusDependencyReady       = "dependency_ready"
+	cloudflaredVersion          = "2026.7.3"
+	maxCloudflaredAssetBytes    = 100 * 1024 * 1024
 )
+
+type cloudflaredAsset struct {
+	name        string
+	downloadSHA string
+	binarySHA   string
+	extractTGZ  bool
+}
+
+var cloudflaredAssets = map[string]cloudflaredAsset{
+	"darwin/amd64":  {name: "cloudflared-darwin-amd64.tgz", downloadSHA: "70d1c8684fa6d14b5843787ec8d1ea8e18b23650e424f4ea43d849a506487c3b", binarySHA: "e88fe5874d42a94f49a7ea59cabc3722d2962d0449232b0f3b1a426a712e275c", extractTGZ: true},
+	"darwin/arm64":  {name: "cloudflared-darwin-arm64.tgz", downloadSHA: "90c5a4f914d705fd70c135dba6d80b1791d254b08d6d4136301941f88330dd09", binarySHA: "f35c50089cd25f77a4cb5a2152036bc26db15aa31fbe11f7995d2e42a4ed6257", extractTGZ: true},
+	"linux/amd64":   {name: "cloudflared-linux-amd64", downloadSHA: "9d71c677db00134c1bd4144b7783486b654ad281b1ea62b4972098d19f770f17", binarySHA: "9d71c677db00134c1bd4144b7783486b654ad281b1ea62b4972098d19f770f17"},
+	"linux/arm64":   {name: "cloudflared-linux-arm64", downloadSHA: "65259e652a7bea08bf5df603233ab22b8bf3116af8df9f9206209af6a1b955c0", binarySHA: "65259e652a7bea08bf5df603233ab22b8bf3116af8df9f9206209af6a1b955c0"},
+	"windows/amd64": {name: "cloudflared-windows-amd64.exe", downloadSHA: "8635da433b6df8194746e88ed9d2589566c20e38bfc2a80e431a348b7c765841", binarySHA: "8635da433b6df8194746e88ed9d2589566c20e38bfc2a80e431a348b7c765841"},
+}
 
 var cloudflaredDownloadHTTPClient = &http.Client{Timeout: 2 * time.Minute}
 
@@ -60,70 +81,163 @@ func getCloudflaredBinary(reporter StatusReporter) (string, error) {
 		return "", err
 	}
 
-	if _, err := os.Stat(binaryPath); err == nil {
+	asset, ok := cloudflaredAssets[runtime.GOOS+"/"+runtime.GOARCH]
+	if !ok {
+		return "", fmt.Errorf("unsupported platform: %s/%s", runtime.GOOS, runtime.GOARCH)
+	}
+	if cloudflaredCacheVerified(binaryPath, asset) {
 		return binaryPath, nil
 	}
 	reportStatus(reporter, StatusDownloadingDependency, "Downloading cloudflared (~15MB)...")
 
-	var downloadURL string
-	var needsExtraction bool
-	switch runtime.GOOS + "/" + runtime.GOARCH {
-	case "linux/amd64":
-		downloadURL = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64"
-	case "linux/arm64":
-		downloadURL = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64"
-	case "darwin/amd64":
-		downloadURL = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-darwin-amd64.tgz"
-		needsExtraction = true
-	case "darwin/arm64":
-		downloadURL = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-darwin-arm64.tgz"
-		needsExtraction = true
-	case "windows/amd64":
-		downloadURL = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe"
-	default:
-		return "", fmt.Errorf("unsupported platform: %s/%s", runtime.GOOS, runtime.GOARCH)
-	}
-
-	// download the binary
-	resp, err := cloudflaredDownloadHTTPClient.Get(downloadURL)
-	if err != nil {
-		return "", fmt.Errorf("error downloading cloudflared binary: %v", err)
-	}
-	defer resp.Body.Close()
-
-	// check status code
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("download failed with status %s", resp.Status)
-	}
-
-	if needsExtraction {
-		if err := extractCloudflaredFromTgz(resp.Body, binaryPath); err != nil {
-			return "", fmt.Errorf("failed to extract the binary %v", err)
-		}
-	} else {
-		// make binary file
-		file, err := os.Create(binaryPath)
-		if err != nil {
-			return "", fmt.Errorf("failed to create file: %v", err)
-		}
-		defer file.Close()
-
-		// copy file to binary
-		_, err = io.Copy(file, resp.Body)
-		if err != nil {
-			return "", fmt.Errorf("failed to copy file: %v", err)
-		}
-	}
-
-	// on unix systems, make binary into executable
-	if runtime.GOOS != "windows" {
-		if err := os.Chmod(binaryPath, 0755); err != nil {
-			return "", fmt.Errorf("failed to make executable: %v", err)
-		}
+	downloadURL := fmt.Sprintf("https://github.com/cloudflare/cloudflared/releases/download/%s/%s", cloudflaredVersion, asset.name)
+	if err := installCloudflared(downloadURL, asset, binaryPath); err != nil {
+		return "", err
 	}
 
 	reportStatus(reporter, StatusDependencyReady, "cloudflared ready")
 	return binaryPath, nil
+}
+
+func cloudflaredCacheVerified(binaryPath string, asset cloudflaredAsset) bool {
+	file, err := os.Open(binaryPath)
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+	return verifySHA256(file, asset.binarySHA) == nil
+}
+
+func installCloudflared(downloadURL string, asset cloudflaredAsset, binaryPath string) error {
+	resp, err := cloudflaredDownloadHTTPClient.Get(downloadURL)
+	if err != nil {
+		return fmt.Errorf("error downloading cloudflared binary: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("download failed with status %s", resp.Status)
+	}
+
+	download, err := os.CreateTemp(filepath.Dir(binaryPath), ".cloudflared-download-*")
+	if err != nil {
+		return fmt.Errorf("failed to create temporary download: %v", err)
+	}
+	downloadPath := download.Name()
+	defer os.Remove(downloadPath)
+	hasher := sha256.New()
+	written, copyErr := io.Copy(io.MultiWriter(download, hasher), io.LimitReader(resp.Body, maxCloudflaredAssetBytes+1))
+	closeErr := download.Close()
+	if copyErr != nil {
+		return fmt.Errorf("failed to save cloudflared download: %v", copyErr)
+	}
+	if closeErr != nil {
+		return fmt.Errorf("failed to close cloudflared download: %v", closeErr)
+	}
+	if written > maxCloudflaredAssetBytes {
+		return fmt.Errorf("cloudflared download exceeds size limit")
+	}
+	if err := compareSHA256(hasher.Sum(nil), asset.downloadSHA); err != nil {
+		return fmt.Errorf("cloudflared checksum verification failed: %v", err)
+	}
+
+	installPath := downloadPath
+	if asset.extractTGZ {
+		extracted, err := os.CreateTemp(filepath.Dir(binaryPath), ".cloudflared-binary-*")
+		if err != nil {
+			return fmt.Errorf("failed to create temporary binary: %v", err)
+		}
+		installPath = extracted.Name()
+		if err := extracted.Close(); err != nil {
+			return err
+		}
+		defer os.Remove(installPath)
+		archive, err := os.Open(downloadPath)
+		if err != nil {
+			return err
+		}
+		err = extractCloudflaredFromTgz(archive, installPath)
+		_ = archive.Close()
+		if err != nil {
+			return fmt.Errorf("failed to extract the binary: %v", err)
+		}
+	}
+	if runtime.GOOS != "windows" {
+		if err := os.Chmod(installPath, 0o755); err != nil {
+			return fmt.Errorf("failed to make executable: %v", err)
+		}
+	}
+	installed, err := os.Open(installPath)
+	if err != nil {
+		return err
+	}
+	verifyErr := verifySHA256(installed, asset.binarySHA)
+	_ = installed.Close()
+	if verifyErr != nil {
+		return fmt.Errorf("cloudflared binary checksum verification failed: %v", verifyErr)
+	}
+	if err := replaceFile(installPath, binaryPath); err != nil {
+		return fmt.Errorf("failed to install cloudflared: %v", err)
+	}
+	return nil
+}
+
+func verifySHA256(reader io.Reader, expected string) error {
+	hasher := sha256.New()
+	if _, err := io.Copy(hasher, reader); err != nil {
+		return err
+	}
+	return compareSHA256(hasher.Sum(nil), expected)
+}
+
+func compareSHA256(actual []byte, expectedHex string) error {
+	expected, err := hex.DecodeString(expectedHex)
+	if err != nil || len(expected) != sha256.Size {
+		return fmt.Errorf("invalid expected SHA-256")
+	}
+	if subtle.ConstantTimeCompare(actual, expected) != 1 {
+		return fmt.Errorf("SHA-256 mismatch")
+	}
+	return nil
+}
+
+func replaceFile(source, destination string) error {
+	if runtime.GOOS != "windows" {
+		return os.Rename(source, destination)
+	}
+	return replaceFileWithBackup(source, destination, os.Rename)
+}
+
+func replaceFileWithBackup(source, destination string, rename func(string, string) error) error {
+	if _, err := os.Lstat(destination); errors.Is(err, os.ErrNotExist) {
+		return rename(source, destination)
+	} else if err != nil {
+		return err
+	}
+
+	backup, err := os.CreateTemp(filepath.Dir(destination), ".cloudflared-backup-*")
+	if err != nil {
+		return err
+	}
+	backupPath := backup.Name()
+	if err := backup.Close(); err != nil {
+		_ = os.Remove(backupPath)
+		return err
+	}
+	if err := os.Remove(backupPath); err != nil {
+		return err
+	}
+
+	if err := rename(destination, backupPath); err != nil {
+		return err
+	}
+	if err := rename(source, destination); err != nil {
+		if rollbackErr := rename(backupPath, destination); rollbackErr != nil {
+			return fmt.Errorf("replace failed: %v; rollback failed; previous binary remains at %s: %v", err, backupPath, rollbackErr)
+		}
+		return err
+	}
+	_ = os.Remove(backupPath)
+	return nil
 }
 
 func extractCloudflaredFromTgz(reader io.Reader, outputPath string) error {
@@ -143,7 +257,10 @@ func extractCloudflaredFromTgz(reader io.Reader, outputPath string) error {
 			return fmt.Errorf("error reading from tar header: %v", err)
 		}
 
-		if strings.HasSuffix(header.Name, "cloudflared") && header.Typeflag == tar.TypeReg {
+		if path.Base(header.Name) == "cloudflared" && header.Typeflag == tar.TypeReg {
+			if header.Size < 0 || header.Size > maxCloudflaredAssetBytes {
+				return fmt.Errorf("cloudflared binary exceeds size limit")
+			}
 			outFile, err := os.Create(outputPath)
 			if err != nil {
 				return fmt.Errorf("failed to create output file: %v", err)

@@ -63,8 +63,29 @@ echo "installing $BIN $LATEST for $OS/$ARCH..."
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT HUP INT TERM
 ARCHIVE="$TMPDIR/$TARBALL"
+CHECKSUMS="$TMPDIR/checksums.txt"
 if ! curl -fL --retry 3 "$URL" -o "$ARCHIVE"; then
   echo "error: failed to download $URL" >&2
+  exit 1
+fi
+if ! curl -fL --retry 3 "https://github.com/$REPO/releases/download/$LATEST/checksums.txt" -o "$CHECKSUMS"; then
+  echo "error: failed to download release checksums" >&2
+  exit 1
+fi
+EXPECTED=$(awk -v asset="$TARBALL" '$2 == asset { print $1; found=1; exit } END { if (!found) exit 1 }' "$CHECKSUMS") || {
+  echo "error: release checksum is missing $TARBALL" >&2
+  exit 1
+}
+if command -v sha256sum >/dev/null 2>&1; then
+  ACTUAL=$(sha256sum "$ARCHIVE" | awk '{print $1}')
+elif command -v shasum >/dev/null 2>&1; then
+  ACTUAL=$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')
+else
+  echo "error: sha256sum or shasum is required to verify $BIN" >&2
+  exit 1
+fi
+if [ "$ACTUAL" != "$EXPECTED" ]; then
+  echo "error: release checksum verification failed" >&2
   exit 1
 fi
 if ! tar xzf "$ARCHIVE" -C "$TMPDIR"; then

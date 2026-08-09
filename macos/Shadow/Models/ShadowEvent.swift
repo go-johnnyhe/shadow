@@ -31,4 +31,5 @@ enum ShadowEventName {
     static let readOnly = "read_only"
     static let warning = "warning"
     static let error = "error"
+    static let disconnected = "disconnected"
 }

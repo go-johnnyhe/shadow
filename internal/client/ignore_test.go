@@ -44,6 +44,41 @@ func TestOutboundIgnoreHonorsNestedGitignore(t *testing.T) {
 	if ignore.Match("keep.log", false) {
 		t.Fatalf("expected app/keep.log to be unignored by nested .gitignore")
 	}
+
+	ignore.git.processMu.Lock()
+	firstPID := ignore.git.process.Process.Pid
+	ignore.git.processMu.Unlock()
+	if ignore.Match("file with spaces.txt", false) {
+		t.Fatal("ordinary filename with spaces was ignored")
+	}
+	ignore.git.processMu.Lock()
+	secondPID := ignore.git.process.Process.Pid
+	ignore.git.processMu.Unlock()
+	if secondPID != firstPID {
+		t.Fatalf("git check-ignore process was not reused: %d then %d", firstPID, secondPID)
+	}
+
+	if err := os.WriteFile(filepath.Join(repo, "app", ".gitignore"), []byte("*.log\n!keep.log\nsecret.txt\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	ignore.Invalidate()
+	if !ignore.Match("secret.txt", false) {
+		t.Fatal("updated .gitignore policy was not loaded")
+	}
+
+	ignore.git.processMu.Lock()
+	_ = ignore.git.process.Process.Kill()
+	ignore.git.processMu.Unlock()
+	if ignore.Match("after-process-failure.txt", false) {
+		t.Fatal("ordinary file was ignored after git process restart")
+	}
+	ignore.Close()
+	ignore.git.processMu.Lock()
+	process := ignore.git.process
+	ignore.git.processMu.Unlock()
+	if process != nil {
+		t.Fatal("git check-ignore process remained open")
+	}
 }
 
 func runGit(dir string, args ...string) error {

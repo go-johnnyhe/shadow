@@ -7,6 +7,7 @@ import (
 	"github.com/go-johnnyhe/shadow/internal/client"
 	"github.com/go-johnnyhe/shadow/internal/e2e"
 	"github.com/go-johnnyhe/shadow/internal/opener"
+	"github.com/go-johnnyhe/shadow/internal/protocol"
 	"github.com/go-johnnyhe/shadow/internal/tunnel"
 	"github.com/go-johnnyhe/shadow/internal/ui"
 	"github.com/go-johnnyhe/shadow/server"
@@ -50,6 +51,14 @@ func runStart(opts StartOptions) error {
 			return err
 		}
 		opts.E2EKey = generatedKey
+	}
+	hostToken, err := e2e.GenerateShareKey()
+	if err != nil {
+		return fmt.Errorf("failed to generate host token: %w", err)
+	}
+	joinToken, err := e2e.GenerateShareKey()
+	if err != nil {
+		return fmt.Errorf("failed to generate join token: %w", err)
 	}
 
 	if opts.JSONMode {
@@ -119,13 +128,16 @@ func runStart(opts StartOptions) error {
 		}
 	}
 
-	server.SetReadOnlyJoiners(opts.ReadOnlyJoiners)
-
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/ws", server.StartServer)
+	relay := server.NewRelay(server.SessionConfig{
+		ReadOnlyJoiners: opts.ReadOnlyJoiners,
+		HostToken:       hostToken,
+		JoinToken:       joinToken,
+	})
+	mux.Handle("/ws", relay)
 	srv := &http.Server{Handler: mux}
 	go func() {
 		if serveErr := srv.Serve(listener); serveErr != http.ErrServerClosed {
@@ -170,7 +182,7 @@ func runStart(opts StartOptions) error {
 	if err != nil {
 		return fmt.Errorf("failed to create tunnel: %w (server is running locally on localhost:%d)", err, actualPort)
 	}
-	shareJoinURL, err := appendURLFragment(tunnelURL, opts.E2EKey)
+	shareJoinURL, err := appendSessionCredentials(tunnelURL, joinToken, opts.E2EKey)
 	if err != nil {
 		return err
 	}
@@ -206,17 +218,20 @@ func runStart(opts StartOptions) error {
 	clientOnEvent := jsonOnEvent(opts.JSONMode)
 
 	var sessionFileCount atomic.Int64
+	var connectionLost atomic.Bool
 	sessionStart := time.Now()
 
 	go func(runCtx context.Context, port int) {
 		time.Sleep(500 * time.Millisecond)
-		conn, _, dialErr := websocket.DefaultDialer.Dial(fmt.Sprintf("ws://localhost:%d/ws", port), nil)
+		conn, _, dialErr := dialSessionWebSocket(fmt.Sprintf("ws://localhost:%d/ws", port), hostToken)
 		if dialErr != nil {
 			if opts.JSONMode {
 				emitJSONError(fmt.Sprintf("Local connection failed: %v", dialErr))
 			} else {
 				fmt.Println("Error connecting to websocket:", dialErr)
 			}
+			connectionLost.Store(true)
+			stop()
 			return
 		}
 		defer conn.Close()
@@ -234,6 +249,8 @@ func runStart(opts StartOptions) error {
 			} else {
 				fmt.Println("Error initializing E2E client:", clientErr)
 			}
+			connectionLost.Store(true)
+			stop()
 			return
 		}
 		c.Start(runCtx)
@@ -252,7 +269,14 @@ func runStart(opts StartOptions) error {
 				fmt.Printf("%s\n", ui.Dim(fmt.Sprintf("ready · %d files", count)))
 			}
 		}
-		<-runCtx.Done()
+		select {
+		case <-runCtx.Done():
+		case <-c.Done():
+			if runCtx.Err() == nil {
+				connectionLost.Store(true)
+				stop()
+			}
+		}
 	}(ctx, actualPort)
 
 	if !opts.JSONMode && isInteractiveSession() {
@@ -263,6 +287,9 @@ func runStart(opts StartOptions) error {
 	<-ctx.Done()
 	srv.Shutdown(context.Background())
 	time.Sleep(100 * time.Millisecond)
+	if connectionLost.Load() {
+		return nil
+	}
 	elapsed := time.Since(sessionStart).Truncate(time.Second)
 	if opts.JSONMode {
 		emitJSON(JSONEvent{Event: EventStopped, Message: fmt.Sprintf("Session stopped after %s", formatDuration(elapsed))})
@@ -286,7 +313,7 @@ func runJoin(opts JoinOptions) error {
 		return fmt.Errorf("join path must be a directory")
 	}
 
-	wsURL, keyFromURL, err := normalizeSessionWSURL(opts.SessionURL)
+	wsURL, keyFromURL, joinToken, err := normalizeSessionWSURL(opts.SessionURL)
 	if err != nil {
 		return err
 	}
@@ -308,7 +335,7 @@ func runJoin(opts JoinOptions) error {
 	if !opts.JSONMode {
 		fmt.Printf("\n  %s", ui.Dim("connecting..."))
 	}
-	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	conn, _, err := dialSessionWebSocket(wsURL, joinToken)
 	if err != nil {
 		if !opts.JSONMode {
 			fmt.Println()
@@ -346,7 +373,16 @@ func runJoin(opts JoinOptions) error {
 		fmt.Println()
 	}
 
-	<-ctx.Done()
+	disconnected := false
+	select {
+	case <-ctx.Done():
+		<-c.Done()
+	case <-c.Done():
+		disconnected = ctx.Err() == nil
+	}
+	if disconnected {
+		return nil
+	}
 	elapsed := time.Since(sessionStart).Truncate(time.Second)
 	if opts.JSONMode {
 		emitJSON(JSONEvent{Event: EventStopped, Message: fmt.Sprintf("Session ended after %s", formatDuration(elapsed))})
@@ -356,22 +392,30 @@ func runJoin(opts JoinOptions) error {
 	return nil
 }
 
-func normalizeSessionWSURL(rawURL string) (string, string, error) {
+func normalizeSessionWSURL(rawURL string) (string, string, string, error) {
 	trimmed := strings.TrimSpace(rawURL)
 	if trimmed == "" {
-		return "", "", fmt.Errorf("session URL is required")
+		return "", "", "", fmt.Errorf("session URL is required")
 	}
 
 	parsed, err := url.Parse(trimmed)
 	if err != nil {
-		return "", "", fmt.Errorf("invalid session URL: %w", err)
+		return "", "", "", fmt.Errorf("invalid session URL: %w", err)
 	}
 	if parsed.Scheme == "" || parsed.Host == "" {
-		return "", "", fmt.Errorf("invalid session URL: expected full URL with scheme and host")
+		return "", "", "", fmt.Errorf("invalid session URL: expected full URL with scheme and host")
 	}
 
-	keyFromURL := strings.TrimSpace(parsed.Fragment)
+	fragmentValues, err := url.ParseQuery(parsed.Fragment)
+	if err != nil {
+		return "", "", "", fmt.Errorf("invalid session credentials")
+	}
+	keyFromURL := strings.TrimSpace(fragmentValues.Get("key"))
+	joinToken := strings.TrimSpace(fragmentValues.Get("token"))
 	parsed.Fragment = ""
+	if joinToken == "" {
+		return "", "", "", fmt.Errorf("session URL is missing an access token")
+	}
 
 	switch parsed.Scheme {
 	case "https":
@@ -380,7 +424,7 @@ func normalizeSessionWSURL(rawURL string) (string, string, error) {
 		parsed.Scheme = "ws"
 	case "wss", "ws":
 	default:
-		return "", "", fmt.Errorf("unsupported URL scheme %q", parsed.Scheme)
+		return "", "", "", fmt.Errorf("unsupported URL scheme %q", parsed.Scheme)
 	}
 
 	if parsed.Path == "" || parsed.Path == "/" {
@@ -389,16 +433,35 @@ func normalizeSessionWSURL(rawURL string) (string, string, error) {
 		parsed.Path = strings.TrimSuffix(parsed.Path, "/") + "/ws"
 	}
 
-	return parsed.String(), keyFromURL, nil
+	return parsed.String(), keyFromURL, joinToken, nil
 }
 
-func appendURLFragment(rawURL, fragment string) (string, error) {
+func appendSessionCredentials(rawURL, token, fragment string) (string, error) {
 	parsed, err := url.Parse(rawURL)
 	if err != nil {
 		return "", fmt.Errorf("failed to build share URL with E2E key: %w", err)
 	}
-	parsed.Fragment = fragment
+	credentials := url.Values{}
+	credentials.Set("key", fragment)
+	credentials.Set("token", token)
+	parsed.Fragment = credentials.Encode()
 	return parsed.String(), nil
+}
+
+func dialSessionWebSocket(wsURL, token string) (*websocket.Conn, *http.Response, error) {
+	dialer := *websocket.DefaultDialer
+	dialer.Subprotocols = []string{protocol.WebSocketSubprotocol}
+	headers := http.Header{}
+	headers.Set("Authorization", "Bearer "+token)
+	conn, response, err := dialer.Dial(wsURL, headers)
+	if err != nil {
+		return nil, response, err
+	}
+	if conn.Subprotocol() != protocol.WebSocketSubprotocol {
+		_ = conn.Close()
+		return nil, response, fmt.Errorf("server does not support Shadow protocol v%d", protocol.SyncProtocolVersion)
+	}
+	return conn, response, nil
 }
 
 func promptOpenIn(dir string) {

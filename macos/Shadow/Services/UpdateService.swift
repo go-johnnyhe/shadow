@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 
 /// Manages checking for and applying updates to the bundled shadow binary.
 @MainActor
@@ -125,7 +126,9 @@ final class UpdateService: ObservableObject {
             throw UpdateError.binaryNotFound
         }
 
-        let archiveURLString = "https://github.com/go-johnnyhe/shadow/releases/download/v\(version)/shadow_\(version)_darwin_\(Self.arch).tar.gz"
+        let archiveName = "shadow_\(version)_darwin_\(Self.arch).tar.gz"
+        let releaseBaseURL = "https://github.com/go-johnnyhe/shadow/releases/download/v\(version)"
+        let archiveURLString = "\(releaseBaseURL)/\(archiveName)"
         guard let archiveURL = URL(string: archiveURLString) else {
             throw UpdateError.invalidURL
         }
@@ -148,6 +151,19 @@ final class UpdateService: ObservableObject {
         let tgzPath = tmpDir.appendingPathComponent("shadow.tar.gz")
         try FileManager.default.moveItem(at: downloadURL, to: tgzPath)
 
+        guard let checksumsURL = URL(string: "\(releaseBaseURL)/checksums.txt") else {
+            throw UpdateError.invalidURL
+        }
+        let (checksumsData, checksumsResponse) = try await URLSession.shared.data(from: checksumsURL)
+        guard let checksumsHTTP = checksumsResponse as? HTTPURLResponse, checksumsHTTP.statusCode == 200 else {
+            throw UpdateError.checksumDownloadFailed
+        }
+        let expectedChecksum = try checksum(for: archiveName, in: checksumsData)
+        let actualChecksum = try sha256(of: tgzPath)
+        guard actualChecksum == expectedChecksum.lowercased() else {
+            throw UpdateError.checksumMismatch
+        }
+
         let tar = Process()
         tar.executableURL = URL(fileURLWithPath: "/usr/bin/tar")
         tar.arguments = ["-xzf", tgzPath.path, "-C", tmpDir.path]
@@ -169,20 +185,33 @@ final class UpdateService: ObservableObject {
         // Set executable permissions
         try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: extractedBinary.path)
 
-        // Atomic replace: remove old, move new
-        let backupURL = binaryURL.appendingPathExtension("bak")
-        try? FileManager.default.removeItem(at: backupURL)
+        // Stage and replace on one file system so a failed update keeps the old binary.
+        let destinationDirectory = binaryURL.deletingLastPathComponent()
+        let stagedBinary = destinationDirectory.appendingPathComponent(".shadow-update-\(UUID().uuidString)")
+        let backupName = ".shadow-backup-\(UUID().uuidString)"
+        let backupURL = destinationDirectory.appendingPathComponent(backupName)
+        try FileManager.default.copyItem(at: extractedBinary, to: stagedBinary)
+        defer {
+            try? FileManager.default.removeItem(at: stagedBinary)
+        }
 
         do {
-            // Move current binary to backup
-            try FileManager.default.moveItem(at: binaryURL, to: backupURL)
-            // Move new binary into place
-            try FileManager.default.moveItem(at: extractedBinary, to: binaryURL)
-            // Clean up backup
+            _ = try FileManager.default.replaceItemAt(
+                binaryURL,
+                withItemAt: stagedBinary,
+                backupItemName: backupName,
+                options: []
+            )
             try? FileManager.default.removeItem(at: backupURL)
         } catch {
-            // Restore backup if replacement failed
-            try? FileManager.default.moveItem(at: backupURL, to: binaryURL)
+            if !FileManager.default.fileExists(atPath: binaryURL.path),
+               FileManager.default.fileExists(atPath: backupURL.path) {
+                do {
+                    try FileManager.default.moveItem(at: backupURL, to: binaryURL)
+                } catch {
+                    throw UpdateError.rollbackFailed(backupURL.path)
+                }
+            }
             if (error as NSError).domain == NSCocoaErrorDomain &&
                (error as NSError).code == NSFileWriteNoPermissionError {
                 throw UpdateError.permissionDenied
@@ -199,6 +228,34 @@ final class UpdateService: ObservableObject {
                 state = .idle
             }
         }
+    }
+
+    private func checksum(for archiveName: String, in data: Data) throws -> String {
+        guard let text = String(data: data, encoding: .utf8) else {
+            throw UpdateError.checksumMissing
+        }
+        for line in text.split(whereSeparator: \Character.isNewline) {
+            let fields = line.split(whereSeparator: \Character.isWhitespace)
+            guard fields.count == 2, String(fields[1]) == archiveName else { continue }
+            let checksum = String(fields[0])
+            guard checksum.count == 64, checksum.allSatisfy({ $0.isHexDigit }) else {
+                throw UpdateError.checksumMissing
+            }
+            return checksum.lowercased()
+        }
+        throw UpdateError.checksumMissing
+    }
+
+    private func sha256(of url: URL) throws -> String {
+        let handle = try FileHandle(forReadingFrom: url)
+        defer { try? handle.close() }
+        var hasher = SHA256()
+        while true {
+            let data = try handle.read(upToCount: 1024 * 1024) ?? Data()
+            if data.isEmpty { break }
+            hasher.update(data: data)
+        }
+        return hasher.finalize().map { String(format: "%02x", $0) }.joined()
     }
 }
 
@@ -217,10 +274,14 @@ private enum UpdateError: LocalizedError {
     case binaryNotFound
     case invalidURL
     case downloadFailed
+    case checksumDownloadFailed
+    case checksumMissing
+    case checksumMismatch
     case extractFailed
     case binaryNotInArchive
     case permissionDenied
     case replaceFailed(String)
+    case rollbackFailed(String)
 
     var errorDescription: String? {
         switch self {
@@ -228,10 +289,14 @@ private enum UpdateError: LocalizedError {
         case .binaryNotFound: return "Shadow binary not found in bundle"
         case .invalidURL: return "Invalid download URL"
         case .downloadFailed: return "Download failed"
+        case .checksumDownloadFailed: return "Could not download release checksum"
+        case .checksumMissing: return "Release checksum is missing"
+        case .checksumMismatch: return "Release checksum verification failed"
         case .extractFailed: return "Failed to extract archive"
         case .binaryNotInArchive: return "Binary not found in archive"
         case .permissionDenied: return "Permission denied — try moving Shadow.app to Applications"
         case .replaceFailed(let msg): return "Replace failed: \(msg)"
+        case .rollbackFailed(let path): return "Update failed. The previous binary is at \(path)"
         }
     }
 }

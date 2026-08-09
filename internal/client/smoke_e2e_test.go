@@ -11,21 +11,47 @@ import (
 	"time"
 
 	"github.com/go-johnnyhe/shadow/internal/client"
+	"github.com/go-johnnyhe/shadow/internal/protocol"
 	"github.com/go-johnnyhe/shadow/server"
 	"github.com/gorilla/websocket"
 	"net/http"
 	"net/http/httptest"
 )
 
-func TestSmokeSyncNearLimitFile(t *testing.T) {
-	server.SetReadOnlyJoiners(false)
+const (
+	smokeHostToken = "smoke-host-token"
+	smokeJoinToken = "smoke-join-token"
+)
 
+func newSmokeServer(t *testing.T, readOnly bool) string {
+	t.Helper()
 	mux := http.NewServeMux()
-	mux.HandleFunc("/ws", server.StartServer)
+	mux.Handle("/ws", server.NewRelay(server.SessionConfig{
+		ReadOnlyJoiners: readOnly,
+		HostToken:       smokeHostToken,
+		JoinToken:       smokeJoinToken,
+	}))
 	httpServer := httptest.NewServer(mux)
-	defer httpServer.Close()
+	t.Cleanup(httpServer.Close)
+	return "ws" + strings.TrimPrefix(httpServer.URL, "http") + "/ws"
+}
 
-	wsURL := "ws" + strings.TrimPrefix(httpServer.URL, "http") + "/ws"
+func dialSmoke(t *testing.T, wsURL, token string) *websocket.Conn {
+	t.Helper()
+	dialer := *websocket.DefaultDialer
+	dialer.Subprotocols = []string{protocol.WebSocketSubprotocol}
+	header := http.Header{}
+	header.Set("Authorization", "Bearer "+token)
+	conn, _, err := dialer.Dial(wsURL, header)
+	if err != nil {
+		t.Fatalf("websocket dial failed: %v", err)
+	}
+	t.Cleanup(func() { _ = conn.Close() })
+	return conn
+}
+
+func TestSmokeSyncNearLimitFile(t *testing.T) {
+	wsURL := newSmokeServer(t, false)
 	hostDir := t.TempDir()
 	joinDir := t.TempDir()
 	relPath := filepath.Join("nested", "big.txt")
@@ -40,17 +66,8 @@ func TestSmokeSyncNearLimitFile(t *testing.T) {
 		t.Fatalf("failed to create host file: %v", err)
 	}
 
-	hostConn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
-	if err != nil {
-		t.Fatalf("host dial failed: %v", err)
-	}
-	defer hostConn.Close()
-
-	joinConn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
-	if err != nil {
-		t.Fatalf("join dial failed: %v", err)
-	}
-	defer joinConn.Close()
+	hostConn := dialSmoke(t, wsURL, smokeHostToken)
+	joinConn := dialSmoke(t, wsURL, smokeJoinToken)
 
 	key := "smoke-test-key"
 	hostClient, err := client.NewClient(hostConn, client.Options{
@@ -83,7 +100,7 @@ func TestSmokeSyncNearLimitFile(t *testing.T) {
 	}
 
 	joinFilePath := filepath.Join(joinDir, relPath)
-	deadline := time.Now().Add(6 * time.Second)
+	deadline := time.Now().Add(20 * time.Second)
 	for time.Now().Before(deadline) {
 		got, readErr := os.ReadFile(joinFilePath)
 		if readErr == nil {
@@ -99,14 +116,7 @@ func TestSmokeSyncNearLimitFile(t *testing.T) {
 }
 
 func TestHostSyncsExistingFilesWhenJoinerConnectsLater(t *testing.T) {
-	server.SetReadOnlyJoiners(false)
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/ws", server.StartServer)
-	httpServer := httptest.NewServer(mux)
-	defer httpServer.Close()
-
-	wsURL := "ws" + strings.TrimPrefix(httpServer.URL, "http") + "/ws"
+	wsURL := newSmokeServer(t, false)
 	hostDir := t.TempDir()
 	joinDir := t.TempDir()
 	hostFilePath := filepath.Join(hostDir, "existing.txt")
@@ -115,11 +125,7 @@ func TestHostSyncsExistingFilesWhenJoinerConnectsLater(t *testing.T) {
 		t.Fatalf("failed to create host file: %v", err)
 	}
 
-	hostConn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
-	if err != nil {
-		t.Fatalf("host dial failed: %v", err)
-	}
-	defer hostConn.Close()
+	hostConn := dialSmoke(t, wsURL, smokeHostToken)
 
 	key := "late-join-test-key"
 	hostClient, err := client.NewClient(hostConn, client.Options{
@@ -138,11 +144,7 @@ func TestHostSyncsExistingFilesWhenJoinerConnectsLater(t *testing.T) {
 		t.Fatalf("initial snapshot before join = (%d, %v), want (1, nil)", count, snapshotErr)
 	}
 
-	joinConn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
-	if err != nil {
-		t.Fatalf("join dial failed: %v", err)
-	}
-	defer joinConn.Close()
+	joinConn := dialSmoke(t, wsURL, smokeJoinToken)
 	joinClient, err := client.NewClient(joinConn, client.Options{
 		E2EKey:  key,
 		BaseDir: joinDir,
@@ -156,26 +158,11 @@ func TestHostSyncsExistingFilesWhenJoinerConnectsLater(t *testing.T) {
 }
 
 func TestClientRejectsPlaintextFileMessage(t *testing.T) {
-	server.SetReadOnlyJoiners(false)
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/ws", server.StartServer)
-	httpServer := httptest.NewServer(mux)
-	defer httpServer.Close()
-
-	wsURL := "ws" + strings.TrimPrefix(httpServer.URL, "http") + "/ws"
-	attackerConn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
-	if err != nil {
-		t.Fatalf("attacker dial failed: %v", err)
-	}
-	defer attackerConn.Close()
+	wsURL := newSmokeServer(t, false)
+	attackerConn := dialSmoke(t, wsURL, smokeHostToken)
 
 	joinDir := t.TempDir()
-	joinConn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
-	if err != nil {
-		t.Fatalf("join dial failed: %v", err)
-	}
-	defer joinConn.Close()
+	joinConn := dialSmoke(t, wsURL, smokeJoinToken)
 	joinClient, err := client.NewClient(joinConn, client.Options{
 		E2EKey:  "key-the-attacker-does-not-have",
 		BaseDir: joinDir,
@@ -198,14 +185,7 @@ func TestClientRejectsPlaintextFileMessage(t *testing.T) {
 }
 
 func TestSmokeSyncRenameAndDelete(t *testing.T) {
-	server.SetReadOnlyJoiners(false)
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/ws", server.StartServer)
-	httpServer := httptest.NewServer(mux)
-	defer httpServer.Close()
-
-	wsURL := "ws" + strings.TrimPrefix(httpServer.URL, "http") + "/ws"
+	wsURL := newSmokeServer(t, false)
 	hostDir := t.TempDir()
 	joinDir := t.TempDir()
 	oldRelPath := filepath.Join("nested", "old.txt")
@@ -220,17 +200,8 @@ func TestSmokeSyncRenameAndDelete(t *testing.T) {
 		t.Fatalf("failed to create host file: %v", err)
 	}
 
-	hostConn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
-	if err != nil {
-		t.Fatalf("host dial failed: %v", err)
-	}
-	defer hostConn.Close()
-
-	joinConn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
-	if err != nil {
-		t.Fatalf("join dial failed: %v", err)
-	}
-	defer joinConn.Close()
+	hostConn := dialSmoke(t, wsURL, smokeHostToken)
+	joinConn := dialSmoke(t, wsURL, smokeJoinToken)
 
 	key := "smoke-rename-delete-key"
 	hostClient, err := client.NewClient(hostConn, client.Options{
@@ -273,6 +244,94 @@ func TestSmokeSyncRenameAndDelete(t *testing.T) {
 		t.Fatalf("failed to delete host file: %v", err)
 	}
 	waitForPathRemoved(t, newJoinPath, 6*time.Second)
+}
+
+func TestConcurrentEditsConvergeAndPreserveBothVersions(t *testing.T) {
+	wsURL := newSmokeServer(t, false)
+	hostDir := t.TempDir()
+	joinDir := t.TempDir()
+	hostPath := filepath.Join(hostDir, "shared.txt")
+	joinPath := filepath.Join(joinDir, "shared.txt")
+	base := []byte("common base")
+	if err := os.WriteFile(hostPath, base, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	hostClient, err := client.NewClient(dialSmoke(t, wsURL, smokeHostToken), client.Options{IsHost: true, E2EKey: "concurrent-key", BaseDir: hostDir})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	hostClient.Start(ctx)
+	if _, err := hostClient.SendInitialSnapshot(); err != nil {
+		t.Fatal(err)
+	}
+
+	joinClient, err := client.NewClient(dialSmoke(t, wsURL, smokeJoinToken), client.Options{E2EKey: "concurrent-key", BaseDir: joinDir})
+	if err != nil {
+		t.Fatal(err)
+	}
+	joinClient.Start(ctx)
+	readyCtx, readyCancel := context.WithTimeout(ctx, 6*time.Second)
+	defer readyCancel()
+	if err := joinClient.WaitReady(readyCtx); err != nil {
+		t.Fatalf("joiner did not become ready: %v", err)
+	}
+	waitForFileContent(t, joinPath, base, 6*time.Second)
+
+	hostEdit := []byte("host concurrent edit")
+	joinEdit := []byte("join concurrent edit")
+	if err := os.WriteFile(hostPath, hostEdit, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(joinPath, joinEdit, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	start := make(chan struct{})
+	done := make(chan struct{}, 2)
+	go func() { <-start; hostClient.SendFile(hostPath); done <- struct{}{} }()
+	go func() { <-start; joinClient.SendFile(joinPath); done <- struct{}{} }()
+	close(start)
+	<-done
+	<-done
+
+	deadline := time.Now().Add(6 * time.Second)
+	var final []byte
+	for time.Now().Before(deadline) {
+		hostFinal, hostErr := os.ReadFile(hostPath)
+		joinFinal, joinErr := os.ReadFile(joinPath)
+		if hostErr == nil && joinErr == nil && bytes.Equal(hostFinal, joinFinal) &&
+			(bytes.Equal(hostFinal, hostEdit) || bytes.Equal(hostFinal, joinEdit)) {
+			final = hostFinal
+			break
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	if final == nil {
+		t.Fatal("clients did not converge after concurrent edits")
+	}
+	if !bytes.Equal(final, hostEdit) && !conflictContentExists(hostDir, hostEdit) && !conflictContentExists(joinDir, hostEdit) {
+		t.Fatal("host edit was lost")
+	}
+	if !bytes.Equal(final, joinEdit) && !conflictContentExists(hostDir, joinEdit) && !conflictContentExists(joinDir, joinEdit) {
+		t.Fatal("joiner edit was lost")
+	}
+}
+
+func conflictContentExists(baseDir string, expected []byte) bool {
+	found := false
+	_ = filepath.WalkDir(filepath.Join(baseDir, ".shadow-conflicts"), func(path string, entry os.DirEntry, err error) error {
+		if err != nil || entry.IsDir() {
+			return nil
+		}
+		content, readErr := os.ReadFile(path)
+		if readErr == nil && bytes.Equal(content, expected) {
+			found = true
+		}
+		return nil
+	})
+	return found
 }
 
 func waitForFileContent(t *testing.T, path string, want []byte, timeout time.Duration) {

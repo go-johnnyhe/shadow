@@ -20,6 +20,7 @@ const (
 	EventReadOnly         = "read_only"
 	EventWarning          = "warning"
 	EventError            = "error"
+	EventDisconnected     = "disconnected"
 	EventDownloadingDep   = "downloading_dependency"
 	EventDependencyReady  = "dependency_ready"
 )

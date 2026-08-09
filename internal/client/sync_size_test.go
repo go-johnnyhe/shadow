@@ -1,7 +1,6 @@
 package client
 
 import (
-	"encoding/base64"
 	"strings"
 	"testing"
 
@@ -9,42 +8,30 @@ import (
 	"github.com/go-johnnyhe/shadow/internal/protocol"
 )
 
-func TestDecodeIncomingFileContentEnforcesRawFileLimit(t *testing.T) {
-	withinLimit := strings.Repeat("a", maxSyncedFileBytes)
-	decoded, err := decodeIncomingFileContent(base64.StdEncoding.EncodeToString([]byte(withinLimit)))
-	if err != nil {
-		t.Fatalf("expected %d-byte payload to pass, got error: %v", maxSyncedFileBytes, err)
-	}
-	if len(decoded) != maxSyncedFileBytes {
-		t.Fatalf("expected decoded length %d, got %d", maxSyncedFileBytes, len(decoded))
-	}
-
-	overLimit := strings.Repeat("b", maxSyncedFileBytes+1)
-	_, err = decodeIncomingFileContent(base64.StdEncoding.EncodeToString([]byte(overLimit)))
-	if err == nil {
-		t.Fatalf("expected over-limit payload to fail")
-	}
-	if _, ok := err.(incomingFileTooLargeError); !ok {
-		t.Fatalf("expected incomingFileTooLargeError, got %T", err)
-	}
-}
-
 func TestWireLimitAllowsValidTenMBEncryptedMessage(t *testing.T) {
 	codec, err := e2e.NewCodec("test-key")
 	if err != nil {
 		t.Fatalf("failed to build codec: %v", err)
 	}
 
-	// Build the same path|base64(payload) plaintext format used by sendFile.
 	content := strings.Repeat("x", maxSyncedFileBytes)
-	encodedContent := base64.StdEncoding.EncodeToString([]byte(content))
-	plaintext := []byte("nested/path/file.txt|" + encodedContent)
+	operation := protocol.SyncOperation{
+		ID:          "client-1",
+		Path:        "nested/path/file.txt",
+		BaseState:   missingState,
+		DesiredHash: fileHash([]byte(content)),
+		Content:     []byte(content),
+	}
+	plaintext, err := protocol.EncodeSyncOperation(operation)
+	if err != nil {
+		t.Fatalf("failed to encode operation: %v", err)
+	}
 	encryptedPayload, err := codec.Encrypt(plaintext)
 	if err != nil {
 		t.Fatalf("failed to encrypt payload: %v", err)
 	}
 
-	wireMessage := []byte(protocol.EncryptedChannel + "|" + encryptedPayload)
+	wireMessage := protocol.EncodeEncrypted(encryptedPayload)
 	if len(wireMessage) <= maxSyncedFileBytes {
 		t.Fatalf("expected encrypted wire message to exceed raw 10MB size, got %d bytes", len(wireMessage))
 	}

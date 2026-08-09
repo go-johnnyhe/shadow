@@ -107,7 +107,8 @@ export class ShadowProcess {
     this.lineBuf = "";
     this.sawStoppedEvent = false;
 
-    this.outputChannel.appendLine(`> ${binaryPath} ${args.join(" ")}`);
+    const loggedArgs = args.map((arg, index) => args[0] === "join" && index === 1 ? "<session-url>" : arg);
+    this.outputChannel.appendLine(`> ${binaryPath} ${loggedArgs.join(" ")}`);
 
     const proc = cp.spawn(binaryPath, args, {
       cwd,
@@ -205,6 +206,10 @@ export class ShadowProcess {
 
       case "error":
         this.setError(evt.message);
+        break;
+
+      case "disconnected":
+        this.setError("Disconnected");
         break;
 
       case "warning":

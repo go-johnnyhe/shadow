@@ -1,7 +1,10 @@
 package client
 
 import (
+	"bufio"
 	"errors"
+	"fmt"
+	"io"
 	"log"
 	"os/exec"
 	"path"
@@ -9,13 +12,14 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 )
 
 var hardcodedIgnore = regexp.MustCompile(`(?i)` +
 	// Directories: VCS, editors, caches, system, secrets
 	`(?:^|[\\/])(?:\.git|\.hg|\.svn|\.vscode|\.idea|\.opencode|node_modules|` +
 	`__pycache__|\.mypy_cache|\.pytest_cache|\.ruff_cache|` +
-	`\.cache|\.local|\.ssh|\.gnupg|\.aws|\.shadow|\.Trash)(?:[\\/]|$)` +
+	`\.cache|\.local|\.ssh|\.gnupg|\.aws|\.shadow|\.shadow-conflicts|\.Trash)(?:[\\/]|$)` +
 	// Shell history, config, and completion files
 	`|(?:^|[\\/])\.(?:bash_history|zsh_history|sh_history|python_history|node_repl_history|lesshst|wget-hsts)(?:\.LOCK)?$` +
 	`|(?:^|[\\/])\.(?:bashrc|zshrc|profile|bash_profile|zprofile|bash_logout|zlogout)$` +
@@ -48,18 +52,30 @@ func (o *OutboundIgnore) Match(relPath string, isDir bool) bool {
 	return o.git.Match(relPath, isDir)
 }
 
+func (o *OutboundIgnore) Close() {
+	if o != nil && o.git != nil {
+		o.git.Close()
+	}
+}
+
+func (o *OutboundIgnore) Invalidate() {
+	if o != nil && o.git != nil {
+		o.git.Invalidate()
+	}
+}
+
 func shouldIgnoreInbound(relPath string) bool {
 	return hardcodedIgnore.MatchString(relPath)
 }
 
 type gitIgnoreMatcher struct {
-	baseDir         string
-	gitRoot         string
-	mu              sync.RWMutex
-	ignoredFiles    map[string]struct{}
-	ignoredDirs     map[string]struct{}
-	notIgnoredFiles map[string]struct{}
-	notIgnoredDirs  map[string]struct{}
+	baseDir       string
+	gitRoot       string
+	processMu     sync.Mutex
+	process       *exec.Cmd
+	processInput  io.WriteCloser
+	processOutput *bufio.Reader
+	processStart  time.Time
 }
 
 func newGitIgnoreMatcher(baseDir string) (*gitIgnoreMatcher, error) {
@@ -73,18 +89,7 @@ func newGitIgnoreMatcher(baseDir string) (*gitIgnoreMatcher, error) {
 		return nil, err
 	}
 
-	matcher := &gitIgnoreMatcher{
-		baseDir:         normalizedBaseDir,
-		gitRoot:         gitRoot,
-		ignoredFiles:    map[string]struct{}{},
-		ignoredDirs:     map[string]struct{}{},
-		notIgnoredFiles: map[string]struct{}{},
-		notIgnoredDirs:  map[string]struct{}{},
-	}
-	if err := matcher.preloadIgnoredPaths(); err != nil {
-		return nil, err
-	}
-	return matcher, nil
+	return &gitIgnoreMatcher{baseDir: normalizedBaseDir, gitRoot: gitRoot}, nil
 }
 
 func gitRepositoryRoot(baseDir string) (string, error) {
@@ -104,50 +109,14 @@ func gitRepositoryRoot(baseDir string) (string, error) {
 	return normalizePath(root)
 }
 
-func (m *gitIgnoreMatcher) preloadIgnoredPaths() error {
-	cmd := exec.Command("git", "-C", m.gitRoot, "ls-files", "--others", "-i", "--exclude-standard", "--directory", "-z")
-	out, err := cmd.Output()
-	if err != nil {
-		var exitErr *exec.ExitError
-		if errors.As(err, &exitErr) {
-			return nil
-		}
-		return err
-	}
-
-	for _, entry := range strings.Split(string(out), "\x00") {
-		entry = strings.TrimSpace(entry)
-		if entry == "" {
-			continue
-		}
-		m.cacheIgnoredRepoPath(entry, strings.HasSuffix(entry, "/"))
-	}
-	return nil
-}
-
 func (m *gitIgnoreMatcher) Match(relPath string, isDir bool) bool {
 	repoRelPath, ok := m.repoRelativePath(relPath)
 	if !ok {
 		return false
 	}
 
-	if m.matchesCache(repoRelPath, isDir) {
-		return true
-	}
-	if m.isCachedNotIgnored(repoRelPath, isDir) {
-		return false
-	}
-
 	ignored, known := m.matchWithGit(repoRelPath, isDir)
-	if !known {
-		return false
-	}
-	if ignored {
-		m.cacheIgnoredRepoPath(repoRelPath, isDir)
-		return true
-	}
-	m.cacheNotIgnoredRepoPath(repoRelPath, isDir)
-	return false
+	return known && ignored
 }
 
 func (m *gitIgnoreMatcher) repoRelativePath(relPath string) (string, bool) {
@@ -175,97 +144,89 @@ func normalizePath(p string) (string, error) {
 	return filepath.Clean(absPath), nil
 }
 
-func (m *gitIgnoreMatcher) matchesCache(repoRelPath string, isDir bool) bool {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-
-	if isDir {
-		if _, ok := m.ignoredDirs[repoRelPath]; ok {
-			return true
-		}
-	} else {
-		if _, ok := m.ignoredFiles[repoRelPath]; ok {
-			return true
-		}
-	}
-	if _, ok := m.ignoredDirs[repoRelPath]; ok {
-		return true
-	}
-
-	current := repoRelPath
-	for {
-		slash := strings.LastIndex(current, "/")
-		if slash == -1 {
-			return false
-		}
-		current = current[:slash]
-		if _, ok := m.ignoredDirs[current]; ok {
-			return true
-		}
-	}
-}
-
-func (m *gitIgnoreMatcher) isCachedNotIgnored(repoRelPath string, isDir bool) bool {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-
-	if isDir {
-		_, ok := m.notIgnoredDirs[repoRelPath]
-		return ok
-	}
-	_, ok := m.notIgnoredFiles[repoRelPath]
-	return ok
-}
-
 func (m *gitIgnoreMatcher) matchWithGit(repoRelPath string, asDir bool) (bool, bool) {
 	candidate := repoRelPath
 	if asDir {
 		candidate = strings.TrimSuffix(candidate, "/") + "/"
 	}
 
-	cmd := exec.Command("git", "-C", m.gitRoot, "check-ignore", "-q", "--", candidate)
-	err := cmd.Run()
-	if err == nil {
-		return true, true
-	}
-
-	var exitErr *exec.ExitError
-	if errors.As(err, &exitErr) && exitErr.ExitCode() == 1 {
-		return false, true
+	m.processMu.Lock()
+	defer m.processMu.Unlock()
+	for attempt := 0; attempt < 2; attempt++ {
+		ignored, err := m.queryGitLocked(candidate)
+		if err == nil {
+			return ignored, true
+		}
+		m.stopGitLocked()
 	}
 	return false, false
 }
 
-func (m *gitIgnoreMatcher) cacheIgnoredRepoPath(repoRelPath string, isDir bool) {
-	trimmed := strings.TrimSpace(strings.TrimSuffix(repoRelPath, "/"))
-	trimmed = path.Clean(filepath.ToSlash(trimmed))
-	if trimmed == "" || trimmed == "." || trimmed == ".." || strings.HasPrefix(trimmed, "../") || strings.HasPrefix(trimmed, "/") {
-		return
+func (m *gitIgnoreMatcher) queryGitLocked(candidate string) (bool, error) {
+	if m.process != nil && time.Since(m.processStart) >= time.Second {
+		m.stopGitLocked()
+	}
+	if m.process == nil {
+		cmd := exec.Command("git", "-C", m.gitRoot, "check-ignore", "--stdin", "-z", "--verbose", "--non-matching")
+		input, err := cmd.StdinPipe()
+		if err != nil {
+			return false, err
+		}
+		output, err := cmd.StdoutPipe()
+		if err != nil {
+			_ = input.Close()
+			return false, err
+		}
+		cmd.Stderr = io.Discard
+		if err := cmd.Start(); err != nil {
+			_ = input.Close()
+			return false, err
+		}
+		m.process = cmd
+		m.processInput = input
+		m.processOutput = bufio.NewReader(output)
+		m.processStart = time.Now()
 	}
 
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	delete(m.notIgnoredFiles, trimmed)
-	delete(m.notIgnoredDirs, trimmed)
-	if isDir {
-		m.ignoredDirs[trimmed] = struct{}{}
-		return
+	if _, err := io.WriteString(m.processInput, candidate+"\x00"); err != nil {
+		return false, err
 	}
-	m.ignoredFiles[trimmed] = struct{}{}
+	fields := make([]string, 4)
+	for i := range fields {
+		field, err := m.processOutput.ReadString('\x00')
+		if err != nil {
+			return false, err
+		}
+		fields[i] = strings.TrimSuffix(field, "\x00")
+	}
+	if fields[3] != candidate {
+		return false, fmt.Errorf("git check-ignore returned path %q for %q", fields[3], candidate)
+	}
+	return fields[2] != "" && !strings.HasPrefix(fields[2], "!"), nil
 }
 
-func (m *gitIgnoreMatcher) cacheNotIgnoredRepoPath(repoRelPath string, isDir bool) {
-	trimmed := strings.TrimSpace(strings.TrimSuffix(repoRelPath, "/"))
-	trimmed = path.Clean(filepath.ToSlash(trimmed))
-	if trimmed == "" || trimmed == "." || trimmed == ".." || strings.HasPrefix(trimmed, "../") || strings.HasPrefix(trimmed, "/") {
-		return
+func (m *gitIgnoreMatcher) stopGitLocked() {
+	if m.processInput != nil {
+		_ = m.processInput.Close()
 	}
+	if m.process != nil && m.process.Process != nil {
+		_ = m.process.Process.Kill()
+		_ = m.process.Wait()
+	}
+	m.process = nil
+	m.processInput = nil
+	m.processOutput = nil
+	m.processStart = time.Time{}
+}
 
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	if isDir {
-		m.notIgnoredDirs[trimmed] = struct{}{}
-		return
-	}
-	m.notIgnoredFiles[trimmed] = struct{}{}
+func (m *gitIgnoreMatcher) Close() {
+	m.processMu.Lock()
+	m.stopGitLocked()
+	m.processMu.Unlock()
+}
+
+func (m *gitIgnoreMatcher) Invalidate() {
+	m.processMu.Lock()
+	m.stopGitLocked()
+	m.processMu.Unlock()
 }

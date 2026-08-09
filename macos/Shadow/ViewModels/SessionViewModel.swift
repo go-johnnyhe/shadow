@@ -178,6 +178,10 @@ final class SessionViewModel: ObservableObject {
             )
             setState(.error)
 
+        case ShadowEventName.disconnected:
+            session.lastError = "Disconnected"
+            setState(.error)
+
         case ShadowEventName.warning:
             // Log but don't change state
             break
