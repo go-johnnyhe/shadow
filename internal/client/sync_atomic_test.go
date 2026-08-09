@@ -179,12 +179,14 @@ func TestIncomingConflictPreservesLocalBytes(t *testing.T) {
 	if err != nil || string(got) != string(incoming) {
 		t.Fatalf("live file = %q, %v", got, err)
 	}
-	info, err := os.Stat(destination)
-	if err != nil {
-		t.Fatalf("stat incoming file: %v", err)
-	}
-	if info.Mode().Perm() != 0o755 {
-		t.Fatalf("file mode was not preserved: %v", info.Mode().Perm())
+	if runtime.GOOS != "windows" {
+		info, err := os.Stat(destination)
+		if err != nil {
+			t.Fatalf("stat incoming file: %v", err)
+		}
+		if info.Mode().Perm() != 0o755 {
+			t.Fatalf("file mode was not preserved: %v", info.Mode().Perm())
+		}
 	}
 	if !conflictTreeContains(t, baseDir, local) {
 		t.Fatal("local edit was not preserved in conflict directory")
