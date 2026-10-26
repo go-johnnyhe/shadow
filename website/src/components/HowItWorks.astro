@@ -1,28 +1,43 @@
 ---
+import AppMockup from './AppMockup.astro';
 import Icon from './Icon.astro';
 
 const steps = [
   {
     title: 'Start a session',
     app: 'Click Start Session in the menu bar and pick your project folder.',
-    cli: 'Run this from your project folder. Shadow downloads its tunnel helper on first run.',
-    appVisual: { kind: 'button', text: 'Start Session' },
-    cliVisual: 'shadow start .',
+    cli: 'Run shadow start from your project folder. Shadow downloads its tunnel helper on first run.',
+    dwell: 3600,
   },
   {
     title: 'Send the link',
     app: 'Shadow copies the invite for you. It is long because the encryption key rides along after the #.',
-    cli: 'The invite prints and lands on your clipboard. Paste it into Slack, a DM, wherever you talk.',
-    appVisual: { kind: 'toast', text: 'Invite link copied' },
-    cliVisual: "https://abc123.trycloudflare.com#<key>",
+    cli: 'The join command prints and lands on your clipboard. Paste it into Slack, a DM, wherever you talk.',
+    dwell: 3600,
   },
   {
     title: 'Edit together',
     app: 'Your partner clicks the link or pastes it into their Shadow app. Their copy of the folder fills in and stays live.',
-    cli: 'Your partner joins with the URL. The log marks outgoing changes and incoming ones with arrows, so you can see who changed what.',
-    appVisual: { kind: 'status', text: 'Sharing · Everyone can edit' },
-    cliVisual: "shadow join '<url>'",
+    cli: 'Your partner runs the join command. Arrows in the log show which files went out and which came in.',
+    dwell: 5200,
   },
+];
+
+// Mirrors the real output of `shadow start` (cmd/session.go). Each line
+// appears once its step is reached.
+const terminal = [
+  { step: 1, parts: [['prompt', '~/lexer $ '], ['', 'shadow start .']] },
+  { step: 2, parts: [] },
+  { step: 2, parts: [['', '  '], ['accent', '◗ shadow'], ['dim', ' — sharing lexer']] },
+  { step: 2, parts: [] },
+  { step: 2, parts: [['', '  '], ['dim', 'tell your partner to run this:']] },
+  { step: 2, parts: [['', '  '], ['bold', "shadow join 'https://abc123.trycloudflare.com#key=Xk2…&token=9fQ…'"], ['', '  '], ['bold nowrap', '✓ copied to clipboard']] },
+  { step: 2, parts: [] },
+  { step: 2, parts: [['', '  '], ['accent', 'encrypted end-to-end · ctrl+c to stop']] },
+  { step: 3, parts: [['dim', 'ready · 3 files']] },
+  { step: 3, parts: [['in', '←'], ['', ' lexer/lexer.go']] },
+  { step: 3, parts: [['out', '→'], ['', ' lexer/token.go']] },
+  { step: 3, parts: [['in', '←'], ['', ' lexer/lexer_test.go']] },
 ];
 ---
 
@@ -31,51 +46,86 @@ const steps = [
     <div class="how-top">
       <div class="section-head reveal">
         <p class="eyebrow">How it works</p>
-        <h2 id="how-title" class="section-title">Pairing in three steps, about thirty seconds</h2>
+        <h2 id="how-title" class="section-title">From Start to pairing in three steps</h2>
       </div>
 
       <div class="segmented reveal" role="tablist" aria-label="Show steps for">
-        <button type="button" role="tab" id="tab-app" aria-selected="true" aria-controls="how-steps" data-how-tab="app">
+        <button type="button" role="tab" id="tab-app" aria-selected="true" aria-controls="how-panel" data-how-tab="app">
           <Icon name="apple-logo" size={16} /> Menu bar app
         </button>
-        <button type="button" role="tab" id="tab-cli" aria-selected="false" aria-controls="how-steps" data-how-tab="cli" tabindex="-1">
+        <button type="button" role="tab" id="tab-cli" aria-selected="false" aria-controls="how-panel" data-how-tab="cli" tabindex="-1">
           <Icon name="terminal-window" size={16} /> CLI
         </button>
       </div>
     </div>
 
-    <ol class="steps" id="how-steps" role="tabpanel" aria-labelledby="tab-app" data-how-panel data-mode="app">
-      {steps.map((s, i) => (
-        <li class:list={['step reveal', `reveal-d${i}`]}>
-          <div class="step-visual" aria-hidden="true">
-            <div class="visual-app">
-              {s.appVisual.kind === 'button' && <span class="v-button">{s.appVisual.text}</span>}
-              {s.appVisual.kind === 'toast' && (
-                <span class="v-toast"><Icon name="check-circle" size={16} /> {s.appVisual.text}</span>
-              )}
-              {s.appVisual.kind === 'status' && (
-                <span class="v-status"><span class="v-dot"></span> {s.appVisual.text}</span>
-              )}
+    <div
+      class="how-body reveal"
+      id="how-panel"
+      role="tabpanel"
+      aria-labelledby="tab-app"
+      data-how-panel
+      data-mode="app"
+      data-step="3"
+    >
+      <ol class="steps">
+        {steps.map((s, i) => (
+          <li class="step" data-how-step={i + 1} data-dwell={s.dwell}>
+            <span class="step-num" aria-hidden="true">{i + 1}</span>
+            <div class="step-body">
+              <h3>
+                <button type="button" class="step-btn" data-how-step-btn={i + 1}>{s.title}</button>
+              </h3>
+              <p class="copy-app">{s.app}</p>
+              <p class="copy-cli">{s.cli}</p>
             </div>
-            <code class="visual-cli"><span class="prompt">{i === 1 ? '' : '$ '}</span>{s.cliVisual}</code>
+            <span class="step-progress" aria-hidden="true"><span style={`--dwell:${s.dwell}ms`}></span></span>
+          </li>
+        ))}
+      </ol>
+
+      <div class="how-stage" aria-hidden="true">
+        <div class="stage-app">
+          <div class="menubar">
+            <span class="menubar-item is-active">
+              <svg viewBox="0 0 32 32" width="16" height="16" fill="none">
+                <circle cx="16" cy="16" r="11" stroke="currentColor" stroke-width="2.5" />
+                <path d="M16 5 A11 11 0 0 1 16 27 Z" fill="currentColor" />
+              </svg>
+            </span>
+            <span class="menubar-item"><Icon name="wifi-high" size={16} /></span>
+            <span class="menubar-item"><Icon name="battery-high" size={16} /></span>
           </div>
-          <div class="step-body">
-            <p class="step-num">Step {i + 1}</p>
-            <h3>{s.title}</h3>
-            <p class="copy-app">{s.app}</p>
-            <p class="copy-cli">{s.cli}</p>
+          <div class="popover-slot">
+            <AppMockup />
           </div>
-        </li>
-      ))}
-    </ol>
+        </div>
+
+        <div class="stage-cli">
+          <div class="term">
+            <div class="term-bar">
+              <span class="term-dots"><i></i><i></i><i></i></span>
+              <span class="term-title">~/lexer · shadow start</span>
+            </div>
+            <pre class="term-body">{terminal.map((line, i) => (
+              <span class="term-line" data-line-step={line.step} style={`--i:${i}`}>{line.parts.length
+                ? line.parts.map(([tone, text]) => <span class={tone ? tone.split(' ').map((t) => `t-${t}`).join(' ') : undefined}>{text}</span>)
+                : ' '}{i === 0 && <span class="term-cursor"></span>}</span>
+            ))}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
 <script>
-  const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-how-tab]'));
   const panel = document.querySelector<HTMLElement>('[data-how-panel]');
+  const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-how-tab]'));
+  const items = Array.from(document.querySelectorAll<HTMLElement>('[data-how-step]'));
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  function select(tab: HTMLButtonElement, focus = false) {
+  function selectTab(tab: HTMLButtonElement, focus = false) {
     tabs.forEach((t) => {
       const on = t === tab;
       t.setAttribute('aria-selected', String(on));
@@ -86,17 +136,99 @@ const steps = [
       panel.setAttribute('aria-labelledby', tab.id);
     }
     if (focus) tab.focus();
+    restart();
   }
 
   tabs.forEach((tab, i) => {
-    tab.addEventListener('click', () => select(tab));
+    tab.addEventListener('click', () => selectTab(tab));
     tab.addEventListener('keydown', (event) => {
       if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
       event.preventDefault();
       const next = tabs[(i + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
-      select(next, true);
+      selectTab(next, true);
     });
   });
+
+  // ---- Step walkthrough ----
+  // Steps advance on their own while the section is on screen, pause while the
+  // visitor hovers or focuses inside it, and stop for good once they pick a
+  // step themselves. With reduced motion nothing advances automatically.
+  let step = 1;
+  let timer = 0;
+  let inView = false;
+  let held = false;
+  let manual = reduceMotion;
+
+  function show(next: number) {
+    step = next;
+    if (!panel) return;
+    panel.dataset.step = String(step);
+    panel.dataset.playing = String(!manual && inView && !held);
+    items.forEach((item) => {
+      const n = Number(item.dataset.howStep);
+      const btn = item.querySelector('button');
+      item.classList.toggle('is-active', n === step);
+      item.classList.toggle('is-done', n < step);
+      if (n === step) btn?.setAttribute('aria-current', 'step');
+      else btn?.removeAttribute('aria-current');
+    });
+  }
+
+  function schedule() {
+    window.clearTimeout(timer);
+    if (manual || !inView || held) {
+      if (panel) panel.dataset.playing = 'false';
+      return;
+    }
+    if (panel) panel.dataset.playing = 'true';
+    const dwell = Number(items[step - 1]?.dataset.dwell ?? 3600);
+    timer = window.setTimeout(() => {
+      show(step === items.length ? 1 : step + 1);
+      schedule();
+    }, dwell);
+  }
+
+  function restart() {
+    // Re-render the current step so its entrance plays again in the new mode.
+    if (!panel) return;
+    panel.dataset.step = '0';
+    void panel.offsetWidth;
+    show(step);
+    schedule();
+  }
+
+  if (panel && items.length) {
+    show(1);
+
+    items.forEach((item) => {
+      item.querySelector('button')?.addEventListener('click', () => {
+        manual = true;
+        show(Number(item.dataset.howStep));
+        schedule();
+      });
+    });
+
+    panel.addEventListener('pointerenter', () => { held = true; schedule(); });
+    panel.addEventListener('pointerleave', () => { held = false; schedule(); });
+    panel.addEventListener('focusin', () => { held = true; schedule(); });
+    panel.addEventListener('focusout', (event) => {
+      if (panel.contains(event.relatedTarget as Node | null)) return;
+      held = false;
+      schedule();
+    });
+
+    new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const was = inView;
+          inView = entry.isIntersecting;
+          if (inView && !was && !manual) show(1);
+          schedule();
+        }
+      },
+      { threshold: 0.45 }
+    ).observe(panel);
+  }
 </script>
 
 <style>
@@ -150,53 +282,88 @@ const steps = [
     color: var(--text);
   }
 
+  /* ---- Body: steps on the left, live visual on the right ---- */
+  .how-body {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--sp-200);
+    align-items: stretch;
+  }
+
   .steps {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--sp-200);
+    gap: var(--sp-75);
     list-style: none;
+    align-content: start;
   }
 
   .step {
+    position: relative;
     display: flex;
-    flex-direction: column;
-    padding: var(--sp-75);
+    gap: var(--sp-200);
+    padding: var(--sp-300);
     border: 1px solid var(--border);
     border-radius: var(--r-2xl);
+    background: transparent;
+    overflow: hidden;
+    transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+  }
+
+  .step:hover {
     background: var(--surface);
   }
 
-  .step-visual {
+  .step-num {
     display: grid;
     place-items: center;
-    height: 160px;
-    border-radius: var(--r-lg);
-    background: var(--well);
-    overflow: hidden;
-  }
-
-  .visual-app,
-  .visual-cli {
-    grid-area: 1 / 1;
-    transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
-  }
-
-  .visual-cli {
-    max-width: calc(100% - var(--sp-400));
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-full);
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     line-height: var(--lh-sm);
+    color: var(--text-secondary);
+    transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+  }
+
+  .step h3 {
+    font-size: var(--text-xl);
+    line-height: var(--lh-xl);
     color: var(--text);
-    overflow-wrap: anywhere;
   }
 
-  .prompt {
-    color: var(--accent);
+  .step-btn {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    text-align: left;
+    color: inherit;
+    cursor: pointer;
   }
 
-  [data-mode='app'] .visual-cli,
-  [data-mode='cli'] .visual-app {
-    opacity: 0;
-    transform: translateY(var(--sp-75));
+  /* The whole card is the hit area for its button. */
+  .step-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+
+  .step-btn:focus-visible {
+    outline: none;
+  }
+
+  .step:has(.step-btn:focus-visible) {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .step-body p {
+    margin-top: var(--sp-75);
+    color: var(--text-secondary);
   }
 
   [data-mode='app'] .copy-cli,
@@ -204,83 +371,234 @@ const steps = [
     display: none;
   }
 
-  .v-button {
-    padding: var(--sp-75) var(--sp-200);
-    border-radius: var(--r-md);
-    background: #0a84ff;
-    font-size: var(--text-sm);
-    line-height: var(--lh-sm);
-    font-weight: 500;
-    color: #fff;
-  }
-
-  .v-toast,
-  .v-status {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--sp-75);
-    padding: var(--sp-75) var(--sp-100);
-    border: 1px solid var(--border-strong);
+  .step-progress {
+    position: absolute;
+    left: var(--sp-300);
+    right: var(--sp-300);
+    bottom: var(--sp-100);
+    height: 2px;
     border-radius: var(--r-full);
-    background: var(--surface-raised);
-    font-size: var(--text-sm);
-    line-height: var(--lh-sm);
-    color: var(--text);
+    background: var(--border);
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease);
   }
 
-  .v-toast svg {
-    color: var(--live);
+  .step-progress span {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
   }
 
-  .v-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: var(--r-full);
-    background: var(--live);
+  .step.is-active {
+    border-color: var(--accent-line);
+    background: var(--surface);
   }
 
-  .step-body {
-    padding: var(--sp-300) var(--sp-200) var(--sp-200);
-  }
-
-  .step-num {
-    margin-bottom: var(--sp-75);
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    line-height: var(--lh-xs);
+  .step.is-active .step-num,
+  .step.is-done .step-num {
+    border-color: var(--accent);
     color: var(--accent);
   }
 
-  .step h3 {
-    margin-bottom: var(--sp-75);
-    font-size: var(--text-xl);
-    line-height: var(--lh-xl);
-    color: var(--text);
+  .step.is-active .step-num {
+    background: var(--accent);
+    color: var(--on-accent);
   }
 
-  .step-body p:not(.step-num) {
+  [data-playing='true'] .step.is-active .step-progress {
+    opacity: 1;
+  }
+
+  [data-playing='true'] .step.is-active .step-progress span {
+    animation: progress var(--dwell) linear forwards;
+  }
+
+  @keyframes progress {
+    to { transform: scaleX(1); }
+  }
+
+  /* Without JS every step reads as a plain card. */
+  :global(html:not(.js)) .step {
+    background: var(--surface);
+  }
+
+  /* ---- Stage ---- */
+  .how-stage {
+    position: relative;
+    display: grid;
+    min-height: 440px;
+    padding: var(--sp-75);
+    border: 1px solid var(--border);
+    border-radius: var(--r-2xl);
+    background: var(--surface);
+  }
+
+  .stage-app,
+  .stage-cli {
+    grid-area: 1 / 1;
+    border-radius: var(--r-lg);
+    background: var(--well);
+    overflow: hidden;
+    transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+
+  [data-mode='app'] .stage-cli,
+  [data-mode='cli'] .stage-app {
+    opacity: 0;
+    transform: translateY(var(--sp-75));
+    pointer-events: none;
+  }
+
+  /* macOS menu bar with the popover hanging from the Shadow item */
+  .stage-app {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .menubar {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--sp-50);
+    padding: var(--sp-50) var(--sp-200);
+    background: var(--surface-raised);
     color: var(--text-secondary);
   }
 
-  @media (max-width: 1023px) {
-    .steps {
-      grid-template-columns: 1fr;
-    }
+  .menubar-item {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 24px;
+    border-radius: var(--r);
+  }
 
+  .menubar-item.is-active {
+    background: rgba(255, 255, 255, 0.14);
+  }
+
+  .popover-slot {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    padding: var(--sp-75) var(--sp-200) var(--sp-400);
+  }
+
+  /* Right edge lines up with the Shadow item in the menu bar. */
+  .popover-slot :global(.popover) {
+    margin-right: calc(var(--sp-700) + var(--sp-75));
+  }
+
+  /* Terminal */
+  .term {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .term-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-200);
+    padding: var(--sp-100) var(--sp-200);
+    background: var(--surface);
+  }
+
+  .term-dots {
+    display: flex;
+    gap: var(--sp-75);
+  }
+
+  .term-dots i {
+    width: 12px;
+    height: 12px;
+    border-radius: var(--r-full);
+    background: var(--surface-high);
+  }
+
+  .term-title {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: var(--lh-xs);
+    color: var(--text-muted);
+  }
+
+  .term-body {
+    display: flex;
+    flex-direction: column;
+    padding: var(--sp-300);
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    color: var(--text);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .term-line {
+    min-height: var(--lh-sm);
+    transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+
+  .t-prompt { color: var(--accent); }
+  .t-dim { color: var(--text-muted); }
+  .t-bold { font-weight: 600; }
+  .t-nowrap { white-space: nowrap; }
+  .t-accent { color: #6cc2cf; opacity: 0.85; }
+  .t-out { color: #6cc2cf; }
+  .t-in { color: #7fcf86; }
+
+  .term-cursor {
+    display: none;
+    width: 8px;
+    height: 1lh;
+    margin-left: var(--sp-25);
+    vertical-align: bottom;
+    background: var(--text-secondary);
+    animation: blink 1.1s steps(1) infinite;
+  }
+
+  [data-step='1'] .term-cursor {
+    display: inline-block;
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  /* Lines from later steps stay hidden until their step comes up. */
+  [data-step='1'] .term-line[data-line-step='2'],
+  [data-step='1'] .term-line[data-line-step='3'],
+  [data-step='2'] .term-line[data-line-step='3'] {
+    opacity: 0;
+    transform: translateY(var(--sp-50));
+  }
+
+  [data-step='2'] .term-line[data-line-step='2'],
+  [data-step='3'] .term-line[data-line-step='3'] {
+    transition-delay: calc(300ms + (var(--i) - 1) * 60ms);
+  }
+
+  [data-step='3'] .term-line[data-line-step='3'] {
+    transition-delay: calc(300ms + (var(--i) - 8) * 400ms);
+  }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 1023px) {
     .how-top {
       flex-direction: column;
       align-items: flex-start;
     }
 
-    .step {
-      flex-direction: row;
-      align-items: stretch;
+    .how-body {
+      grid-template-columns: 1fr;
     }
 
-    .step-visual {
-      flex: 0 0 40%;
-      height: auto;
-      min-height: 160px;
+    .how-stage {
+      order: -1;
+      min-height: 400px;
     }
   }
 
@@ -289,21 +607,61 @@ const steps = [
       margin-bottom: var(--sp-500);
     }
 
-    .step {
-      flex-direction: column;
+    .how-stage {
+      min-height: 0;
+      padding: var(--sp-50);
+      border-radius: var(--r-xl);
     }
 
-    .step-visual {
-      flex: none;
-      min-height: 0;
-      height: 128px;
+    .stage-app,
+    .stage-cli {
+      border-radius: var(--r-lg);
+    }
+
+    .popover-slot {
+      justify-content: center;
+      padding: var(--sp-75) var(--sp-100) var(--sp-300);
+    }
+
+    .popover-slot :global(.popover) {
+      margin-right: 0;
+    }
+
+    .term-body {
+      padding: var(--sp-200);
+      font-size: var(--text-xs);
+      line-height: var(--lh-xs);
+    }
+
+    .term-line {
+      min-height: var(--lh-xs);
+    }
+
+    .step {
+      padding: var(--sp-200);
+    }
+
+    .step h3 {
+      font-size: var(--text-lg);
+      line-height: var(--lh-lg);
+    }
+
+    .step-progress {
+      left: var(--sp-200);
+      right: var(--sp-200);
+      bottom: var(--sp-75);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    [data-mode='app'] .visual-cli,
-    [data-mode='cli'] .visual-app {
-      transform: none;
+    [data-mode='app'] .stage-cli,
+    [data-mode='cli'] .stage-app,
+    .term-line {
+      transform: none !important;
+    }
+
+    .term-cursor {
+      animation: none;
     }
   }
 </style>

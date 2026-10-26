@@ -1,7 +1,8 @@
 ---
-// A replica of the Shadow menu bar popover. It loops through the real flow:
-// idle, press Start Session, then the live "Sharing" view as files sync.
-// Only opacity and transform animate, and the layout never shifts.
+// A replica of the Shadow menu bar popover. Its state follows the nearest
+// ancestor's data-step: 1 idle (Start Session gets pressed), 2 sharing with the
+// invite copied, 3 files syncing. Only opacity and transform animate, and the
+// layout never shifts between states.
 import Icon from './Icon.astro';
 
 const rawBase = import.meta.env.BASE_URL;
@@ -10,12 +11,12 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
 const activity = ['lexer/lexer.go', 'lexer/token.go', 'lexer/lexer_test.go'];
 ---
 
-<div class="popover" role="img" aria-label="The Shadow menu bar app. Clicking Start Session shares the lexer folder and shows files syncing.">
-  <div class="layers" aria-hidden="true">
+<div class="popover" aria-hidden="true">
+  <div class="layers">
     <!-- Idle -->
     <div class="layer layer-idle">
       <div class="pop-head">
-        <img src={`${base}shadow-icon.png`} alt="" width="32" height="32" />
+        <img src={`${base}shadow-icon.png`} alt="" width="32" height="32" loading="lazy" decoding="async" />
         <div>
           <p class="pop-title">Shadow</p>
           <p class="pop-sub">Encrypted realtime collaboration</p>
@@ -61,18 +62,21 @@ const activity = ['lexer/lexer.go', 'lexer/token.go', 'lexer/lexer_test.go'];
 
       <div class="pop-activity">
         <p class="pop-label">Recent activity</p>
-        <ul>
-          {activity.map((file, i) => (
-            <li style={`--n:${i}`}>
-              <Icon name="arrows-left-right" size={12} />
-              <span>{file}</span>
-            </li>
-          ))}
-        </ul>
+        <div class="activity-box">
+          <p class="activity-empty">Waiting for your partner to join</p>
+          <ul>
+            {activity.map((file, i) => (
+              <li style={`--n:${i}`}>
+                <Icon name="arrows-left-right" size={12} />
+                <span>{file}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
       <div class="pop-buttons">
-        <span class="mac-btn">Copy Invite Link</span>
+        <span class="mac-btn invite-btn">Copy Invite Link</span>
         <span class="mac-btn mac-btn-stop">Stop Session</span>
       </div>
     </div>
@@ -86,15 +90,10 @@ const activity = ['lexer/lexer.go', 'lexer/token.go', 'lexer/lexer_test.go'];
     border: 1px solid var(--border-strong);
     border-radius: var(--r-xl);
     background: rgba(39, 39, 39, 0.96);
-    backdrop-filter: blur(20px) saturate(1.5);
     box-shadow: var(--shadow-lg);
     font-size: var(--text-xs);
     line-height: var(--lh-xs);
     color: var(--text-secondary);
-  }
-
-  @supports not (backdrop-filter: blur(1px)) {
-    .popover { -webkit-backdrop-filter: blur(20px) saturate(1.5); }
   }
 
   .layers {
@@ -106,6 +105,7 @@ const activity = ['lexer/lexer.go', 'lexer/token.go', 'lexer/lexer_test.go'];
     display: flex;
     flex-direction: column;
     gap: var(--sp-100);
+    transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
   }
 
   .pop-head {
@@ -221,10 +221,6 @@ const activity = ['lexer/lexer.go', 'lexer/token.go', 'lexer/lexer_test.go'];
     background: var(--live);
   }
 
-  .live-dot::after {
-    animation: live-ping 1.8s var(--ease) infinite;
-  }
-
   .pop-rows {
     display: grid;
     gap: var(--sp-50);
@@ -253,6 +249,21 @@ const activity = ['lexer/lexer.go', 'lexer/token.go', 'lexer/lexer_test.go'];
     color: var(--text-muted);
   }
 
+  .activity-box {
+    display: grid;
+  }
+
+  .activity-empty,
+  .pop-activity ul {
+    grid-area: 1 / 1;
+    transition: opacity var(--dur) var(--ease);
+  }
+
+  .activity-empty {
+    align-self: center;
+    color: var(--text-muted);
+  }
+
   .pop-activity ul {
     display: grid;
     gap: var(--sp-50);
@@ -265,59 +276,68 @@ const activity = ['lexer/lexer.go', 'lexer/token.go', 'lexer/lexer_test.go'];
     display: flex;
     align-items: center;
     gap: var(--sp-75);
+    transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
   }
 
   .pop-activity li svg {
     color: var(--accent);
   }
 
-  /* ---- Loop: 10s. Idle, press Start, share, files arrive, reset ---- */
-  @media (prefers-reduced-motion: no-preference) {
-    .layer-idle { animation: idle-layer 10s var(--ease) infinite; }
-    .layer-active { animation: active-layer 10s var(--ease) infinite; }
-    .start-btn { animation: press 10s var(--ease) infinite; }
-    .pop-activity li { animation: file-in 10s var(--ease) infinite; }
-    .pop-activity li:nth-child(2) { animation-name: file-in-2; }
-    .pop-activity li:nth-child(3) { animation-name: file-in-3; }
+  /* ---- States. With no data-step the final, fully synced state shows. ---- */
+  .layer-idle {
+    opacity: 0;
+    transform: scale(0.98);
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .layer-idle { opacity: 0; }
+  .activity-empty {
+    opacity: 0;
   }
 
-  .layer-active { opacity: 0; }
+  :global([data-step='1']) .layer-idle {
+    opacity: 1;
+    transform: none;
+  }
+
+  :global([data-step='1']) .layer-active {
+    opacity: 0;
+    transform: translateY(var(--sp-75));
+  }
+
+  :global([data-step='1']) .start-btn {
+    animation: press 1600ms var(--ease) 1200ms both;
+  }
+
+  :global([data-step='2']) .activity-empty {
+    opacity: 1;
+  }
+
+  :global([data-step='1']) .pop-activity li,
+  :global([data-step='2']) .pop-activity li {
+    opacity: 0;
+    transform: translateY(var(--sp-50));
+  }
+
+  :global([data-step='2']) .invite-btn {
+    animation: flash 1600ms var(--ease) 300ms both;
+  }
+
+  :global([data-step='3']) .pop-activity li {
+    transition-delay: calc(400ms + var(--n) * 600ms);
+  }
+
+  :global([data-step='3']) .live-dot::after {
+    animation: live-ping 1.8s var(--ease) infinite;
+  }
 
   @keyframes press {
-    0%, 18%, 100% { transform: none; }
-    21% { transform: scale(0.94); }
-    25% { transform: none; }
+    0%, 100% { transform: none; }
+    20% { transform: scale(0.94); }
+    40% { transform: none; }
   }
 
-  @keyframes idle-layer {
-    0%, 24% { opacity: 1; transform: none; }
-    30%, 92% { opacity: 0; transform: scale(0.98); }
-    100% { opacity: 1; transform: none; }
-  }
-
-  @keyframes active-layer {
-    0%, 24% { opacity: 0; transform: translateY(8px); }
-    32%, 88% { opacity: 1; transform: none; }
-    94%, 100% { opacity: 0; transform: translateY(8px); }
-  }
-
-  @keyframes file-in {
-    0%, 36% { opacity: 0; transform: translateY(4px); }
-    42%, 100% { opacity: 1; transform: none; }
-  }
-
-  @keyframes file-in-2 {
-    0%, 52% { opacity: 0; transform: translateY(4px); }
-    58%, 100% { opacity: 1; transform: none; }
-  }
-
-  @keyframes file-in-3 {
-    0%, 68% { opacity: 0; transform: translateY(4px); }
-    74%, 100% { opacity: 1; transform: none; }
+  @keyframes flash {
+    0%, 100% { background-color: rgba(255, 255, 255, 0.08); }
+    30% { background-color: rgba(255, 255, 255, 0.2); }
   }
 
   @keyframes live-ping {
@@ -326,7 +346,14 @@ const activity = ['lexer/lexer.go', 'lexer/token.go', 'lexer/lexer_test.go'];
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .layer-active { opacity: 1; }
-    .live-dot::after { animation: none; opacity: 0; }
+    .layer,
+    .pop-activity li {
+      transform: none !important;
+    }
+
+    :global([data-step='1']) .start-btn,
+    :global([data-step='3']) .live-dot::after {
+      animation: none;
+    }
   }
 </style>

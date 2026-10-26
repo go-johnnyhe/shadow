@@ -34,7 +34,7 @@ export const faqs = [
   },
   {
     q: 'Does Vim reload files when my partner saves?',
-    a: 'Yes, once it is set up. The install script configures Vim and Neovim to reload changed buffers automatically. If you installed another way, run `shadow vimSetup`.',
+    a: 'Yes, once it is set up. The install script configures Vim and Neovim to reload changed buffers automatically. If you installed another way, run `shadow setup-editor`.',
   },
   {
     q: 'What does it cost?',

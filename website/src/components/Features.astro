@@ -17,21 +17,26 @@ const editors = ['VS Code', 'Neovim', 'Vim', 'JetBrains', 'Zed'];
 
     <div class="bento">
       <article class="tile tile-wide reveal">
-        <div class="tile-icon"><Icon name="code" /></div>
-        <h3>Keep your editor, keymap, and extensions</h3>
-        <p>
-          Your partner’s Vim config never touches your setup. Each of you edits real files on your own disk,
-          with your own linters, debugger, and terminal.
-        </p>
-        <ul class="editor-chips" role="list" aria-label="Editors people pair from">
-          {editors.map((e) => <li>{e}</li>)}
-          <li class="is-more">anything that saves files</li>
-        </ul>
+        <div class="tile-text">
+          <div class="tile-icon"><Icon name="code" /></div>
+          <h3>Keep your editor, keymap, and extensions</h3>
+          <p>
+            Your partner’s Vim config never touches your setup. Each of you edits real files on your own disk,
+            with your own linters, debugger, and terminal.
+          </p>
+        </div>
+        <div class="editor-well">
+          <p class="well-label">Pair from any of these</p>
+          <ul class="editor-chips" role="list" aria-label="Editors people pair from">
+            {editors.map((e) => <li>{e}</li>)}
+            <li class="is-more">anything that saves files</li>
+          </ul>
+        </div>
       </article>
 
       <article class="tile reveal reveal-d1">
         <div class="tile-icon"><Icon name="lightning" /></div>
-        <h3>Both of you type, live</h3>
+        <h3>Both of you can drive</h3>
         <p>
           No driver, no passenger. Shadow picks up each save after a 50 ms debounce and checks it by hash,
           so unchanged files are never resent.
@@ -93,6 +98,31 @@ const editors = ['VS Code', 'Neovim', 'Vim', 'JetBrains', 'Zed'];
 
   .tile-wide {
     grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--sp-400);
+    align-items: center;
+  }
+
+  .tile-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-100);
+  }
+
+  .editor-well {
+    padding: var(--sp-300);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    background: var(--well);
+  }
+
+  .well-label {
+    margin-bottom: var(--sp-200);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: var(--lh-xs);
+    color: var(--text-muted);
   }
 
   .tile-icon {
@@ -122,18 +152,17 @@ const editors = ['VS Code', 'Neovim', 'Vim', 'JetBrains', 'Zed'];
     display: flex;
     flex-wrap: wrap;
     gap: var(--sp-75);
-    margin-top: var(--sp-200);
     list-style: none;
   }
 
   .editor-chips li {
-    padding: var(--sp-50) var(--sp-100);
+    padding: var(--sp-75) var(--sp-100);
     border: 1px solid var(--border-strong);
     border-radius: var(--r-full);
     background: var(--surface-raised);
     font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    line-height: var(--lh-xs);
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
     color: var(--text);
   }
 
@@ -143,9 +172,20 @@ const editors = ['VS Code', 'Neovim', 'Vim', 'JetBrains', 'Zed'];
     color: var(--text-muted);
   }
 
+  @media (max-width: 1023px) {
+    .tile-wide {
+      grid-template-columns: 1fr;
+      gap: var(--sp-300);
+    }
+  }
+
   @media (max-width: 767px) {
     .bento {
       grid-template-columns: 1fr;
+    }
+
+    .editor-well {
+      padding: var(--sp-200);
     }
 
     .tile {

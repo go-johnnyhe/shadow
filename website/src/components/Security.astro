@@ -16,8 +16,8 @@ const specs = [
       <p class="eyebrow">Security</p>
       <h2 id="security-title" class="section-title">The relay carries your code but can’t read it</h2>
       <p class="section-lead">
-        Every file is encrypted on your machine before it leaves. The key travels inside the invite link,
-        after the <span class="inline-code">#</span>, and that part of a URL is never sent to a server.
+        Every file is encrypted on your machine before it leaves. The key rides in the invite link after
+        the <span class="inline-code">#</span>, and Shadow strips it out before connecting, so it never crosses the wire.
       </p>
       <p class="security-note">
         Shadow is MIT licensed, so you can check all of this yourself.{' '}
@@ -38,7 +38,7 @@ const specs = [
     <div class="security-card reveal reveal-d1">
       <div class="url-anatomy" aria-label="Anatomy of an invite link">
         <p class="url">
-          <span class="url-public">https://abc123.trycloudflare.com</span><span class="url-key">#&lt;key&gt;</span>
+          <span class="url-public">https://abc123.trycloudflare.com</span><span class="url-sep">#</span><span class="url-key">key=Xk2…</span><span class="url-sep">&amp;</span><span class="url-token">token=9fQ…</span>
         </p>
         <div class="url-legend">
           <p>
@@ -47,7 +47,11 @@ const specs = [
           </p>
           <p class="is-key">
             <Icon name="key" size={16} />
-            <span><strong>Key.</strong> Stays with you and your partner. Never reaches the relay.</span>
+            <span><strong>Key.</strong> Decrypts the files. Read on your two machines and never sent anywhere.</span>
+          </p>
+          <p>
+            <Icon name="ticket" size={16} />
+            <span><strong>Token.</strong> Lets your partner in. Shadow refuses connections without it.</span>
           </p>
         </div>
       </div>
@@ -101,16 +105,31 @@ const specs = [
     overflow-wrap: anywhere;
   }
 
+  /* Address on the first line, the fragment Shadow keeps local on the second. */
   .url-public {
+    display: block;
     color: var(--text-secondary);
   }
 
-  .url-key {
+  .url-sep {
+    color: var(--text-muted);
+  }
+
+  .url-key,
+  .url-token {
     white-space: nowrap;
     padding: var(--sp-25) var(--sp-50);
     border-radius: var(--r);
+  }
+
+  .url-key {
     background: var(--accent-soft);
     color: var(--accent);
+  }
+
+  .url-token {
+    background: var(--surface-raised);
+    color: var(--text);
   }
 
   .url-legend {

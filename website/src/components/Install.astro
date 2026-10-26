@@ -120,7 +120,7 @@ const commands = [
         </div>
         <p>
           The install script finds Vim and Neovim and sets them to reload a buffer when your partner saves it.
-          Already installed? Run <span class="inline-code">shadow vimSetup</span>.
+          Already installed? Run <span class="inline-code">shadow setup-editor</span>.
         </p>
       </article>
     </div>
@@ -208,7 +208,7 @@ const commands = [
 
   .command-row {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--sp-75);
     padding: var(--sp-50);
     padding-left: var(--sp-100);
@@ -217,15 +217,15 @@ const commands = [
     background: var(--well);
   }
 
+  /* Wrap instead of clipping, so the whole command is readable before it runs. */
   .command-row code {
     flex: 1;
     min-width: 0;
-    overflow-x: auto;
-    white-space: nowrap;
+    padding-block: var(--sp-50);
+    overflow-wrap: anywhere;
     font-size: var(--text-sm);
     line-height: var(--lh-sm);
     color: var(--text);
-    scrollbar-width: none;
   }
 
   .copy-btn {
