@@ -11,6 +11,18 @@ import { githubUrl } from '../consts';
   home={false}
 >
   <Prose eyebrow="Privacy" title="What Shadow can and can’t see">
+    <h2>The short version</h2>
+    <p>
+      Shadow does not collect sensitive information. The Mac app and this website send anonymous usage events so
+      the maintainer can see what works, and they never collect:
+    </p>
+    <ul>
+      <li>your code, file contents, file names, or folder paths</li>
+      <li>invite links, encryption keys, or session tokens</li>
+      <li>your name, email address, or any account details, because Shadow has no accounts</li>
+      <li>anything you type into your editor or terminal</li>
+    </ul>
+
     <h2>Your code</h2>
     <p>
       Files in a Shadow session are encrypted with <code class="inline-code">AES-256-GCM</code> on your machine before they are sent.
@@ -25,6 +37,10 @@ import { githubUrl } from '../consts';
       invite copies, read only mode, and error categories. They never include file contents, file names, folder paths,
       or the invite link. Screen views and lifecycle autocapture are turned off.
     </p>
+    <p>
+      Like any analytics tool, PostHog also receives basic technical details with each event: a random ID for the
+      install, the app and macOS versions, and an approximate location derived from your IP address.
+    </p>
 
     <h2>The CLI and VS Code extension</h2>
     <p>
@@ -34,7 +50,12 @@ import { githubUrl } from '../consts';
     <h2>This website</h2>
     <p>
       This site uses PostHog to measure page views and how the page gets used, such as clicks on the download,
-      copy, and demo controls. It does not create profiles for anonymous visitors.
+      copy, and demo controls. It does not create profiles for anonymous visitors. The site has no forms, so there
+      is nothing personal to submit.
+    </p>
+    <p>
+      PostHog stores a random visitor ID in a cookie and local storage so repeat visits are not counted twice. It
+      also receives your browser type, the page you came from, and an approximate location derived from your IP address.
     </p>
 
     <h2>Check it yourself</h2>
