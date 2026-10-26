@@ -1,0 +1,47 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Prose from '../components/Prose.astro';
+import { githubUrl } from '../consts';
+---
+
+<Layout
+  title="Privacy | Shadow"
+  description="What Shadow and this website collect, and what they never see: your code stays end to end encrypted."
+  path="privacy/"
+  home={false}
+>
+  <Prose eyebrow="Privacy" title="What Shadow can and can’t see">
+    <h2>Your code</h2>
+    <p>
+      Files in a Shadow session are encrypted with <code class="inline-code">AES-256-GCM</code> on your machine before they are sent.
+      The key lives in the invite link after the <code class="inline-code">#</code>, which is never sent to the relay,
+      so the relay only handles ciphertext. Shadow has no accounts, so there is no profile, email, or password to store.
+    </p>
+
+    <h2>The Mac app</h2>
+    <p>
+      The menu bar app sends a small set of anonymous usage events to PostHog so the maintainer can see whether sessions
+      start and where they fail. Events include app launches, session starts, joins, stops with their duration,
+      invite copies, read only mode, and error categories. They never include file contents, file names, folder paths,
+      or the invite link. Screen views and lifecycle autocapture are turned off.
+    </p>
+
+    <h2>The CLI and VS Code extension</h2>
+    <p>
+      The CLI and the VS Code extension do not include analytics.
+    </p>
+
+    <h2>This website</h2>
+    <p>
+      This site uses PostHog to measure page views and how the page gets used, such as clicks on the download,
+      copy, and demo controls. It does not create profiles for anonymous visitors.
+    </p>
+
+    <h2>Check it yourself</h2>
+    <p>
+      Shadow is open source under the MIT license. Every claim on this page can be verified in the{' '}
+      <a href={githubUrl} class="text-link" target="_blank" rel="noopener noreferrer">source on GitHub</a>.
+      Questions or concerns? <a href={`${githubUrl}/issues`} class="text-link" target="_blank" rel="noopener noreferrer">Open an issue</a>.
+    </p>
+  </Prose>
+</Layout>

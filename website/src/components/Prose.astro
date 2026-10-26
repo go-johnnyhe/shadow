@@ -1,0 +1,68 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+}
+const { eyebrow, title } = Astro.props;
+---
+
+<article class="prose shell">
+  <p class="eyebrow">{eyebrow}</p>
+  <h1>{title}</h1>
+  <slot />
+</article>
+
+<style>
+  .prose {
+    max-width: calc(680px + var(--gutter) * 2);
+    padding-top: calc(var(--sp-900) + var(--sp-700));
+    padding-bottom: var(--sp-900);
+  }
+
+  h1 {
+    margin-bottom: var(--sp-400);
+    font-size: var(--text-5xl);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    background: linear-gradient(90deg, #ffffff, #9b9b9b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    padding-bottom: var(--sp-50);
+  }
+
+  .prose :global(h2) {
+    margin: var(--sp-500) 0 var(--sp-100);
+    font-size: var(--text-xl);
+    line-height: var(--lh-xl);
+    color: var(--text);
+  }
+
+  .prose :global(p),
+  .prose :global(li) {
+    color: var(--text-secondary);
+  }
+
+  .prose :global(p + p) {
+    margin-top: var(--sp-200);
+  }
+
+  .prose :global(ul) {
+    display: grid;
+    gap: var(--sp-75);
+    margin-top: var(--sp-200);
+    padding-left: var(--sp-300);
+  }
+
+  @media (max-width: 767px) {
+    .prose {
+      padding-top: calc(var(--sp-900) + var(--sp-200));
+      padding-bottom: var(--sp-700);
+    }
+
+    h1 {
+      font-size: var(--text-4xl);
+      line-height: var(--lh-4xl);
+    }
+  }
+</style>

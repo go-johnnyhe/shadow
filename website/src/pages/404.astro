@@ -1,0 +1,71 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Icon from '../components/Icon.astro';
+
+const rawBase = import.meta.env.BASE_URL;
+const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
+---
+
+<Layout title="Page not found | Shadow" description="This page does not exist." path="404" home={false} noindex>
+  <section class="nf shell">
+    <p class="nf-code"><span>&lt;-</span> 404</p>
+    <h1>This file never synced</h1>
+    <p class="nf-lead">The page you asked for isn’t here. It may have moved, or the link has a typo.</p>
+    <a href={base} class="btn btn-primary">
+      <Icon name="arrow-left" />
+      Back to Shadow
+    </a>
+  </section>
+</Layout>
+
+<style>
+  .nf {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 80vh;
+    justify-content: center;
+    padding-top: var(--sp-900);
+    padding-bottom: var(--sp-900);
+    text-align: center;
+  }
+
+  .nf-code {
+    margin-bottom: var(--sp-200);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    color: var(--text-muted);
+  }
+
+  .nf-code span {
+    color: var(--accent);
+  }
+
+  h1 {
+    max-width: 680px;
+    font-size: var(--text-5xl);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    padding-bottom: var(--sp-50);
+    background: linear-gradient(90deg, #ffffff, #9b9b9b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .nf-lead {
+    max-width: 480px;
+    margin: var(--sp-200) 0 var(--sp-500);
+    font-size: var(--text-lg);
+    line-height: var(--lh-lg);
+    color: var(--text-secondary);
+  }
+
+  @media (max-width: 767px) {
+    h1 {
+      font-size: var(--text-4xl);
+      line-height: var(--lh-4xl);
+    }
+  }
+</style>

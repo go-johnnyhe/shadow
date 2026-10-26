@@ -1,103 +1,309 @@
 ---
+import Icon from './Icon.astro';
+
+const steps = [
+  {
+    title: 'Start a session',
+    app: 'Click Start Session in the menu bar and pick your project folder.',
+    cli: 'Run this from your project folder. Shadow downloads its tunnel helper on first run.',
+    appVisual: { kind: 'button', text: 'Start Session' },
+    cliVisual: 'shadow start .',
+  },
+  {
+    title: 'Send the link',
+    app: 'Shadow copies the invite for you. It is long because the encryption key rides along after the #.',
+    cli: 'The invite prints and lands on your clipboard. Paste it into Slack, a DM, wherever you talk.',
+    appVisual: { kind: 'toast', text: 'Invite link copied' },
+    cliVisual: "https://abc123.trycloudflare.com#<key>",
+  },
+  {
+    title: 'Edit together',
+    app: 'Your partner clicks the link or pastes it into their Shadow app. Their copy of the folder fills in and stays live.',
+    cli: 'Your partner joins with the URL. The log marks outgoing changes and incoming ones with arrows, so you can see who changed what.',
+    appVisual: { kind: 'status', text: 'Sharing · Everyone can edit' },
+    cliVisual: "shadow join '<url>'",
+  },
+];
 ---
 
-<section class="how-it-works">
-  <div class="section-shell how-inner">
-    <div class="how-header reveal">
-      <h2 class="section-title">Setup takes thirty seconds.</h2>
-      <p class="section-lead">
-        Click Start and share the link.
-      </p>
-    </div>
-
-    <div class="steps-grid">
-      <div class="step reveal r-d1">
-        <div class="step-num">01</div>
-        <h3>Click Start in the menu bar</h3>
-        <p>Open Shadow, pick your project folder. A secure tunnel is ready in seconds.</p>
+<section class="section how" id="how" aria-labelledby="how-title">
+  <div class="shell">
+    <div class="how-top">
+      <div class="section-head reveal">
+        <p class="eyebrow">How it works</p>
+        <h2 id="how-title" class="section-title">Pairing in three steps, about thirty seconds</h2>
       </div>
 
-      <div class="step reveal r-d2">
-        <div class="step-num">02</div>
-        <h3>Send the link</h3>
-        <p>The invite is auto-copied to your clipboard. It's long: that's the encryption key baked into the URL. Paste it in Slack and move on.</p>
-        <div class="code-block">
-          <code>shadow join 'https://...#e2e-key'</code>
-        </div>
-      </div>
-
-      <div class="step reveal r-d3">
-        <div class="step-num">03</div>
-        <h3>They join, you're pairing</h3>
-        <p>They click the link or paste it into their Shadow app. Both editing the same files, live, in whatever editor they each prefer.</p>
+      <div class="segmented reveal" role="tablist" aria-label="Show steps for">
+        <button type="button" role="tab" id="tab-app" aria-selected="true" aria-controls="how-steps" data-how-tab="app">
+          <Icon name="apple-logo" size={16} /> Menu bar app
+        </button>
+        <button type="button" role="tab" id="tab-cli" aria-selected="false" aria-controls="how-steps" data-how-tab="cli" tabindex="-1">
+          <Icon name="terminal-window" size={16} /> CLI
+        </button>
       </div>
     </div>
+
+    <ol class="steps" id="how-steps" role="tabpanel" aria-labelledby="tab-app" data-how-panel data-mode="app">
+      {steps.map((s, i) => (
+        <li class:list={['step reveal', `reveal-d${i}`]}>
+          <div class="step-visual" aria-hidden="true">
+            <div class="visual-app">
+              {s.appVisual.kind === 'button' && <span class="v-button">{s.appVisual.text}</span>}
+              {s.appVisual.kind === 'toast' && (
+                <span class="v-toast"><Icon name="check-circle" size={16} /> {s.appVisual.text}</span>
+              )}
+              {s.appVisual.kind === 'status' && (
+                <span class="v-status"><span class="v-dot"></span> {s.appVisual.text}</span>
+              )}
+            </div>
+            <code class="visual-cli"><span class="prompt">{i === 1 ? '' : '$ '}</span>{s.cliVisual}</code>
+          </div>
+          <div class="step-body">
+            <p class="step-num">Step {i + 1}</p>
+            <h3>{s.title}</h3>
+            <p class="copy-app">{s.app}</p>
+            <p class="copy-cli">{s.cli}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
   </div>
 </section>
 
+<script>
+  const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-how-tab]'));
+  const panel = document.querySelector<HTMLElement>('[data-how-panel]');
+
+  function select(tab: HTMLButtonElement, focus = false) {
+    tabs.forEach((t) => {
+      const on = t === tab;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+    });
+    if (panel) {
+      panel.dataset.mode = tab.dataset.howTab;
+      panel.setAttribute('aria-labelledby', tab.id);
+    }
+    if (focus) tab.focus();
+  }
+
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => select(tab));
+    tab.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+      event.preventDefault();
+      const next = tabs[(i + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+      select(next, true);
+    });
+  });
+</script>
+
 <style>
-  .how-it-works {
-    margin-bottom: clamp(6rem, 10vw, 10rem);
-  }
-
-  .how-header {
-    text-align: center;
-    margin-bottom: 5rem;
+  .how-top {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--sp-300);
+    margin-bottom: var(--sp-600);
   }
 
-  .steps-grid {
+  .how-top .section-head {
+    margin-bottom: 0;
+  }
+
+  .segmented {
+    display: inline-flex;
+    flex-shrink: 0;
+    padding: var(--sp-50);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    background: var(--surface);
+  }
+
+  .segmented button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-75);
+    padding: var(--sp-75) var(--sp-100);
+    border: 0;
+    border-radius: var(--r-lg);
+    background: transparent;
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), transform var(--dur) var(--ease);
+  }
+
+  .segmented button:hover {
+    color: var(--text);
+  }
+
+  .segmented button:active {
+    transform: scale(0.98);
+  }
+
+  .segmented button[aria-selected='true'] {
+    background: var(--surface-high);
+    color: var(--text);
+  }
+
+  .steps {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 3rem;
+    gap: var(--sp-200);
+    list-style: none;
   }
 
   .step {
     display: flex;
     flex-direction: column;
+    padding: var(--sp-75);
+    border: 1px solid var(--border);
+    border-radius: var(--r-2xl);
+    background: var(--surface);
+  }
+
+  .step-visual {
+    display: grid;
+    place-items: center;
+    height: 160px;
+    border-radius: var(--r-lg);
+    background: var(--well);
+    overflow: hidden;
+  }
+
+  .visual-app,
+  .visual-cli {
+    grid-area: 1 / 1;
+    transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+
+  .visual-cli {
+    max-width: calc(100% - var(--sp-400));
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    color: var(--text);
+    overflow-wrap: anywhere;
+  }
+
+  .prompt {
+    color: var(--accent);
+  }
+
+  [data-mode='app'] .visual-cli,
+  [data-mode='cli'] .visual-app {
+    opacity: 0;
+    transform: translateY(var(--sp-75));
+  }
+
+  [data-mode='app'] .copy-cli,
+  [data-mode='cli'] .copy-app {
+    display: none;
+  }
+
+  .v-button {
+    padding: var(--sp-75) var(--sp-200);
+    border-radius: var(--r-md);
+    background: #0a84ff;
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    font-weight: 500;
+    color: #fff;
+  }
+
+  .v-toast,
+  .v-status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-75);
+    padding: var(--sp-75) var(--sp-100);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-full);
+    background: var(--surface-raised);
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    color: var(--text);
+  }
+
+  .v-toast svg {
+    color: var(--live);
+  }
+
+  .v-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--r-full);
+    background: var(--live);
+  }
+
+  .step-body {
+    padding: var(--sp-300) var(--sp-200) var(--sp-200);
   }
 
   .step-num {
+    margin-bottom: var(--sp-75);
     font-family: var(--font-mono);
-    font-size: 1rem;
+    font-size: var(--text-xs);
+    line-height: var(--lh-xs);
     color: var(--accent);
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border);
   }
 
   .step h3 {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: var(--sp-75);
+    font-size: var(--text-xl);
+    line-height: var(--lh-xl);
     color: var(--text);
   }
 
-  .step p {
+  .step-body p:not(.step-num) {
     color: var(--text-secondary);
-    line-height: 1.7;
   }
 
-  .code-block {
-    margin-top: 1.5rem;
-    padding: 1rem 1.25rem;
-    background: var(--paper-strong);
-    border-radius: 0.5rem;
-    border: 1px solid var(--border);
-  }
-
-  .code-block code {
-    font-size: 0.8rem;
-    color: var(--text);
-    word-break: break-all;
-  }
-
-  @media (max-width: 900px) {
-    .steps-grid {
+  @media (max-width: 1023px) {
+    .steps {
       grid-template-columns: 1fr;
-      gap: 4rem;
+    }
+
+    .how-top {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .step {
+      flex-direction: row;
+      align-items: stretch;
+    }
+
+    .step-visual {
+      flex: 0 0 40%;
+      height: auto;
+      min-height: 160px;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .how-top {
+      margin-bottom: var(--sp-500);
+    }
+
+    .step {
+      flex-direction: column;
+    }
+
+    .step-visual {
+      flex: none;
+      min-height: 0;
+      height: 128px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-mode='app'] .visual-cli,
+    [data-mode='cli'] .visual-app {
+      transform: none;
     }
   }
 </style>

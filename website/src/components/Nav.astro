@@ -1,0 +1,406 @@
+---
+import { dmgUrl, githubUrl } from '../consts';
+import Icon from './Icon.astro';
+
+interface Props {
+  /** On secondary pages, section links point back to the landing page. */
+  home?: boolean;
+}
+
+const { home = true } = Astro.props;
+const rawBase = import.meta.env.BASE_URL;
+const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
+const prefix = home ? '' : base;
+
+const links = [
+  { href: `${prefix}#how`, id: 'how', label: 'How it works' },
+  { href: `${prefix}#security`, id: 'security', label: 'Security' },
+  { href: `${prefix}#compare`, id: 'compare', label: 'Compare' },
+  { href: `${prefix}#install`, id: 'install', label: 'Install' },
+  { href: `${prefix}#faq`, id: 'faq', label: 'FAQ' },
+];
+---
+
+<header class="nav-wrap" data-nav>
+  <nav class="nav" aria-label="Primary">
+    <a href={base} class="nav-brand" aria-label="Shadow home">
+      <img src={`${base}shadow-icon.png`} alt="" width="24" height="24" />
+      <span>Shadow</span>
+    </a>
+
+    <ul class="nav-links" role="list">
+      {links.map((l) => (
+        <li>
+          <a href={l.href} class="nav-link" data-nav-link={l.id}>{l.label}</a>
+        </li>
+      ))}
+    </ul>
+
+    <div class="nav-actions">
+      <a
+        href={githubUrl}
+        class="nav-icon-link"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Shadow on GitHub"
+        data-cta
+        data-cta-source="nav"
+        data-cta-target="github"
+      >
+        <Icon name="github-logo" size={20} />
+      </a>
+      <a
+        href={dmgUrl}
+        class="btn btn-primary btn-sm nav-download"
+        data-cta
+        data-cta-source="nav"
+        data-cta-target="download_mac"
+      >
+        Download
+      </a>
+      <button
+        type="button"
+        class="nav-toggle"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        data-nav-toggle
+      >
+        <span class="sr-only" data-nav-toggle-label>Open menu</span>
+        <span class="toggle-line" aria-hidden="true"></span>
+        <span class="toggle-line" aria-hidden="true"></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="mobile-menu" id="mobile-menu" data-mobile-menu hidden>
+    <ul role="list">
+      {links.map((l, i) => (
+        <li style={`--i:${i}`}>
+          <a href={l.href} class="mobile-link" data-nav-link={l.id} data-mobile-link>{l.label}</a>
+        </li>
+      ))}
+      <li style={`--i:${links.length}`}>
+        <a
+          href={githubUrl}
+          class="mobile-link"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-mobile-link
+        >
+          GitHub
+        </a>
+      </li>
+      <li style={`--i:${links.length + 1}`} class="mobile-cta">
+        <a
+          href={dmgUrl}
+          class="btn btn-primary"
+          data-cta
+          data-cta-source="mobile_menu"
+          data-cta-target="download_mac"
+        >
+          <Icon name="apple-logo" />
+          Download for Mac
+        </a>
+      </li>
+    </ul>
+  </div>
+</header>
+
+<script>
+  const wrap = document.querySelector<HTMLElement>('[data-nav]');
+  const toggle = wrap?.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+  const menu = wrap?.querySelector<HTMLElement>('[data-mobile-menu]');
+  const toggleLabel = wrap?.querySelector<HTMLElement>('[data-nav-toggle-label]');
+
+  function setOpen(open: boolean) {
+    if (!wrap || !toggle || !menu) return;
+    toggle.setAttribute('aria-expanded', String(open));
+    if (toggleLabel) toggleLabel.textContent = open ? 'Close menu' : 'Open menu';
+    document.documentElement.classList.toggle('menu-open', open);
+    if (open) {
+      menu.hidden = false;
+      // Next frame so the entrance transition runs from the closed state.
+      requestAnimationFrame(() => wrap.classList.add('is-open'));
+    } else {
+      wrap.classList.remove('is-open');
+      window.setTimeout(() => {
+        if (!wrap.classList.contains('is-open')) menu.hidden = true;
+      }, 400);
+    }
+  }
+
+  toggle?.addEventListener('click', () => {
+    setOpen(toggle.getAttribute('aria-expanded') !== 'true');
+  });
+
+  menu?.querySelectorAll('[data-mobile-link], .mobile-cta a').forEach((link) => {
+    link.addEventListener('click', () => setOpen(false));
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') {
+      setOpen(false);
+      toggle.focus();
+    }
+  });
+
+  window.matchMedia('(min-width: 880px)').addEventListener('change', (event) => {
+    if (event.matches) setOpen(false);
+  });
+
+  // Mark the section currently in view as the current nav item.
+  const navLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]'));
+  const sections = Array.from(new Set(navLinks.map((l) => l.dataset.navLink)))
+    .map((id) => (id ? document.getElementById(id) : null))
+    .filter((el): el is HTMLElement => el instanceof HTMLElement);
+
+  if (sections.length) {
+    const visible = new Set<string>();
+    const spy = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) visible.add(entry.target.id);
+          else visible.delete(entry.target.id);
+        });
+        // Last visible section in document order wins; none visible clears it.
+        const current = sections.filter((s) => visible.has(s.id)).pop()?.id;
+        navLinks.forEach((link) => {
+          if (current && link.dataset.navLink === current) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        });
+      },
+      { rootMargin: '-45% 0px -50% 0px' }
+    );
+    sections.forEach((s) => spy.observe(s));
+  }
+</script>
+
+<style>
+  .nav-wrap {
+    position: fixed;
+    top: var(--sp-200);
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    padding: 0 var(--sp-200);
+    pointer-events: none;
+  }
+
+  .nav {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-300);
+    padding: var(--sp-50);
+    padding-left: var(--sp-100);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    background: rgba(31, 31, 31, 0.72);
+    backdrop-filter: blur(16px) saturate(1.4);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.32);
+    pointer-events: auto;
+  }
+
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-75);
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .nav-brand img {
+    border-radius: var(--r-md);
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-50);
+    list-style: none;
+  }
+
+  .nav-link {
+    display: block;
+    padding: var(--sp-75) var(--sp-100);
+    border-radius: var(--r-lg);
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+  }
+
+  .nav-link:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .nav-link[aria-current] {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-50);
+  }
+
+  .nav-icon-link {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--r-lg);
+    color: var(--text-secondary);
+    transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+  }
+
+  .nav-icon-link:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  /* ---- Menu toggle: two lines that rotate into an X ---- */
+  .nav-toggle {
+    display: none;
+    position: relative;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: var(--r-lg);
+    background: transparent;
+    cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease);
+  }
+
+  .nav-toggle:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .toggle-line {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 16px;
+    height: 2px;
+    border-radius: var(--r-sm);
+    background: var(--text);
+    transition: transform var(--dur) var(--ease);
+  }
+
+  .toggle-line:nth-of-type(2) { transform: translateY(-4px); }
+  .toggle-line:nth-of-type(3) { transform: translateY(4px); }
+
+  .is-open .toggle-line:nth-of-type(2) { transform: rotate(45deg); }
+  .is-open .toggle-line:nth-of-type(3) { transform: rotate(-45deg); }
+
+  /* ---- Mobile panel ---- */
+  .mobile-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    padding: var(--sp-900) var(--sp-300) var(--sp-400);
+    background: rgba(19, 18, 9, 0.94);
+    backdrop-filter: blur(24px);
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease);
+    pointer-events: auto;
+    overflow-y: auto;
+  }
+
+  .is-open .mobile-menu {
+    opacity: 1;
+  }
+
+  .mobile-menu ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-75);
+    list-style: none;
+  }
+
+  .mobile-menu li {
+    opacity: 0;
+    transform: translateY(var(--sp-300));
+    transition:
+      opacity var(--dur) var(--ease),
+      transform var(--dur) var(--ease);
+    /* 60ms per item, capped so the whole sequence stays under 400ms. */
+    transition-delay: min(calc(var(--i) * 60ms), 340ms);
+  }
+
+  .is-open .mobile-menu li {
+    opacity: 1;
+    transform: none;
+  }
+
+  .mobile-link {
+    display: block;
+    padding: var(--sp-75) 0;
+    font-size: var(--text-3xl);
+    line-height: var(--lh-3xl);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text-secondary);
+    transition: color var(--dur-fast) var(--ease);
+  }
+
+  .mobile-link:hover,
+  .mobile-link[aria-current] {
+    color: var(--text);
+  }
+
+  .mobile-cta {
+    margin-top: var(--sp-300);
+  }
+
+  .mobile-cta .btn {
+    width: 100%;
+  }
+
+  /* Older Safari only understands the prefixed property. */
+  @supports not (backdrop-filter: blur(1px)) {
+    .nav { -webkit-backdrop-filter: blur(16px) saturate(1.4); }
+    .mobile-menu { -webkit-backdrop-filter: blur(24px); }
+  }
+
+  @media (max-width: 879px) {
+    .nav-links,
+    .nav-download {
+      display: none;
+    }
+
+    .nav-toggle {
+      display: block;
+    }
+
+    .nav {
+      gap: var(--sp-400);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-menu li,
+    .toggle-line {
+      transition: opacity var(--dur) var(--ease);
+    }
+
+    .mobile-menu li {
+      transform: none;
+      transition-delay: 0ms;
+    }
+  }
+</style>
+
+<style is:global>
+  html.menu-open {
+    overflow: hidden;
+  }
+</style>

@@ -1,24 +1,53 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Hero from '../components/Hero.astro';
-import Demo from '../components/Demo.astro';
 import Aside from '../components/Aside.astro';
-import Comparison from '../components/Comparison.astro';
-import HowItWorks from '../components/HowItWorks.astro';
 import Features from '../components/Features.astro';
-import InstallCTA from '../components/InstallCTA.astro';
-import Footer from '../components/Footer.astro';
+import Tagline from '../components/Tagline.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import Security from '../components/Security.astro';
+import Comparison from '../components/Comparison.astro';
+import Install from '../components/Install.astro';
+import FAQ from '../components/FAQ.astro';
+import FinalCTA from '../components/FinalCTA.astro';
+import { dmgUrl, githubUrl } from '../consts';
+import { faqs, plainAnswer } from '../faq';
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'Shadow',
+    applicationCategory: 'DeveloperApplication',
+    operatingSystem: 'macOS 13 or later, Linux (CLI)',
+    description:
+      'Live pair programming where each person edits in their own editor. Shadow syncs a project folder between machines with end to end encryption.',
+    downloadUrl: dmgUrl,
+    codeRepository: githubUrl,
+    license: 'https://opensource.org/licenses/MIT',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: plainAnswer(f.a) },
+    })),
+  },
+];
 ---
 
-<Layout>
-  <main id="main-content">
-    <Hero />
-    <Demo />
-    <Aside />
-    <HowItWorks />
-    <Features />
-    <Comparison />
-    <InstallCTA />
-  </main>
-  <Footer />
+<Layout schema={schema}>
+  <Hero />
+  <Aside />
+  <Features />
+  <Tagline />
+  <HowItWorks />
+  <Security />
+  <Comparison />
+  <Install />
+  <FAQ />
+  <FinalCTA />
 </Layout>

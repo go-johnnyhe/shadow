@@ -1,0 +1,195 @@
+---
+import { githubUrl } from '../consts';
+import Icon from './Icon.astro';
+
+const specs = [
+  { k: 'Cipher', v: 'AES-256-GCM' },
+  { k: 'Nonce', v: 'Random 12 bytes per message' },
+  { k: 'Key derivation', v: 'Domain separated SHA-256' },
+  { k: 'Transport', v: 'WebSocket over HTTPS tunnel' },
+];
+---
+
+<section class="section security" id="security" aria-labelledby="security-title">
+  <div class="shell security-grid">
+    <div class="security-copy reveal">
+      <p class="eyebrow">Security</p>
+      <h2 id="security-title" class="section-title">The relay carries your code but can’t read it</h2>
+      <p class="section-lead">
+        Every file is encrypted on your machine before it leaves. The key travels inside the invite link,
+        after the <span class="inline-code">#</span>, and that part of a URL is never sent to a server.
+      </p>
+      <p class="security-note">
+        Shadow is MIT licensed, so you can check all of this yourself.{' '}
+        <a
+          href={`${githubUrl}#architecture`}
+          class="text-link"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-cta
+          data-cta-source="security"
+          data-cta-target="github_architecture"
+        >
+          Read the architecture notes
+        </a>
+      </p>
+    </div>
+
+    <div class="security-card reveal reveal-d1">
+      <div class="url-anatomy" aria-label="Anatomy of an invite link">
+        <p class="url">
+          <span class="url-public">https://abc123.trycloudflare.com</span><span class="url-key">#&lt;key&gt;</span>
+        </p>
+        <div class="url-legend">
+          <p>
+            <Icon name="globe-simple" size={16} />
+            <span><strong>Address.</strong> The tunnel sees this and routes encrypted messages.</span>
+          </p>
+          <p class="is-key">
+            <Icon name="key" size={16} />
+            <span><strong>Key.</strong> Stays with you and your partner. Never reaches the relay.</span>
+          </p>
+        </div>
+      </div>
+
+      <dl class="specs">
+        {specs.map((s) => (
+          <div>
+            <dt>{s.k}</dt>
+            <dd><code>{s.v}</code></dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </div>
+</section>
+
+<style>
+  .security-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--sp-700);
+    align-items: center;
+  }
+
+  .security-copy .section-lead {
+    max-width: 560px;
+  }
+
+  .security-note {
+    margin-top: var(--sp-300);
+    color: var(--text-secondary);
+  }
+
+  .security-card {
+    padding: var(--sp-75);
+    border: 1px solid var(--border);
+    border-radius: var(--r-2xl);
+    background: var(--surface);
+  }
+
+  .url-anatomy {
+    padding: var(--sp-300);
+    border-radius: var(--r-lg);
+    background: var(--well);
+  }
+
+  .url {
+    font-family: var(--font-mono);
+    font-size: var(--text-base);
+    line-height: var(--lh-base);
+    overflow-wrap: anywhere;
+  }
+
+  .url-public {
+    color: var(--text-secondary);
+  }
+
+  .url-key {
+    white-space: nowrap;
+    padding: var(--sp-25) var(--sp-50);
+    border-radius: var(--r);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .url-legend {
+    display: grid;
+    gap: var(--sp-100);
+    margin-top: var(--sp-300);
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    color: var(--text-secondary);
+  }
+
+  .url-legend p {
+    display: flex;
+    gap: var(--sp-75);
+  }
+
+  .url-legend svg {
+    flex-shrink: 0;
+    margin-top: var(--sp-25);
+    color: var(--text-muted);
+  }
+
+  .url-legend .is-key svg {
+    color: var(--accent);
+  }
+
+  .url-legend strong {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .specs {
+    display: grid;
+    padding: var(--sp-100) var(--sp-200) var(--sp-50);
+  }
+
+  .specs div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--sp-200);
+    padding: var(--sp-100) 0;
+  }
+
+  .specs div + div {
+    box-shadow: 0 -1px 0 var(--border);
+  }
+
+  .specs dt {
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    color: var(--text-muted);
+  }
+
+  .specs dd {
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    color: var(--text);
+    text-align: right;
+  }
+
+  @media (max-width: 1023px) {
+    .security-grid {
+      grid-template-columns: 1fr;
+      gap: var(--sp-500);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .url-anatomy {
+      padding: var(--sp-200);
+    }
+
+    .url {
+      font-size: var(--text-sm);
+      line-height: var(--lh-sm);
+    }
+
+    .specs {
+      padding-inline: var(--sp-100);
+    }
+  }
+</style>

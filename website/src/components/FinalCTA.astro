@@ -1,0 +1,236 @@
+---
+import { dmgUrl } from '../consts';
+import Icon from './Icon.astro';
+
+const rawBase = import.meta.env.BASE_URL;
+const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
+const iconSrc = `${base}shadow-icon.png`;
+---
+
+<section class="section final" aria-labelledby="final-title">
+  <div class="shell">
+    <div class="final-card reveal">
+      <div class="brand-mark" data-brand-mark data-particle-src={iconSrc} aria-hidden="true">
+        <canvas class="brand-mark-canvas" data-brand-canvas></canvas>
+        <img class="brand-mark-fallback" src={iconSrc} alt="" width="160" height="160" loading="lazy" decoding="async" />
+      </div>
+
+      <h2 id="final-title" class="final-title">
+        Next time someone<br />{' '}says “let’s pair,”<br />{' '}stay in your editor
+      </h2>
+      <p class="final-lead">
+        Download Shadow, click Start, send the link. Free, open source, and no account to create.
+      </p>
+
+      <div class="final-actions">
+        <a
+          href={dmgUrl}
+          class="btn btn-primary"
+          data-cta
+          data-cta-source="final_cta"
+          data-cta-target="download_mac"
+        >
+          <Icon name="apple-logo" />
+          Download for Mac
+        </a>
+        <p class="final-meta">
+          macOS 13 or later. On Linux or prefer a terminal? <a href="#install" class="text-link">Install the CLI</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const mount = document.querySelector('[data-brand-mark]');
+  const canvas = mount?.querySelector('[data-brand-canvas]');
+  const src = mount?.getAttribute('data-particle-src') ?? '';
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function webglAvailable() {
+    try {
+      const test = document.createElement('canvas');
+      return (
+        !!window.WebGLRenderingContext &&
+        !!(test.getContext('webgl') || test.getContext('experimental-webgl'))
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  // Only enhance when it's safe: real canvas, an asset, motion allowed, WebGL present.
+  // Otherwise the static icon (fallback <img>) stays exactly as-is.
+  if (mount && canvas instanceof HTMLCanvasElement && src && !reduceMotion && webglAvailable()) {
+    let started = false;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting || started) continue;
+          started = true;
+          io.disconnect();
+
+          // Dynamic import keeps three.js in its own lazily-loaded chunk,
+          // off the initial page load.
+          import('./canvasui/ParticleObjectVanilla')
+            .then(({ createParticleObject }) => {
+              const instance = createParticleObject(
+                { canvas },
+                {
+                  src,
+                  count: 7000,
+                  size: 2.2,
+                  color: '',
+                  background: '',
+                  orbit: false,
+                  zoom: false,
+                  autoRotate: false,
+                  floatIntensity: 1.1,
+                  rotationIntensity: 0.5,
+                  floatSpeed: 1.4,
+                  swirl: 0.7,
+                  onLoad: () => {
+                    mount.setAttribute('data-state', 'ready');
+                    instance?.resize();
+                  },
+                }
+              );
+
+              // createParticleObject returns null if WebGL init fails — keep the static icon.
+              if (!instance) return;
+
+              const onResize = () => instance.resize();
+              window.addEventListener('resize', onResize, { passive: true });
+              instance.resize();
+            })
+            .catch(() => {
+              /* import/init failed — the static icon stays visible */
+            });
+        }
+      },
+      { rootMargin: '200px 0px' }
+    );
+
+    io.observe(mount);
+  }
+</script>
+
+<style>
+  .final-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--sp-800) var(--sp-300);
+    border: 1px solid var(--border);
+    border-radius: var(--r-3xl);
+    background: transparent;
+    text-align: center;
+  }
+
+  .brand-mark {
+    position: relative;
+    width: 160px;
+    aspect-ratio: 1;
+    margin-bottom: var(--sp-500);
+  }
+
+  .brand-mark-canvas,
+  .brand-mark-fallback {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .brand-mark-canvas {
+    opacity: 0;
+    transition: opacity var(--dur-reveal) var(--ease);
+    touch-action: pan-y;
+  }
+
+  .brand-mark-fallback {
+    object-fit: contain;
+    border-radius: var(--r-3xl);
+    transition: opacity var(--dur-reveal) var(--ease);
+  }
+
+  .brand-mark[data-state='ready'] .brand-mark-canvas {
+    opacity: 1;
+  }
+
+  .brand-mark[data-state='ready'] .brand-mark-fallback {
+    opacity: 0;
+  }
+
+  .final-title {
+    max-width: 680px;
+    font-size: var(--text-5xl);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--text);
+  }
+
+  .final-lead {
+    max-width: 560px;
+    margin-top: var(--sp-300);
+    font-size: var(--text-lg);
+    line-height: var(--lh-lg);
+    color: var(--text-secondary);
+  }
+
+  .final-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-200);
+    margin-top: var(--sp-500);
+  }
+
+  .final-meta {
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    color: var(--text-muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .brand-mark-canvas {
+      display: none;
+    }
+
+    .brand-mark-fallback {
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .final-card {
+      padding: var(--sp-600) var(--sp-200);
+    }
+
+    .brand-mark {
+      width: 128px;
+      margin-bottom: var(--sp-400);
+    }
+
+    .final-title {
+      font-size: var(--text-3xl);
+      line-height: var(--lh-3xl);
+    }
+
+    .final-title br {
+      display: none;
+    }
+
+    .final-lead {
+      font-size: var(--text-base);
+      line-height: var(--lh-base);
+    }
+
+    .final-actions,
+    .final-actions .btn {
+      width: 100%;
+    }
+  }
+</style>

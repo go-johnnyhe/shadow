@@ -1,0 +1,90 @@
+---
+// Large type moment. Each word brightens on its own as it crosses a trigger
+// line 60% down the viewport, in reading order.
+const lines = ['You keep your editor.', 'They keep theirs.', 'Only the files move,', 'sealed end to end.'];
+---
+
+<section class="section tagline" aria-label="What Shadow does">
+  <div class="shell">
+    <p class="tagline-text" data-tagline>
+      {lines.map((line, li) => (
+        <span class="line">
+          {line.split(' ').map((word, wi) => (
+            <>
+              <span class:list={['word', { 'is-accent': li === 3 }]}>{word}</span>
+              {wi < line.split(' ').length - 1 && ' '}
+            </>
+          ))}
+          {' '}
+        </span>
+      ))}
+    </p>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector('[data-tagline]');
+  const words = root ? Array.from(root.querySelectorAll<HTMLElement>('.word')) : [];
+
+  if (words.length && 'IntersectionObserver' in window) {
+    root?.classList.add('is-armed');
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('is-lit');
+          io.unobserve(entry.target);
+        });
+      },
+      { rootMargin: '0px 0px -40% 0px', threshold: 1 }
+    );
+    words.forEach((w) => io.observe(w));
+  }
+</script>
+
+<style>
+  .tagline {
+    padding-block: var(--sp-900);
+  }
+
+  .tagline-text {
+    max-width: 680px;
+    margin: 0 auto;
+    text-align: center;
+    font-size: var(--text-6xl);
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    color: var(--text);
+    text-wrap: balance;
+  }
+
+  .line {
+    display: block;
+    padding-bottom: var(--sp-75);
+  }
+
+  .word.is-accent {
+    color: var(--accent);
+  }
+
+  .is-armed .word {
+    opacity: 0.3;
+    transition: opacity var(--dur) var(--ease);
+  }
+
+  .is-armed .word.is-lit {
+    opacity: 1;
+  }
+
+  @media (max-width: 767px) {
+    .tagline-text {
+      font-size: var(--text-4xl);
+      line-height: var(--lh-4xl);
+    }
+
+    .line {
+      padding-bottom: 0;
+    }
+  }
+</style>

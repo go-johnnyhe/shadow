@@ -1,0 +1,158 @@
+---
+import { faqs } from '../faq';
+import Icon from './Icon.astro';
+import { githubUrl } from '../consts';
+---
+
+<section class="section faq" id="faq" aria-labelledby="faq-title">
+  <div class="shell faq-grid">
+    <div class="faq-head reveal">
+      <p class="eyebrow">FAQ</p>
+      <h2 id="faq-title" class="section-title">Questions before you pair</h2>
+      <p class="section-lead">
+        Something else? <a
+          href={`${githubUrl}/issues`}
+          class="text-link"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-cta
+          data-cta-source="faq"
+          data-cta-target="github_issues"
+        >Open an issue on GitHub</a>.
+      </p>
+    </div>
+
+    <div class="faq-list reveal reveal-d1">
+      {faqs.map((f) => (
+        <details class="faq-item">
+          <summary>
+            <span>{f.q}</span>
+            <span class="faq-icon"><Icon name="plus" size={16} /></span>
+          </summary>
+          <p>
+            {f.a.split('`').map((part, i) => (i % 2 ? <code class="inline-code">{part}</code> : part))}
+          </p>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--sp-700);
+    align-items: start;
+  }
+
+  .faq-head {
+    position: sticky;
+    top: var(--sp-900);
+  }
+
+  .faq-list {
+    display: grid;
+    gap: var(--sp-75);
+  }
+
+  .faq-item {
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    background: var(--surface);
+    transition: border-color var(--dur-fast) var(--ease);
+  }
+
+  .faq-item:hover,
+  .faq-item[open] {
+    border-color: var(--border-strong);
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-200);
+    padding: var(--sp-200) var(--sp-300);
+    font-size: var(--text-lg);
+    line-height: var(--lh-lg);
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary:focus-visible {
+    border-radius: var(--r-xl);
+  }
+
+  .faq-icon {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: var(--r-lg);
+    background: var(--surface-raised);
+    color: var(--text-secondary);
+    transition: transform var(--dur) var(--ease), color var(--dur-fast) var(--ease);
+  }
+
+  [open] .faq-icon {
+    transform: rotate(45deg);
+    color: var(--accent);
+  }
+
+  .faq-item p {
+    max-width: 640px;
+    padding: 0 var(--sp-300) var(--sp-300);
+    color: var(--text-secondary);
+  }
+
+  .faq-item[open] p {
+    animation: faq-in var(--dur) var(--ease);
+  }
+
+  @keyframes faq-in {
+    from { opacity: 0; transform: translateY(calc(var(--sp-75) * -1)); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @media (max-width: 1023px) {
+    .faq-grid {
+      grid-template-columns: 1fr;
+      gap: var(--sp-500);
+    }
+
+    .faq-head {
+      position: static;
+    }
+  }
+
+  @media (max-width: 767px) {
+    summary {
+      padding: var(--sp-200);
+      font-size: var(--text-base);
+      line-height: var(--lh-base);
+    }
+
+    .faq-item p {
+      padding: 0 var(--sp-200) var(--sp-200);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq-item[open] p {
+      animation-name: faq-fade;
+    }
+
+    @keyframes faq-fade {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  }
+</style>

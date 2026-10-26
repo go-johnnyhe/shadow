@@ -1,0 +1,273 @@
+---
+import { dmgUrl, goInstallCmd, installCmd, marketplaceUrl } from '../consts';
+import Icon from './Icon.astro';
+
+const commands = [
+  { id: 'cli_install', label: 'Install script', cmd: installCmd },
+  { id: 'go_install', label: 'With Go', cmd: goInstallCmd },
+];
+---
+
+<section class="section install" id="install" aria-labelledby="install-title">
+  <div class="shell">
+    <div class="section-head reveal">
+      <p class="eyebrow">Install</p>
+      <h2 id="install-title" class="section-title">Works where you already work</h2>
+      <p class="section-lead">
+        Every option runs the same Shadow underneath, so a host on the Mac app can pair with someone
+        on the CLI or in VS Code.
+      </p>
+    </div>
+
+    <div class="install-grid">
+      <article class="option option-primary reveal">
+        <div class="option-head">
+          <span class="option-icon"><Icon name="apple-logo" /></span>
+          <div>
+            <h3>Mac menu bar app</h3>
+            <p class="option-meta">Recommended · macOS 13 or later</p>
+          </div>
+        </div>
+        <p>
+          Open the DMG, drag Shadow to Applications, and it lives in your menu bar.
+          Start, pick a folder, send the link. No terminal needed.
+        </p>
+        <p>
+          Once a session is running, open the shared folder in your editor or terminal straight from the menu.
+        </p>
+        <a
+          href={dmgUrl}
+          class="btn btn-primary option-action"
+          data-cta
+          data-cta-source="install"
+          data-cta-target="download_mac"
+        >
+          <Icon name="download-simple" />
+          Download Shadow.dmg
+        </a>
+      </article>
+
+      <article class="option reveal reveal-d1">
+        <div class="option-head">
+          <span class="option-icon"><Icon name="terminal-window" /></span>
+          <div>
+            <h3>Command line</h3>
+            <p class="option-meta">macOS and Linux</p>
+          </div>
+        </div>
+        <p>
+          Run <span class="inline-code">shadow</span> for a guided setup, or call{' '}
+          <span class="inline-code">shadow start</span> and <span class="inline-code">shadow join</span> directly.
+        </p>
+        <div class="commands">
+          {commands.map((c) => (
+            <div class="command">
+              <p class="command-label">{c.label}</p>
+              <div class="command-row">
+                <code>{c.cmd}</code>
+                <button
+                  type="button"
+                  class="copy-btn"
+                  data-copy-text={c.cmd}
+                  data-copy-source="install"
+                  data-copy-target={c.id}
+                >
+                  <span data-copy-icon="idle"><Icon name="copy" size={16} /></span>
+                  <span data-copy-icon="done"><Icon name="check" size={16} /></span>
+                  <span data-copy-label>Copy</span>
+                  <span class="sr-only"> {c.label.toLowerCase()} command</span>
+                </button>
+              </div>
+              <p class="copy-error" role="status" data-copy-error></p>
+            </div>
+          ))}
+        </div>
+      </article>
+
+      <article class="option reveal">
+        <div class="option-head">
+          <span class="option-icon"><Icon name="code" /></span>
+          <div>
+            <h3>VS Code extension</h3>
+            <p class="option-meta">Status bar and Activity Bar</p>
+          </div>
+        </div>
+        <p>
+          Start, join, or host a read only session from the Shadow item in the status bar.
+          It offers to install the CLI if you don’t have it yet.
+        </p>
+        <a
+          href={marketplaceUrl}
+          class="btn btn-secondary option-action"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-cta
+          data-cta-source="install"
+          data-cta-target="vscode_marketplace"
+        >
+          Get it on the Marketplace
+          <Icon name="arrow-up-right" />
+        </a>
+      </article>
+
+      <article class="option reveal reveal-d1">
+        <div class="option-head">
+          <span class="option-icon"><Icon name="file-code" /></span>
+          <div>
+            <h3>Vim and Neovim</h3>
+            <p class="option-meta">Auto reload while you pair</p>
+          </div>
+        </div>
+        <p>
+          The install script finds Vim and Neovim and sets them to reload a buffer when your partner saves it.
+          Already installed? Run <span class="inline-code">shadow vimSetup</span>.
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<style>
+  .install-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-200);
+  }
+
+  .option {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-200);
+    padding: var(--sp-400);
+    border: 1px solid var(--border);
+    border-radius: var(--r-2xl);
+    background: var(--surface);
+    color: var(--text-secondary);
+  }
+
+  .option-primary {
+    border-color: var(--accent-line);
+  }
+
+  .option-head {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-200);
+  }
+
+  .option-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: var(--r-lg);
+    background: var(--surface-raised);
+    color: var(--text);
+  }
+
+  .option-primary .option-icon {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .option h3 {
+    font-size: var(--text-xl);
+    line-height: var(--lh-xl);
+    color: var(--text);
+  }
+
+  .option-meta {
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    color: var(--text-muted);
+  }
+
+  .option-action {
+    align-self: flex-start;
+    margin-top: auto;
+  }
+
+  .option {
+    min-width: 0;
+  }
+
+  .commands {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-200);
+    min-width: 0;
+  }
+
+  .command-label {
+    margin-bottom: var(--sp-75);
+    font-size: var(--text-xs);
+    line-height: var(--lh-xs);
+    color: var(--text-muted);
+  }
+
+  .command-row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-75);
+    padding: var(--sp-50);
+    padding-left: var(--sp-100);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    background: var(--well);
+  }
+
+  .command-row code {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    color: var(--text);
+    scrollbar-width: none;
+  }
+
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-50);
+    flex-shrink: 0;
+    padding: var(--sp-50) var(--sp-75);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r);
+    background: var(--surface-raised);
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease), transform var(--dur) var(--ease);
+  }
+
+  .copy-btn:hover {
+    background: var(--surface-high);
+  }
+
+  .copy-btn:active {
+    transform: scale(0.98);
+  }
+
+  .copy-error {
+    margin-top: var(--sp-75);
+  }
+
+  @media (max-width: 767px) {
+    .install-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .option {
+      padding: var(--sp-300);
+    }
+
+    .option-action {
+      align-self: stretch;
+    }
+  }
+</style>
