@@ -8,10 +8,13 @@
     "preview": "astro preview"
   },
   "dependencies": {
+    "@fontsource-variable/geist": "^5.3.0",
+    "@fontsource-variable/geist-mono": "^5.3.0",
     "astro": "^7.0.7",
     "three": "^0.180.0"
   },
   "devDependencies": {
+    "@phosphor-icons/core": "^2.1.1",
     "@types/three": "^0.180.0"
   }
 }

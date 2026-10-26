@@ -1,169 +1,514 @@
 ---
-import { dmgUrl } from '../consts';
-import AppMockup from './AppMockup.astro';
+import { dmgUrl, githubUrl } from '../consts';
+import Icon from './Icon.astro';
+
+const rawBase = import.meta.env.BASE_URL;
+const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
+
+const proof = [
+  { icon: 'lock-simple', text: 'End to end encrypted' },
+  { icon: 'user-circle-dashed', text: 'No accounts' },
+  { icon: 'github-logo', text: 'Open source, MIT', href: githubUrl },
+];
 ---
 
-<section class="hero">
-  <div class="section-shell hero-inner">
+<section class="hero" aria-labelledby="hero-title">
+  <div class="shell">
     <div class="hero-copy">
-      <h1 class="hero-title reveal r-d1">
-        Screensharing <span class="ne">&ne;</span><br />
-        pair programming.
+      <h1 id="hero-title" class="hero-title reveal">
+        Pair program live,<br />{' '}each in your own editor
       </h1>
 
-      <p class="hero-desc reveal r-d2">
-        Most &ldquo;pairing&rdquo; is one person driving. The other is <strong>stuck</strong> in someone else&rsquo;s setup.
+      <p class="hero-sub reveal reveal-d1">
+        Shadow syncs one project folder between two machines in real time.
+        You stay in VS Code, they stay in Neovim, and you both edit the same files.
       </p>
 
-      <p class="hero-punch reveal r-d2">
-        Shadow lets both of you edit live, in your own editor.
-      </p>
-
-      <p class="hero-editors reveal r-d3">
-        VS Code &middot; Neovim &middot; Vim &middot; JetBrains &middot; Zed. Keep your setup.
-      </p>
-
-      <div class="hero-actions reveal r-d3">
+      <div class="hero-actions reveal reveal-d2">
         <a
           href={dmgUrl}
-          class="primary-button"
+          class="btn btn-primary"
           data-cta
           data-cta-source="hero"
           data-cta-target="download_mac"
-          data-cta-surface="website"
         >
+          <Icon name="apple-logo" />
           Download for Mac
         </a>
-
-        <span class="hero-muted">
-          Requires macOS 13+. Also available as a <a href="#install" class="muted-link">CLI</a>.
-        </span>
+        <p class="hero-meta">
+          Free for macOS 13 or later.
+          On Linux or prefer a terminal? <a href="#install" class="text-link">Install the CLI</a>
+        </p>
       </div>
+
+      <ul class="hero-proof reveal reveal-d3" role="list" aria-label="Why teams trust Shadow">
+        {proof.map((p) => (
+          <li>
+            <Icon name={p.icon} size={16} />
+            {p.href ? (
+              <a
+                href={p.href}
+                class="text-link"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-cta
+                data-cta-source="hero_proof"
+                data-cta-target="github"
+              >
+                {p.text}
+              </a>
+            ) : (
+              <span>{p.text}</span>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
 
-    <div class="hero-mockup reveal r-d3">
-      <AppMockup />
-    </div>
+    <figure class="stage reveal reveal-d2" data-demo-root>
+      <div class="stage-bar">
+        <span class="chrome-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="stage-title">
+          <span class="stage-live" aria-hidden="true"></span>
+          Live session · Seattle and Singapore
+        </span>
+        <button
+          type="button"
+          class="stage-toggle"
+          data-demo-toggle
+          data-demo-source="hero"
+          aria-label="Pause demo video"
+        >
+          <span class="toggle-icon" data-demo-icon="pause"><Icon name="pause" size={16} /></span>
+          <span class="toggle-icon" data-demo-icon="play"><Icon name="play" size={16} /></span>
+        </button>
+      </div>
+
+      <div class="stage-video" data-demo-frame data-demo-scroller tabindex="-1">
+        <div class="video-track">
+          <video
+            src={`${base}demo.mp4`}
+            poster={`${base}demo-poster.webp`}
+            width="2690"
+            height="766"
+            autoplay
+            loop
+            muted
+            playsinline
+            preload="metadata"
+            aria-label="Screen recording: one person edits lexer.go in a GUI editor while the other edits the same file in Neovim, and each saved change appears on the other side."
+            data-demo-video
+          ></video>
+          <span class="snap" aria-hidden="true"></span>
+          <span class="snap" aria-hidden="true"></span>
+          <div class="video-skeleton" aria-hidden="true">
+            <span></span><span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stage-pager" role="group" aria-label="Which side of the recording to show">
+        <button type="button" data-demo-page="0" aria-pressed="true">GUI editor</button>
+        <button type="button" data-demo-page="1" aria-pressed="false">Neovim</button>
+      </div>
+
+      <figcaption class="stage-caption">
+        <span class="caption-wide">A GUI editor on the left, Neovim on the right, both editing <code>lexer.go</code> live</span>
+        <span class="caption-narrow">Two people editing <code>lexer.go</code> live. Swipe to see the other side.</span>
+      </figcaption>
+    </figure>
   </div>
 </section>
 
+<script>
+  // Show the skeleton only until the first frame can render.
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll<HTMLElement>('[data-demo-frame]').forEach((frame) => {
+    const video = frame.querySelector('video');
+    if (!video) return;
+    if (reduceMotion) {
+      // Respect reduced motion: hold on the poster until the visitor presses play.
+      video.removeAttribute('autoplay');
+      video.pause();
+      const toggle = frame.parentElement?.querySelector<HTMLButtonElement>('[data-demo-toggle]');
+      if (toggle) {
+        toggle.dataset.demoState = 'paused';
+        toggle.setAttribute('aria-label', 'Play demo video');
+      }
+    }
+    const ready = () => frame.setAttribute('data-ready', '');
+    if (video.readyState >= 2) ready();
+    else video.addEventListener('loadeddata', ready, { once: true });
+  });
+
+  // On narrow screens the wide recording is shown at double size and pans
+  // between the two editors. The pager mirrors the scroll position.
+  document.querySelectorAll<HTMLElement>('[data-demo-scroller]').forEach((scroller) => {
+    const pages = Array.from(
+      scroller.parentElement?.querySelectorAll<HTMLButtonElement>('[data-demo-page]') ?? []
+    );
+    if (!pages.length) return;
+
+    const mark = (index: number) =>
+      pages.forEach((p, i) => p.setAttribute('aria-pressed', String(i === index)));
+
+    pages.forEach((page, i) => {
+      page.addEventListener('click', () => {
+        scroller.scrollTo({ left: i * scroller.clientWidth, behavior: reduceMotion ? 'auto' : 'smooth' });
+        mark(i);
+      });
+    });
+
+    let frame = 0;
+    scroller.addEventListener(
+      'scroll',
+      () => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => {
+          mark(scroller.scrollLeft > scroller.clientWidth / 2 ? 1 : 0);
+        });
+      },
+      { passive: true }
+    );
+  });
+</script>
+
 <style>
   .hero {
-    padding-top: clamp(8rem, 18vh, 16rem);
-    padding-bottom: clamp(5rem, 12vh, 10rem);
-  }
-
-  .hero-inner {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 4rem;
+    padding-top: calc(var(--sp-900) + var(--sp-700));
+    padding-bottom: 0;
   }
 
   .hero-copy {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .hero-mockup {
-    display: flex;
     align-items: center;
-    justify-content: center;
+    text-align: center;
   }
 
   .hero-title {
-    font-family: var(--font-display);
-    font-size: clamp(2.8rem, 7vw, 5rem);
-    font-weight: 700;
-    line-height: 1.08;
-    letter-spacing: -0.04em;
-    color: var(--text);
-  }
-
-  .ne {
-    color: var(--accent);
-  }
-
-  .hero-desc {
-    font-size: 1.25rem;
-    line-height: 1.7;
-    margin-top: 2rem;
-    max-width: 38rem;
-    color: var(--text-secondary);
-  }
-
-  .hero-desc strong {
-    color: var(--text);
+    max-width: 680px;
+    font-size: var(--text-6xl);
+    line-height: 1;
     font-weight: 600;
+    letter-spacing: -0.035em;
+    padding-bottom: var(--sp-50);
+    background: linear-gradient(90deg, #ffffff, #9b9b9b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
-  .hero-punch {
-    font-size: 1.25rem;
-    line-height: 1.7;
-    margin-top: 0.5rem;
-    max-width: 38rem;
-    color: var(--text);
-    font-weight: 500;
-  }
-
-  .hero-editors {
-    margin-top: 1.5rem;
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    letter-spacing: 0.02em;
+  .hero-sub {
+    max-width: 680px;
+    margin-top: var(--sp-300);
+    font-size: var(--text-xl);
+    line-height: var(--lh-xl);
+    color: var(--text-secondary);
   }
 
   .hero-actions {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-    margin-top: 3rem;
+    align-items: center;
+    gap: var(--sp-200);
+    margin-top: var(--sp-500);
   }
 
-  .hero-muted {
-    font-size: 0.82rem;
+  .hero-meta {
+    max-width: 680px;
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
     color: var(--text-muted);
   }
 
-  .muted-link {
+  .hero-proof {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--sp-100) var(--sp-300);
+    margin-top: var(--sp-400);
+    list-style: none;
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
     color: var(--text-secondary);
-    text-decoration: underline;
-    text-decoration-color: var(--border-strong);
-    text-underline-offset: 2px;
-    transition: color 0.2s ease;
   }
 
-  .muted-link:hover {
+  .hero-proof li {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-75);
+  }
+
+  .hero-proof svg {
+    color: var(--accent);
+  }
+
+  .hero-proof .text-link {
+    color: var(--text-secondary);
+  }
+
+  .hero-proof .text-link:hover {
     color: var(--text);
-    opacity: 1;
   }
 
-  @media (max-width: 900px) {
-    .hero-inner {
-      grid-template-columns: 1fr;
-      gap: 3rem;
-    }
+  /* ---- Stage ---- */
+  .stage {
+    position: relative;
+    margin-top: var(--sp-700);
+    padding: var(--sp-75);
+    border: 1px solid var(--border);
+    border-radius: var(--r-2xl);
+    background: var(--surface);
+    box-shadow: var(--shadow-lg);
+  }
 
-    .hero-mockup {
-      justify-content: flex-start;
+  .stage-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-200);
+    padding: var(--sp-50) var(--sp-75) var(--sp-100);
+  }
+
+  .chrome-dots {
+    display: flex;
+    gap: var(--sp-75);
+  }
+
+  .chrome-dots i {
+    width: 12px;
+    height: 12px;
+    border-radius: var(--r-full);
+    background: var(--surface-high);
+  }
+
+  .stage-title {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-75);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: var(--lh-xs);
+    color: var(--text-muted);
+  }
+
+  .stage-live {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--r-full);
+    background: var(--live);
+  }
+
+  .stage-toggle {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), transform var(--dur) var(--ease);
+  }
+
+  .stage-toggle:hover {
+    color: var(--text);
+    background: var(--surface-raised);
+  }
+
+  .stage-toggle:active {
+    transform: scale(0.94);
+  }
+
+  .toggle-icon {
+    grid-area: 1 / 1;
+  }
+
+  .stage-toggle [data-demo-icon='play'],
+  .stage-toggle[data-demo-state='paused'] [data-demo-icon='pause'] {
+    display: none;
+  }
+
+  .stage-toggle[data-demo-state='paused'] [data-demo-icon='play'] {
+    display: block;
+  }
+
+  .stage-video {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--r-lg);
+    background: var(--well);
+  }
+
+  .video-track {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    aspect-ratio: 2690 / 766;
+  }
+
+  .video-track video {
+    grid-area: 1 / 1 / 2 / 3;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .snap {
+    grid-row: 1;
+    grid-column: 1;
+    scroll-snap-align: start;
+  }
+
+  .snap + .snap {
+    grid-column: 2;
+  }
+
+  .stage-pager,
+  .caption-narrow {
+    display: none;
+  }
+
+  .video-skeleton {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-25);
+    background: var(--well);
+    transition: opacity var(--dur) var(--ease);
+  }
+
+  .video-skeleton span {
+    background: var(--surface);
+    animation: skeleton 1.6s var(--ease) infinite alternate;
+  }
+
+  [data-ready] .video-skeleton {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @keyframes skeleton {
+    from { opacity: 0.5; }
+    to { opacity: 1; }
+  }
+
+  .stage-caption {
+    text-align: center;
+    padding: var(--sp-100) var(--sp-75) var(--sp-50);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: var(--lh-xs);
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 1023px) {
+    .stage {
+      margin-top: var(--sp-600);
     }
   }
 
-  @media (max-width: 640px) {
+  @media (max-width: 767px) {
     .hero {
-      padding-top: 5.5rem;
-      padding-bottom: 4rem;
+      padding-top: calc(var(--sp-900) + var(--sp-200));
     }
 
     .hero-title {
-      font-size: clamp(2.2rem, 9vw, 2.8rem);
+      font-size: var(--text-4xl);
+      line-height: var(--lh-4xl);
+      letter-spacing: -0.03em;
     }
 
-    .hero-desc {
-      font-size: 1.1rem;
+    .hero-title br {
+      display: none;
+    }
+
+    .hero-sub {
+      font-size: var(--text-lg);
+      line-height: var(--lh-lg);
+    }
+
+    .hero-actions {
+      width: 100%;
+    }
+
+    .hero-actions .btn {
+      width: 100%;
+    }
+
+    .stage {
+      padding: var(--sp-50);
+      border-radius: var(--r-xl);
+    }
+
+    .stage-title {
+      justify-content: flex-start;
+    }
+
+    .chrome-dots {
+      display: none;
+    }
+
+    .stage-caption {
+      text-align: left;
+    }
+
+    /* Show the recording at double size and pan between the two editors. */
+    .stage-video {
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+
+    .stage-video::-webkit-scrollbar {
+      display: none;
+    }
+
+    .video-track {
+      width: 200%;
+    }
+
+    .stage-pager {
+      display: flex;
+      gap: var(--sp-50);
+      padding: var(--sp-75) var(--sp-50) 0;
+    }
+
+    .stage-pager button {
+      flex: 1;
+      padding: var(--sp-50) var(--sp-75);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      background: transparent;
+      font-size: var(--text-xs);
+      line-height: var(--lh-xs);
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), transform var(--dur) var(--ease);
+    }
+
+    .stage-pager button:active {
+      transform: scale(0.98);
+    }
+
+    .stage-pager button[aria-pressed='true'] {
+      border-color: var(--border-strong);
+      background: var(--surface-raised);
+      color: var(--text);
+    }
+
+    .caption-wide {
+      display: none;
+    }
+
+    .caption-narrow {
+      display: inline;
     }
   }
 </style>

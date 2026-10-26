@@ -1,116 +1,195 @@
 ---
+import Icon from './Icon.astro';
+
+const editors = ['VS Code', 'Neovim', 'Vim', 'JetBrains', 'Zed'];
 ---
 
-<section class="features">
-  <div class="section-shell features-inner">
-    <div class="features-grid">
-      <article class="feature feature-hero reveal">
-        <h3 class="feature-title">Any editor, full control</h3>
-        <p class="feature-desc">Your teammate's Vim config doesn't affect your VS Code. Shadow syncs the files underneath. Everyone keeps their own setup, keybindings, and extensions.</p>
-        <div class="editor-row">
-          <span>VS Code</span>
-          <span class="dot">&middot;</span>
-          <span>Neovim</span>
-          <span class="dot">&middot;</span>
-          <span>Vim</span>
-          <span class="dot">&middot;</span>
-          <span>JetBrains</span>
-          <span class="dot">&middot;</span>
-          <span>Zed</span>
+<section class="section benefits" id="benefits" aria-labelledby="benefits-title">
+  <div class="shell">
+    <div class="section-head reveal">
+      <p class="eyebrow">Why it works</p>
+      <h2 id="benefits-title" class="section-title">Shadow moves files, not pixels</h2>
+      <p class="section-lead">
+        It watches your project folder and syncs every change to your partner’s copy.
+        Because it works under the editor, nobody has to agree on one.
+      </p>
+    </div>
+
+    <div class="bento">
+      <article class="tile tile-wide reveal">
+        <div class="tile-text">
+          <div class="tile-icon"><Icon name="code" /></div>
+          <h3>Keep your editor, keymap, and extensions</h3>
+          <p>
+            Your partner’s Vim config never touches your setup. Each of you edits real files on your own disk,
+            with your own linters, debugger, and terminal.
+          </p>
+        </div>
+        <div class="editor-well">
+          <p class="well-label">Pair from any of these</p>
+          <ul class="editor-chips" role="list" aria-label="Editors people pair from">
+            {editors.map((e) => <li>{e}</li>)}
+            <li class="is-more">anything that saves files</li>
+          </ul>
         </div>
       </article>
 
-      <article class="feature reveal r-d1">
-        <h3 class="feature-title">Zero-knowledge encryption</h3>
-        <p class="feature-desc">The encryption key lives in the URL fragment. It never touches the server. The relay sees ciphertext. Not even we can read your code.</p>
-        <code class="feature-detail">https://.../<span class="key-highlight">#e2e-key</span></code>
+      <article class="tile reveal reveal-d1">
+        <div class="tile-icon"><Icon name="lightning" /></div>
+        <h3>Both of you can drive</h3>
+        <p>
+          No driver, no passenger. Shadow picks up each save after a 50 ms debounce and checks it by hash,
+          so unchanged files are never resent.
+        </p>
       </article>
 
-      <article class="feature reveal r-d2">
-        <h3 class="feature-title">No accounts.</h3>
-        <p class="feature-desc">No email, no OAuth, no onboarding wizard. Download, click Start, pair. The code is MIT-licensed and fully open source.</p>
+      <article class="tile reveal">
+        <div class="tile-icon"><Icon name="user-circle-dashed" /></div>
+        <h3>Nothing to sign up for</h3>
+        <p>
+          No email, no OAuth, no workspace invite. Shadow opens a secure tunnel for you and copies the
+          invite link. Your partner needs the link and nothing else.
+        </p>
       </article>
 
-      <article class="feature reveal r-d3">
-        <h3 class="feature-title">Lightweight and native</h3>
-        <p class="feature-desc">A native macOS app that sits in your menu bar. No Electron. Start sessions without touching a terminal.</p>
-        <span class="feature-detail">Native Swift &middot; menu bar app</span>
+      <article class="tile reveal reveal-d1">
+        <div class="tile-icon"><Icon name="eye" /></div>
+        <h3>Read only when you want it</h3>
+        <p>
+          Running an interview or a review? Turn on “Joiners are read only” in the app,
+          or pass <code class="inline-code">--read-only-joiners</code>, and they watch without editing.
+        </p>
+      </article>
+
+      <article class="tile reveal reveal-d2">
+        <div class="tile-icon"><Icon name="shield-check" /></div>
+        <h3>Guardrails against oversharing</h3>
+        <p>
+          Shadow refuses to share system folders like your home directory,
+          respects <code class="inline-code">.gitignore</code>, and skips <code class="inline-code">.git</code>
+          and <code class="inline-code">node_modules</code>.
+        </p>
       </article>
     </div>
   </div>
 </section>
 
 <style>
-  .features {
-    margin-bottom: clamp(8rem, 12vw, 12rem);
-  }
-
-  .features-grid {
+  .bento {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-    border-radius: 1rem;
-    overflow: hidden;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-200);
   }
 
-  .feature {
-    background: var(--bg);
-    padding: 2.5rem;
+  .tile {
     display: flex;
     flex-direction: column;
+    gap: var(--sp-100);
+    padding: var(--sp-400);
+    border: 1px solid var(--border);
+    border-radius: var(--r-2xl);
+    background: var(--surface);
+    transition: border-color var(--dur-fast) var(--ease);
   }
 
-  .feature-hero {
+  .tile:hover {
+    border-color: var(--border-strong);
+  }
+
+  .tile-wide {
     grid-column: 1 / -1;
-  }
-
-  .feature-title {
-    font-family: var(--font-display);
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-    color: var(--text);
-  }
-
-  .feature-desc {
-    font-size: 0.95rem;
-    color: var(--text-secondary);
-    line-height: 1.65;
-    max-width: 48rem;
-  }
-
-  .editor-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--sp-400);
     align-items: center;
-    gap: 0.5rem;
-    margin-top: 1.25rem;
+  }
+
+  .tile-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-100);
+  }
+
+  .editor-well {
+    padding: var(--sp-300);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    background: var(--well);
+  }
+
+  .well-label {
+    margin-bottom: var(--sp-200);
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: var(--text-xs);
+    line-height: var(--lh-xs);
     color: var(--text-muted);
-    letter-spacing: 0.02em;
   }
 
-  .dot {
-    color: var(--border-strong);
-  }
-
-  .feature-detail {
-    margin-top: 1.25rem;
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    letter-spacing: 0.02em;
-  }
-
-  .key-highlight {
+  .tile-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    margin-bottom: var(--sp-100);
+    border-radius: var(--r-lg);
+    background: var(--accent-soft);
     color: var(--accent);
   }
 
-  @media (max-width: 960px) {
-    .features-grid {
+  .tile h3 {
+    font-size: var(--text-xl);
+    line-height: var(--lh-xl);
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+
+  .tile p {
+    max-width: 640px;
+    color: var(--text-secondary);
+  }
+
+  .editor-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-75);
+    list-style: none;
+  }
+
+  .editor-chips li {
+    padding: var(--sp-75) var(--sp-100);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-full);
+    background: var(--surface-raised);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    color: var(--text);
+  }
+
+  .editor-chips .is-more {
+    border-style: dashed;
+    background: transparent;
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 1023px) {
+    .tile-wide {
       grid-template-columns: 1fr;
+      gap: var(--sp-300);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .bento {
+      grid-template-columns: 1fr;
+    }
+
+    .editor-well {
+      padding: var(--sp-200);
+    }
+
+    .tile {
+      padding: var(--sp-300);
     }
   }
 </style>

@@ -1,147 +1,190 @@
 ---
 const rows = [
-{ label: 'Can you use your own editor?', shadow: 'Yes, any IDE!', liveshare: 'VS Code only', screen: 'You just watch' },
-  { label: 'How do you share?', shadow: 'Click Start, paste the link', liveshare: 'Microsoft auth invite', screen: 'Meeting link + screen share app' },
-  { label: 'Can both people type?', shadow: 'Yes', liveshare: 'Yes', screen: 'No' },
-  { label: 'How fast does it feel?', shadow: 'Near-instant (file sync)', liveshare: 'Low latency', screen: 'Video-encoding lag' },
-  { label: 'Who sees your code?', shadow: 'Nobody, E2E encrypted', liveshare: 'Relayed through Microsoft', screen: 'Depends on the provider' },
+  { label: 'Editor', shadow: 'Any editor, each person picks', liveshare: 'VS Code only', screen: 'Only the sharer’s' },
+  { label: 'Who can type', shadow: 'Both of you', liveshare: 'Both of you', screen: 'Only the sharer' },
+  { label: 'Setup', shadow: 'Click Start, paste the link', liveshare: 'Extension install and a Microsoft or GitHub sign in', screen: 'Meeting link and screen permissions' },
+  { label: 'How it feels', shadow: 'Your own editor, no lag on your keystrokes', liveshare: 'Low latency', screen: 'Video lag and blurry text' },
+  { label: 'Who can read the code', shadow: 'Only you two, end to end encrypted', liveshare: 'Relayed through Microsoft', screen: 'Anyone on the call' },
 ];
 ---
 
-<section class="comparison">
-  <div class="section-shell comparison-inner">
-    <div class="comparison-copy reveal">
-      <p class="section-kicker">The alternatives, honestly</p>
-      <h2 class="section-title">You already know the workarounds. They all have a catch.</h2>
+<section class="section compare" id="compare" aria-labelledby="compare-title">
+  <div class="shell">
+    <div class="section-head reveal">
+      <p class="eyebrow">Compared honestly</p>
+      <h2 id="compare-title" class="section-title">You know the workarounds. Each one has a catch</h2>
       <p class="section-lead">
-        Screen share and one of you just watches. Live Share and one of you abandons their editor.
-        Shadow syncs the actual files, so both people keep full control of their own setup.
+        Screen share and one of you just watches. Live Share and one of you leaves their editor behind.
       </p>
     </div>
 
-    <div class="table-wrap reveal r-d1">
+    <div class="table-card reveal reveal-d1">
       <table>
+        <caption class="sr-only">Shadow compared with VS Code Live Share and screen sharing</caption>
         <thead>
           <tr>
-            <th class="col-label"></th>
-            <th class="col-shadow">Shadow</th>
-            <th class="col-other">Live Share</th>
-            <th class="col-other">Screenshare</th>
+            <td></td>
+            <th scope="col" class="col-shadow">Shadow</th>
+            <th scope="col">Live Share</th>
+            <th scope="col">Screen share</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((r) => (
             <tr>
-              <td class="col-label">{r.label}</td>
-              <td class="col-shadow">{r.shadow}</td>
-              <td class="col-other">{r.liveshare}</td>
-              <td class="col-other">{r.screen}</td>
+              <th scope="row">{r.label}</th>
+              <td class="col-shadow" data-label="Shadow">{r.shadow}</td>
+              <td data-label="Live Share">{r.liveshare}</td>
+              <td data-label="Screen share">{r.screen}</td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
+
+    <p class="compare-note reveal">
+      Shadow keeps the last write when two people save the same file, so talk before you both edit one function.
+      More on that in the <a href="#faq" class="text-link">FAQ</a>.
+    </p>
   </div>
 </section>
 
 <style>
-  .comparison {
-    margin-bottom: clamp(6rem, 10vw, 10rem);
-  }
-
-  .comparison-copy {
-    text-align: left;
-    margin-bottom: 3rem;
-    max-width: 48rem;
-  }
-
-  .table-wrap {
-    overflow-x: auto;
-    padding-bottom: 2rem;
+  .table-card {
+    padding: var(--sp-75);
+    border: 1px solid var(--border);
+    border-radius: var(--r-2xl);
+    background: var(--surface);
   }
 
   table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    font-size: 1rem;
-    min-width: 760px;
+    table-layout: fixed;
   }
 
   th, td {
-    padding: 1.5rem;
+    padding: var(--sp-200) var(--sp-300);
     text-align: left;
     vertical-align: top;
+    font-size: var(--text-base);
+    line-height: var(--lh-base);
   }
 
-  th {
+  thead th {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
+    line-height: var(--lh-xs);
     font-weight: 500;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--text-muted);
-    border-bottom: 1px solid var(--border);
   }
 
-  td {
-    color: var(--text-secondary);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  }
-
-  tbody tr:last-child td {
-    border-bottom: none;
-  }
-
-  tbody tr {
-    transition: background 0.2s ease;
-  }
-
-  tbody tr:hover td {
-    background: rgba(255, 255, 255, 0.01);
-  }
-
-  .col-label {
+  tbody th {
     font-weight: 500;
     color: var(--text);
-    width: 20%;
   }
 
-  .col-other {
-    width: 25%;
+  tbody td {
     color: var(--text-muted);
   }
 
-  th.col-shadow {
-    color: var(--accent);
-    font-weight: 600;
-    width: 30%;
+  tbody tr + tr > * {
+    box-shadow: 0 -1px 0 var(--border);
   }
 
-  td.col-shadow {
+  .col-shadow {
+    background: var(--surface-raised);
+  }
+
+  thead .col-shadow {
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    color: var(--accent);
+  }
+
+  tbody td.col-shadow {
     color: var(--text);
     font-weight: 500;
-    background: rgba(228, 146, 75, 0.03);
   }
 
-  tbody tr:hover td.col-shadow {
-    background: rgba(228, 146, 75, 0.05);
-  }
-
-  /* Round corners for the shadow column */
-  th.col-shadow {
-    border-top-left-radius: 0.75rem;
-    border-top-right-radius: 0.75rem;
-  }
   tbody tr:last-child td.col-shadow {
-    border-bottom-left-radius: 0.75rem;
-    border-bottom-right-radius: 0.75rem;
+    border-radius: 0 0 var(--r-lg) var(--r-lg);
   }
 
-  @media (max-width: 768px) {
-    th, td {
-      padding: 1.25rem 1rem;
-      font-size: 0.9rem;
+  tbody tr + tr > .col-shadow {
+    box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .compare-note {
+    max-width: 680px;
+    margin-top: var(--sp-300);
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    color: var(--text-muted);
+  }
+
+  /* Stack into one card per question on small screens. */
+  @media (max-width: 767px) {
+    .table-card {
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    table, tbody, tr, th, td {
+      display: block;
+    }
+
+    thead {
+      display: none;
+    }
+
+    tbody {
+      display: grid;
+      gap: var(--sp-100);
+    }
+
+    tbody tr {
+      padding: var(--sp-75);
+      border: 1px solid var(--border);
+      border-radius: var(--r-2xl);
+      background: var(--surface);
+    }
+
+    tbody tr + tr > * {
+      box-shadow: none;
+    }
+
+    tbody th {
+      padding: var(--sp-100) var(--sp-100) var(--sp-75);
+    }
+
+    tbody td {
+      display: grid;
+      grid-template-columns: 104px 1fr;
+      gap: var(--sp-100);
+      padding: var(--sp-75) var(--sp-100);
+      font-size: var(--text-sm);
+      line-height: var(--lh-sm);
+    }
+
+    tbody td::before {
+      content: attr(data-label);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      line-height: var(--lh-sm);
+      color: var(--text-muted);
+    }
+
+    tbody td.col-shadow,
+    tbody tr:last-child td.col-shadow {
+      border-radius: var(--r-lg);
+    }
+
+    tbody td.col-shadow::before {
+      color: var(--accent);
     }
   }
 </style>

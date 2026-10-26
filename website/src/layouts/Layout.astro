@@ -1,19 +1,38 @@
 ---
+import '@fontsource-variable/geist/wght.css';
+import '@fontsource-variable/geist-mono/wght.css';
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
 interface Props {
   title?: string;
   description?: string;
+  /** Path relative to the site base, e.g. "privacy/". */
+  path?: string;
+  /** Extra JSON-LD objects for this page. */
+  schema?: Record<string, unknown>[];
+  noindex?: boolean;
+  home?: boolean;
 }
 
 const {
-  title = 'Shadow | Real-time pairing, any editor',
-  description = 'A macOS menu bar app for real-time pair programming. End-to-end encrypted. No accounts, no lock-in.',
+  title = 'Shadow: live pair programming in your own editor',
+  description =
+    'Shadow syncs a project folder between two machines in real time, end to end encrypted. Pair from VS Code, Neovim, Vim, JetBrains, or Zed. Free Mac app and CLI, no accounts.',
+  path = '',
+  schema = [],
+  noindex = false,
+  home = true,
 } = Astro.props;
 
 const posthogKey = import.meta.env.PUBLIC_POSTHOG_KEY;
 
 const rawBase = import.meta.env.BASE_URL;
 const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
-const canonicalUrl = new URL(base, Astro.site ?? 'https://go-johnnyhe.github.io').toString();
+const siteOrigin = Astro.site ?? new URL('https://go-johnnyhe.github.io');
+const canonicalUrl = new URL(base + path, siteOrigin).toString();
+const ogImage = new URL(`${base}og.png`, siteOrigin).toString();
 ---
 
 <!doctype html>
@@ -22,21 +41,37 @@ const canonicalUrl = new URL(base, Astro.site ?? 'https://go-johnnyhe.github.io'
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#101010" />
+    <meta name="theme-color" content="#131209" />
+    <meta name="color-scheme" content="dark" />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonicalUrl} />
 
     <!-- Open Graph -->
+    <meta property="og:site_name" content="Shadow" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Shadow: pair program live without leaving your editor" />
 
     <!-- Twitter -->
-    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
 
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <link rel="apple-touch-icon" href={`${base}shadow-icon.png`} />
     <title>{title}</title>
+
+    <script is:inline>document.documentElement.classList.add('js');</script>
+
+    {schema.map((item) => (
+      <script type="application/ld+json" set:html={JSON.stringify(item)} />
+    ))}
 
     <!-- PostHog Analytics -->
     <script is:inline define:vars={{ posthogKey }}>
@@ -66,7 +101,11 @@ const canonicalUrl = new URL(base, Astro.site ?? 'https://go-johnnyhe.github.io'
   </head>
   <body>
     <a href="#main-content" class="skip-link">Skip to content</a>
-    <slot />
+    <Nav home={home} />
+    <main id="main-content" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
 
     <script is:inline>
       function shadowCapture(eventName, properties) {
@@ -75,15 +114,20 @@ const canonicalUrl = new URL(base, Astro.site ?? 'https://go-johnnyhe.github.io'
         }
       }
 
-      function updateCopyButtonState(button, copied) {
+      function updateCopyButtonState(button, state) {
         if (!button) return;
-        button.dataset.copyState = copied ? 'copied' : 'idle';
+        button.dataset.copyState = state;
         var label = button.querySelector('[data-copy-label]');
-        if (!label) return;
-        if (!button.dataset.defaultLabel) {
-          button.dataset.defaultLabel = label.textContent || 'Copy';
+        if (label) {
+          if (!button.dataset.defaultLabel) button.dataset.defaultLabel = label.textContent || 'Copy';
+          label.textContent = state === 'copied' ? 'Copied' : button.dataset.defaultLabel;
         }
-        label.textContent = copied ? 'Copied' : button.dataset.defaultLabel;
+        var wrap = button.parentElement && button.parentElement.parentElement;
+        var error = wrap && wrap.querySelector('[data-copy-error]');
+        if (error) {
+          error.textContent =
+            state === 'failed' ? 'Copy failed. Select the command and press Command C instead.' : '';
+        }
       }
 
       async function copyText(text) {
@@ -98,8 +142,7 @@ const canonicalUrl = new URL(base, Astro.site ?? 'https://go-johnnyhe.github.io'
         textarea.value = text;
         textarea.setAttribute('readonly', '');
         textarea.style.position = 'fixed';
-        textarea.style.top = '-9999px';
-        textarea.style.left = '-9999px';
+        textarea.style.opacity = '0';
         document.body.appendChild(textarea);
         textarea.select();
 
@@ -115,6 +158,12 @@ const canonicalUrl = new URL(base, Astro.site ?? 'https://go-johnnyhe.github.io'
       document.addEventListener('DOMContentLoaded', () => {
         shadowCapture('landing_page_viewed', { surface: 'website' });
 
+        var reveals = document.querySelectorAll('.reveal');
+        if (!('IntersectionObserver' in window)) {
+          reveals.forEach((el) => el.classList.add('is-visible'));
+          return;
+        }
+
         const io = new IntersectionObserver(
           (entries) => {
             entries.forEach((e) => {
@@ -124,9 +173,9 @@ const canonicalUrl = new URL(base, Astro.site ?? 'https://go-johnnyhe.github.io'
               }
             });
           },
-          { threshold: 0.08, rootMargin: '0px 0px -60px 0px' }
+          { threshold: 0.12, rootMargin: '0px 0px -64px 0px' }
         );
-        document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+        reveals.forEach((el) => io.observe(el));
       });
 
       document.addEventListener('click', async (event) => {
@@ -147,55 +196,45 @@ const canonicalUrl = new URL(base, Astro.site ?? 'https://go-johnnyhe.github.io'
           var text = copyButton.getAttribute('data-copy-text') || '';
           if (!text) return;
 
+          var didCopy = false;
           try {
-            var didCopy = await copyText(text);
-            if (!didCopy) return;
-            updateCopyButtonState(copyButton, true);
-            shadowCapture('install_command_copied', {
-              source: copyButton.getAttribute('data-copy-source') || 'unknown',
-              target: copyButton.getAttribute('data-copy-target') || 'unknown',
-              surface: copyButton.getAttribute('data-copy-surface') || 'website',
-            });
-            window.setTimeout(function () {
-              updateCopyButtonState(copyButton, false);
-            }, 1800);
-          } catch (_) {
-            updateCopyButtonState(copyButton, false);
+            didCopy = await copyText(text);
+          } catch (_) {}
+
+          if (!didCopy) {
+            updateCopyButtonState(copyButton, 'failed');
+            return;
           }
+
+          updateCopyButtonState(copyButton, 'copied');
+          shadowCapture('install_command_copied', {
+            source: copyButton.getAttribute('data-copy-source') || 'unknown',
+            target: copyButton.getAttribute('data-copy-target') || 'unknown',
+            surface: copyButton.getAttribute('data-copy-surface') || 'website',
+          });
+          window.setTimeout(function () {
+            updateCopyButtonState(copyButton, 'idle');
+          }, 1800);
         }
 
         const demoToggle = target.closest('[data-demo-toggle]');
         if (demoToggle instanceof HTMLButtonElement) {
           const demoRoot = demoToggle.closest('[data-demo-root]');
           const video = demoRoot && demoRoot.querySelector('[data-demo-video]');
-          const label = demoToggle.querySelector('[data-demo-label]');
           if (!(video instanceof HTMLVideoElement)) return;
 
-          if (video.paused) {
-            void video.play();
-            if (label) label.textContent = 'Pause loop';
-            demoToggle.dataset.demoState = 'playing';
-            shadowCapture('demo_interacted', {
-              source: demoToggle.getAttribute('data-demo-source') || 'unknown',
-              action: 'resume',
-              surface: 'website',
-            });
-          } else {
-            video.pause();
-            if (label) label.textContent = 'Resume loop';
-            demoToggle.dataset.demoState = 'paused';
-            shadowCapture('demo_interacted', {
-              source: demoToggle.getAttribute('data-demo-source') || 'unknown',
-              action: 'pause',
-              surface: 'website',
-            });
-          }
+          const resume = video.paused;
+          if (resume) void video.play();
+          else video.pause();
+          demoToggle.dataset.demoState = resume ? 'playing' : 'paused';
+          demoToggle.setAttribute('aria-label', resume ? 'Pause demo video' : 'Play demo video');
+          shadowCapture('demo_interacted', {
+            source: demoToggle.getAttribute('data-demo-source') || 'unknown',
+            action: resume ? 'resume' : 'pause',
+            surface: 'website',
+          });
         }
       });
     </script>
   </body>
 </html>
-
-<style is:global>
-  @import '../styles/global.css';
-</style>

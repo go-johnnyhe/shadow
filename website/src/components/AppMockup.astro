@@ -1,365 +1,359 @@
 ---
+// A replica of the Shadow menu bar popover. Its state follows the nearest
+// ancestor's data-step: 1 idle (Start Session gets pressed), 2 sharing with the
+// invite copied, 3 files syncing. Only opacity and transform animate, and the
+// layout never shifts between states.
+import Icon from './Icon.astro';
+
 const rawBase = import.meta.env.BASE_URL;
 const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
+
+const activity = ['lexer/lexer.go', 'lexer/token.go', 'lexer/lexer_test.go'];
 ---
 
-<div class="mockup-wrap">
-  <!-- Popover arrow -->
-  <div class="popover-arrow" aria-hidden="true"></div>
-
-  <!-- Popover body -->
-  <div class="popover">
-    <!-- Idle State -->
-    <div class="state state-idle">
-      <div class="pop-header">
-        <div class="app-icon" aria-hidden="true">
-          <img src={`${base}shadow-icon.png`} alt="" width="28" height="28" />
-        </div>
-        <div class="app-meta">
-          <span class="app-title">Shadow</span>
-          <span class="app-subtitle">Real-time file collaboration</span>
+<div class="popover" aria-hidden="true">
+  <div class="layers">
+    <!-- Idle -->
+    <div class="layer layer-idle">
+      <div class="pop-head">
+        <img src={`${base}shadow-icon.png`} alt="" width="32" height="32" loading="lazy" decoding="async" />
+        <div>
+          <p class="pop-title">Shadow</p>
+          <p class="pop-sub">Encrypted realtime collaboration</p>
         </div>
       </div>
 
-      <div class="pop-divider"></div>
-
-      <div class="pop-actions">
-        <button class="mac-btn mac-btn-blue start-btn" type="button" tabindex="-1">Start Session</button>
-        <button class="mac-btn mac-btn-secondary" type="button" tabindex="-1">Join Session</button>
+      <div class="pop-buttons">
+        <span class="mac-btn mac-btn-blue start-btn">Start Session</span>
+        <span class="mac-btn">Join Session</span>
       </div>
 
-      <div class="session-card" aria-hidden="true">
-        <div class="session-status">
-          <span class="status-dot"></span>
-          <span>Invite copied</span>
-        </div>
-        <code>shadow.dev/join#e2e-key</code>
+      <div class="pop-toggle">
+        <span class="switch"><span></span></span>
+        <span>Joiners are read only</span>
       </div>
 
-      <label class="checkbox-row">
-        <span class="checkbox-box checkbox-unchecked" aria-hidden="true"></span>
-        <span class="checkbox-label">Read-only for joiners</span>
-      </label>
-
-      <div class="pop-divider"></div>
-
-      <div class="pop-footer">
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="lock-icon">
-          <rect x="2" y="4.5" width="6" height="4.5" rx="1" fill="#6b7280"/>
-          <path d="M3.5 4.5V3C3.5 1.62 4.34 1 5 1C5.66 1 6.5 1.62 6.5 3V4.5" stroke="#6b7280" stroke-width="1" fill="none" stroke-linecap="round"/>
-        </svg>
-        <span>End-to-end encrypted</span>
+      <div class="pop-empty">
+        <Icon name="folder-simple" size={16} />
+        <span>No session running. Pick a folder to share.</span>
       </div>
+
+      <p class="pop-foot">
+        <Icon name="lock-simple" size={12} />
+        The relay never sees your code.
+      </p>
     </div>
 
-  </div>
+    <!-- Active -->
+    <div class="layer layer-active">
+      <div class="pop-head">
+        <span class="live-dot"></span>
+        <div>
+          <p class="pop-title">Sharing</p>
+          <p class="pop-sub">Invite link copied to clipboard</p>
+        </div>
+      </div>
 
-  <!-- Ambient glow -->
-  <div class="mockup-glow" aria-hidden="true"></div>
+      <dl class="pop-rows">
+        <div><dt>Directory</dt><dd>lexer</dd></div>
+        <div><dt>Permissions</dt><dd>Everyone can edit</dd></div>
+        <div><dt>Security</dt><dd>E2E encrypted</dd></div>
+      </dl>
+
+      <div class="pop-activity">
+        <p class="pop-label">Recent activity</p>
+        <div class="activity-box">
+          <p class="activity-empty">Waiting for your partner to join</p>
+          <ul>
+            {activity.map((file, i) => (
+              <li style={`--n:${i}`}>
+                <Icon name="arrows-left-right" size={12} />
+                <span>{file}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div class="pop-buttons">
+        <span class="mac-btn invite-btn">Copy Invite Link</span>
+        <span class="mac-btn mac-btn-stop">Stop Session</span>
+      </div>
+    </div>
+  </div>
 </div>
 
 <style>
-  .mockup-wrap {
-    position: relative;
-    width: 280px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex-shrink: 0;
-  }
-
-  /* ---- Popover Arrow ---- */
-  .popover-arrow {
-    width: 16px;
-    height: 8px;
-    position: relative;
-    right: -100px;
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-    background: rgba(30, 30, 30, 0.85);
-  }
-
-  /* ---- Popover Body ---- */
   .popover {
-    position: relative;
-    width: 280px;
-    background: rgba(30, 30, 30, 0.85);
-    backdrop-filter: blur(20px) saturate(1.5);
-    -webkit-backdrop-filter: blur(20px) saturate(1.5);
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow:
-      0 24px 80px rgba(0, 0, 0, 0.55),
-      0 0 1px rgba(255, 255, 255, 0.1) inset;
-    overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
+    width: 288px;
+    padding: var(--sp-100);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-xl);
+    background: rgba(39, 39, 39, 0.96);
+    box-shadow: var(--shadow-lg);
+    font-size: var(--text-xs);
+    line-height: var(--lh-xs);
+    color: var(--text-secondary);
   }
 
-  .state {
-    padding: 14px;
+  .layers {
+    display: grid;
   }
 
-  /* ---- Shared Elements ---- */
-  .pop-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-
-  .app-icon {
-    flex-shrink: 0;
-  }
-
-  .app-icon img {
-    border-radius: 6px;
-    display: block;
-    animation: icon-breathe 4.8s ease-in-out infinite;
-  }
-
-  .app-meta {
+  .layer {
+    grid-area: 1 / 1;
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: var(--sp-100);
+    transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
   }
 
-  .app-title {
-    font-size: 13px;
+  .pop-head {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-75);
+  }
+
+  .pop-head img {
+    border-radius: var(--r-lg);
+  }
+
+  .pop-title {
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
     font-weight: 600;
-    color: #f0f0f0;
-    letter-spacing: -0.01em;
+    color: var(--text);
   }
 
-  .app-subtitle {
-    font-size: 11px;
-    color: #8e8e93;
-    letter-spacing: -0.01em;
+  .pop-sub {
+    color: var(--text-muted);
   }
 
-  .pop-divider {
-    height: 1px;
-    background: rgba(255, 255, 255, 0.08);
-    margin: 0 -14px;
-    margin-bottom: 12px;
+  .pop-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-75);
   }
 
-  /* ---- macOS Buttons ---- */
   .mac-btn {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
-    height: 28px;
-    padding: 0 14px;
-    border-radius: 6px;
-    font-size: 12.5px;
+    padding: var(--sp-50) var(--sp-75);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-md);
+    background: rgba(255, 255, 255, 0.08);
     font-weight: 500;
-    font-family: inherit;
-    letter-spacing: -0.01em;
-    cursor: default;
-    border: none;
-    transition: filter 0.15s ease;
+    color: var(--text);
     white-space: nowrap;
   }
 
   .mac-btn-blue {
-    background: #0A84FF;
+    border-color: #0a84ff;
+    background: #0a84ff;
     color: #fff;
-    box-shadow: 0 0 0 rgba(10, 132, 255, 0);
-    animation: start-confirm 6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   }
 
-  .mac-btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: #f0f0f0;
-    border: 0.5px solid rgba(255, 255, 255, 0.15);
+  .mac-btn-stop {
+    color: #ff8a80;
   }
 
-  /* ---- Idle-State Layout ---- */
-  .pop-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-
-  .session-card {
-    display: grid;
-    gap: 5px;
-    margin-bottom: 12px;
-    padding: 8px 9px;
-    border-radius: 7px;
-    background: rgba(10, 132, 255, 0.1);
-    border: 0.5px solid rgba(10, 132, 255, 0.22);
-    animation: session-peek 6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
-    transform-origin: top;
-  }
-
-  .session-status {
+  .pop-toggle {
     display: flex;
     align-items: center;
-    gap: 6px;
-    color: #f0f0f0;
-    font-size: 11.5px;
-    font-weight: 500;
-    letter-spacing: -0.01em;
+    gap: var(--sp-75);
   }
 
-  .status-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #32d74b;
-    box-shadow: 0 0 0 0 rgba(50, 215, 75, 0.34);
-    animation: status-pulse 1.8s ease-out infinite;
-  }
-
-  .session-card code {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    color: #8e8e93;
-    font-family: 'SF Mono', ui-monospace, Menlo, monospace;
-    font-size: 10.5px;
-  }
-
-  .checkbox-row {
+  .switch {
     display: flex;
     align-items: center;
-    gap: 7px;
-    margin-bottom: 12px;
-    cursor: default;
+    width: 24px;
+    height: 16px;
+    padding: var(--sp-25);
+    border-radius: var(--r-full);
+    background: rgba(255, 255, 255, 0.16);
   }
 
-  .checkbox-box {
-    width: 14px;
-    height: 14px;
-    border-radius: 3px;
-    background: #0A84FF;
+  .switch span {
+    width: 12px;
+    height: 12px;
+    border-radius: var(--r-full);
+    background: #e5e5e5;
+  }
+
+  .pop-empty {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: var(--sp-75);
+    padding: var(--sp-75);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--r-lg);
+    color: var(--text-muted);
+  }
+
+  .pop-empty svg {
     flex-shrink: 0;
   }
 
-  .checkbox-unchecked {
-    background: transparent;
-    border: 1.5px solid rgba(255, 255, 255, 0.25);
-  }
-
-  .checkbox-label {
-    font-size: 11.5px;
-    color: #d1d1d6;
-    letter-spacing: -0.01em;
-  }
-
-  .pop-footer {
+  .pop-foot {
     display: flex;
     align-items: center;
-    gap: 5px;
-    padding-top: 0;
+    gap: var(--sp-50);
+    margin-top: auto;
+    color: var(--text-muted);
   }
 
-  .pop-footer span {
-    font-size: 10.5px;
-    color: #636366;
-    letter-spacing: -0.01em;
-  }
-
-  .lock-icon {
+  .live-dot {
+    position: relative;
+    width: 32px;
+    height: 32px;
     flex-shrink: 0;
-    opacity: 0.6;
+    border-radius: var(--r-lg);
+    background: rgba(50, 215, 75, 0.12);
   }
 
-  /* ---- Ambient Glow ---- */
-  .mockup-glow {
+  .live-dot::before,
+  .live-dot::after {
+    content: '';
     position: absolute;
-    width: 200px;
-    height: 200px;
-    bottom: -40px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: radial-gradient(circle, rgba(228, 146, 75, 0.08) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: -1;
+    inset: var(--sp-100);
+    border-radius: var(--r-full);
+    background: var(--live);
   }
 
-  @keyframes start-confirm {
-    0%, 22%, 100% {
-      transform: none;
-      box-shadow: 0 0 0 rgba(10, 132, 255, 0);
-      filter: none;
-    }
-    27% {
-      transform: scale(0.96);
-      filter: brightness(1.05);
-    }
-    34% {
-      transform: none;
-      box-shadow: 0 0 0 6px rgba(10, 132, 255, 0.14);
-    }
-    46% {
-      box-shadow: 0 0 0 rgba(10, 132, 255, 0);
-    }
+  .pop-rows {
+    display: grid;
+    gap: var(--sp-50);
+    padding: var(--sp-75);
+    border-radius: var(--r-lg);
+    background: rgba(0, 0, 0, 0.28);
   }
 
-  @keyframes session-peek {
-    0%, 20%, 100% {
-      opacity: 0;
-      transform: translateY(-4px) scaleY(0.96);
-      max-height: 0;
-      padding-top: 0;
-      padding-bottom: 0;
-      margin-bottom: 0;
-      border-width: 0;
-    }
-    30%, 72% {
-      opacity: 1;
-      transform: none;
-      max-height: 64px;
-      padding-top: 8px;
-      padding-bottom: 8px;
-      margin-bottom: 12px;
-      border-width: 0.5px;
-    }
+  .pop-rows div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--sp-75);
   }
 
-  @keyframes status-pulse {
-    0% { box-shadow: 0 0 0 0 rgba(50, 215, 75, 0.34); }
-    80%, 100% { box-shadow: 0 0 0 7px rgba(50, 215, 75, 0); }
+  .pop-rows dt {
+    color: var(--text-muted);
   }
 
-  @keyframes icon-breathe {
-    0%, 100% { filter: drop-shadow(0 0 0 rgba(228, 146, 75, 0)); }
-    50% { filter: drop-shadow(0 0 10px rgba(228, 146, 75, 0.24)); }
+  .pop-rows dd {
+    color: var(--text);
+  }
+
+  .pop-label {
+    margin-bottom: var(--sp-50);
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+
+  .activity-box {
+    display: grid;
+  }
+
+  .activity-empty,
+  .pop-activity ul {
+    grid-area: 1 / 1;
+    transition: opacity var(--dur) var(--ease);
+  }
+
+  .activity-empty {
+    align-self: center;
+    color: var(--text-muted);
+  }
+
+  .pop-activity ul {
+    display: grid;
+    gap: var(--sp-50);
+    list-style: none;
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+  }
+
+  .pop-activity li {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-75);
+    transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+
+  .pop-activity li svg {
+    color: var(--accent);
+  }
+
+  /* ---- States. With no data-step the final, fully synced state shows. ---- */
+  .layer-idle {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+
+  .activity-empty {
+    opacity: 0;
+  }
+
+  :global([data-step='1']) .layer-idle {
+    opacity: 1;
+    transform: none;
+  }
+
+  :global([data-step='1']) .layer-active {
+    opacity: 0;
+    transform: translateY(var(--sp-75));
+  }
+
+  :global([data-step='1']) .start-btn {
+    animation: press 1600ms var(--ease) 1200ms both;
+  }
+
+  :global([data-step='2']) .activity-empty {
+    opacity: 1;
+  }
+
+  :global([data-step='1']) .pop-activity li,
+  :global([data-step='2']) .pop-activity li {
+    opacity: 0;
+    transform: translateY(var(--sp-50));
+  }
+
+  :global([data-step='2']) .invite-btn {
+    animation: flash 1600ms var(--ease) 300ms both;
+  }
+
+  :global([data-step='3']) .pop-activity li {
+    transition-delay: calc(400ms + var(--n) * 600ms);
+  }
+
+  :global([data-step='3']) .live-dot::after {
+    animation: live-ping 1.8s var(--ease) infinite;
+  }
+
+  @keyframes press {
+    0%, 100% { transform: none; }
+    20% { transform: scale(0.94); }
+    40% { transform: none; }
+  }
+
+  @keyframes flash {
+    0%, 100% { background-color: rgba(255, 255, 255, 0.08); }
+    30% { background-color: rgba(255, 255, 255, 0.2); }
+  }
+
+  @keyframes live-ping {
+    0% { opacity: 0.6; transform: scale(1); }
+    80%, 100% { opacity: 0; transform: scale(2.6); }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .app-icon img,
-    .mac-btn-blue,
-    .session-card,
-    .status-dot {
+    .layer,
+    .pop-activity li {
+      transform: none !important;
+    }
+
+    :global([data-step='1']) .start-btn,
+    :global([data-step='3']) .live-dot::after {
       animation: none;
-    }
-
-    .session-card {
-      opacity: 1;
-      transform: none;
-      max-height: none;
-    }
-  }
-
-  /* ---- Responsive ---- */
-  @media (max-width: 900px) {
-    .mockup-wrap {
-      transform: scale(0.92);
-      transform-origin: top center;
-    }
-  }
-
-  @media (max-width: 640px) {
-    .mockup-wrap {
-      transform: scale(0.85);
-      transform-origin: top center;
     }
   }
 </style>

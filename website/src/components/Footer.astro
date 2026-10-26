@@ -1,98 +1,147 @@
 ---
 import { dmgUrl, githubUrl, marketplaceUrl } from '../consts';
+
+const rawBase = import.meta.env.BASE_URL;
+const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
+
+const groups = [
+  {
+    title: 'Get Shadow',
+    links: [
+      { label: 'Download for Mac', href: dmgUrl, target: 'download_mac' },
+      { label: 'All releases', href: `${githubUrl}/releases/latest`, target: 'github_releases', external: true },
+      { label: 'VS Code extension', href: marketplaceUrl, target: 'vscode_marketplace', external: true },
+    ],
+  },
+  {
+    title: 'Project',
+    links: [
+      { label: 'Source on GitHub', href: githubUrl, target: 'github', external: true },
+      { label: 'Report an issue', href: `${githubUrl}/issues`, target: 'github_issues', external: true },
+      { label: 'Documentation', href: `${githubUrl}#readme`, target: 'github_docs', external: true },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { label: 'Privacy', href: `${base}privacy/`, target: 'privacy' },
+      { label: 'MIT License', href: `${githubUrl}/blob/main/LICENSE`, target: 'license', external: true },
+    ],
+  },
+];
 ---
 
 <footer class="footer">
-  <div class="section-shell footer-inner">
-    <div>
-      <span class="footer-name">Shadow</span>
-      <p class="footer-copy">Pair programming without the editor hostage situation.</p>
+  <div class="shell footer-inner">
+    <div class="footer-brand">
+      <a href={base} class="footer-logo">
+        <img src={`${base}shadow-icon.png`} alt="" width="24" height="24" loading="lazy" />
+        Shadow
+      </a>
+      <p>Live pairing where everyone keeps their own editor.</p>
     </div>
-    <div class="footer-links">
-      <a
-        href={dmgUrl}
-        data-cta
-        data-cta-source="footer"
-        data-cta-target="download_mac"
-        data-cta-surface="website"
-      >
-        Download
-      </a>
-      <span class="sep">&middot;</span>
-      <a
-        href={githubUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        data-cta
-        data-cta-source="footer"
-        data-cta-target="github"
-        data-cta-surface="website"
-      >
-        GitHub
-      </a>
-      <span class="sep">&middot;</span>
-      <a
-        href={marketplaceUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        data-cta
-        data-cta-source="footer"
-        data-cta-target="vscode_marketplace"
-        data-cta-surface="website"
-      >
-        VS Code
-      </a>
-      <span class="sep">&middot;</span>
-      <span>MIT License</span>
-    </div>
+
+    <nav class="footer-nav" aria-label="Footer">
+      {groups.map((g) => (
+        <div>
+          <p class="footer-title">{g.title}</p>
+          <ul role="list">
+            {g.links.map((l) => (
+              <li>
+                <a
+                  href={l.href}
+                  target={l.external ? '_blank' : undefined}
+                  rel={l.external ? 'noopener noreferrer' : undefined}
+                  data-cta
+                  data-cta-source="footer"
+                  data-cta-target={l.target}
+                >
+                  {l.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </nav>
   </div>
 </footer>
 
 <style>
   .footer {
-    border-top: 1px solid var(--border);
-    padding: 1.8rem 1.6rem 2.2rem;
+    padding: var(--sp-700) 0 var(--sp-800);
   }
 
   .footer-inner {
     display: flex;
-    align-items: flex-start;
     justify-content: space-between;
-    gap: 1rem;
-    font-size: 0.9rem;
+    gap: var(--sp-600);
+  }
+
+  .footer-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-75);
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .footer-logo img {
+    border-radius: var(--r-md);
+  }
+
+  .footer-brand p {
+    max-width: 280px;
+    margin-top: var(--sp-100);
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
     color: var(--text-muted);
   }
 
-  .footer-name {
-    display: block;
-    font-family: var(--font-display);
-    font-size: 1.15rem;
+  .footer-nav {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: var(--sp-700);
+  }
+
+  .footer-title {
+    margin-bottom: var(--sp-100);
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    font-weight: 600;
     color: var(--text);
-    margin-bottom: 0.35rem;
   }
 
-  .footer-copy {
-    max-width: 29rem;
-    color: var(--text-secondary);
+  .footer-nav ul {
+    display: grid;
+    gap: var(--sp-75);
+    list-style: none;
   }
 
-  .footer-links {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  .footer-nav a {
+    font-size: var(--text-sm);
+    line-height: var(--lh-sm);
+    color: var(--text-muted);
+    transition: color var(--dur-fast) var(--ease);
   }
 
-  .footer-links a {
-    color: var(--text-secondary);
-    transition: color 0.2s;
+  .footer-nav a:hover {
+    color: var(--text);
   }
-  .footer-links a:hover { color: var(--text); }
 
-  .sep { color: var(--border-strong); }
+  @media (max-width: 767px) {
+    .footer {
+      padding: var(--sp-600) 0 var(--sp-700);
+    }
 
-  @media (max-width: 720px) {
     .footer-inner {
       flex-direction: column;
+      gap: var(--sp-500);
+    }
+
+    .footer-nav {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--sp-400) var(--sp-300);
     }
   }
 </style>
